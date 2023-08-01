@@ -500,7 +500,7 @@ tallgrass_carried
 tnt_bottom
 tnt_side
 tnt_top
-torch_on
+torch_on.2.1
 trapdoor
 trapped_chest_front
 trip_wire
