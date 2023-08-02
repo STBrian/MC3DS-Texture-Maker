@@ -1,5 +1,4 @@
 import os
-import math
 from PIL import Image
 from tkinter import Tk
 from tkinter import filedialog
@@ -172,6 +171,8 @@ def addToItemAtlas(itemData, itemImgPath, output_folder):
         byte_arr = bytearray(itemAtlasBytes)
 
         # Guarda el atlas modificado
+        if not os.path.exists(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst"):
+            print("No atlas file found in output folder. Created a new one")
         with open(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst", "wb") as f:
             f.write(byte_arr)
 
@@ -286,99 +287,107 @@ if __name__ == "__main__":
         match option:
             # Cambiar la textura de un item
             case 1:
-                items = getItemsFromIndexFile("assets/itemslist.txt")
-                clear()
-
-                # Imprime todos los items de la lista
-                for i in range(len(items)):
-                    itemName = items[i].split(".")
-                    print(f"{i+1}: {itemName[0]}")
-                
-                selection = input("Enter the texture id to change: ")
-
-                try: 
-                    selection = int(selection)
-                    if selection < 1 or selection > (len(items)):
-                        selection = None
-                except:
-                    selection = None
-
-                if selection != None:
+                if os.path.exists("assets/atlas/atlas.items.meta_79954554_0.3dst") or os.path.exists(f"{outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"):
                     clear()
-                    itemName = items[selection-1].split(".")
-                    print(f"Selection: {itemName[0]}")
+                    items = getItemsFromIndexFile("assets/itemslist.txt")
 
-                    print("Enter the image file path: ")
-                    filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                    if filePath != '':
-                        print(f"Path selected: {filePath}")
+                    # Imprime todos los items de la lista
+                    for i in range(len(items)):
+                        itemName = items[i].split(".")
+                        print(f"{i+1}: {itemName[0]}")
+                    
+                    selection = input("Enter the texture id to change: ")
+
+                    try: 
+                        selection = int(selection)
+                        if selection < 1 or selection > (len(items)):
+                            selection = None
+                    except:
+                        selection = None
+
+                    if selection != None:
                         clear()
-                        print("Converting Image...")
-                        print(itemName)
-                        outputData = addToItemAtlas(itemName, filePath, outputFolder)
-                        if outputData != None:
+                        itemName = items[selection-1].split(".")
+                        print(f"Selection: {itemName[0]}")
+
+                        print("Enter the image file path: ")
+                        filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                        if filePath != '':
+                            print(f"Path selected: {filePath}")
                             clear()
-                            print("Success")
-                            print(f"File created at: {outputFolder}/items/{itemName[0]}.3dst")
+                            print("Converting Image...")
+                            print(itemName)
+                            outputData = addToItemAtlas(itemName, filePath, outputFolder)
+                            if outputData != None:
+                                clear()
+                                print("Success")
+                                print(f"File created at: {outputFolder}/items/{itemName[0]}.3dst")
+                            else:
+                                clear()
+                                print("Error: The image must be 16x16")
                         else:
                             clear()
-                            print("Error: The image must be 16x16")
+                            print("Error: No file selected")
                     else:
                         clear()
-                        print("Error: No file selected")
+                        print("Error: Invalid selection")
                 else:
                     clear()
-                    print("Error: Invalid selection")
+                    print("Error: No items atlas found in 'assets/atlas'")
 
             case 2:
-                clear()
-                blocks = getItemsFromIndexFile("assets/blockslist.txt")
-
-                for i in range(len(blocks)):
-                    blockName = blocks[i].split(".")
-                    print(f"{i+1}: {blockName[0]}")
-
-                selection = input("Enter the texture id to change: ")
-
-                try: 
-                    selection = int(selection)
-                    if selection < 1 or selection > (len(blocks)):
-                        selection = None
-                except:
-                    selection = None
-
-                if selection != None:
+                if os.path.exists("assets/atlas/atlas.terrain.meta_79954554_0.3dst") or os.path.exists(f"{outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"):
                     clear()
-                    blockName = blocks[selection-1].split(".")
-                    print(f"Selection: {blockName[0]}")
+                    blocks = getItemsFromIndexFile("assets/blockslist.txt")
 
-                    print("Enter the image file path: ")
-                    filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                    if filePath != '':
-                        print(f"Path selected: {filePath}")
+                    for i in range(len(blocks)):
+                        blockName = blocks[i].split(".")
+                        print(f"{i+1}: {blockName[0]}")
+
+                    selection = input("Enter the texture id to change: ")
+
+                    try: 
+                        selection = int(selection)
+                        if selection < 1 or selection > (len(blocks)):
+                            selection = None
+                    except:
+                        selection = None
+
+                    if selection != None:
                         clear()
-                        print("Converting image...")
-                        createOutputDirectory(outputFolder)
-                        outputData, bytes_list = convertImageTo3dst(filePath)
-                        if outputData != None and bytes_list != None:
-                            createOutputDirectory(f"{outputFolder}/items")
-                            with open(f"{outputFolder}/items/{blockName[0]}.3dst", "wb") as outputFile:
-                                outputFile.write(outputData)
+                        blockName = blocks[selection-1].split(".")
+                        print(f"Selection: {blockName[0]}")
 
-                            print(blockName)
-                            addToBlockAtlas(blockName, filePath)
+                        print("Enter the image file path: ")
+                        filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                        if filePath != '':
+                            print(f"Path selected: {filePath}")
                             clear()
-                            print("Success")
-                            print(f"File created at: {outputFolder}/items/{blockName[0]}.3dst")
+                            print("Converting image...")
+                            createOutputDirectory(outputFolder)
+                            outputData, bytes_list = convertImageTo3dst(filePath)
+                            if outputData != None and bytes_list != None:
+                                createOutputDirectory(f"{outputFolder}/items")
+                                with open(f"{outputFolder}/items/{blockName[0]}.3dst", "wb") as outputFile:
+                                    outputFile.write(outputData)
+
+                                print(blockName)
+                                addToBlockAtlas(blockName, filePath)
+                                clear()
+                                print("Success")
+                                print(f"File created at: {outputFolder}/items/{blockName[0]}.3dst")
+                            else:
+                                clear()
+                                print("Error: Image must be 16x16 pixels")
                         else:
                             clear()
-                            print("Error: Image must be 16x16 pixels")
+                            print("Error: No file selected")
                     else:
                         clear()
-                        print("Error: No file selected")
+                        print("Error: Invalid selection")
                 else:
                     clear()
-                    print("Error: Invalid selection")
+                    print("Error: No terrain atlas found in 'assets/atlas'")
 
             case 3:
                 clear()
