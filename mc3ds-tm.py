@@ -77,87 +77,108 @@ def convertImageTo3dst(path):
     else:
         return None, None
 
-def addToItemAtlas(itemData, itemImgPath):
+def addToItemAtlas(itemData, itemImgPath, output_folder):
     # Establece variables necesarias para la conversión
     x_offset = int(itemData[2])
     y_offset = int(itemData[1])
 
-    # Carga las imagenes necesarias a la memoria
-    if os.path.exists(f"{outputFolder}/atlas/atlas.items.meta_79954554_0.png"):
-        atlasImg = Image.open(f"{outputFolder}/atlas/atlas.items.meta_79954554_0.png").convert("RGBA")
+    # Carga los archivos necesarios a la memoria
+    if os.path.exists(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst"):
+        with open(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst", "rb") as f:
+            itemAtlas = f.read()
     else:
-        atlasImg = Image.open("assets/atlas/atlas.items.meta_79954554_0.png").convert("RGBA")
+        with open(f"assets/atlas/atlas.items.meta_79954554_0.3dst", "rb") as f:
+            itemAtlas = f.read()
     itemImg = Image.open(itemImgPath).convert("RGBA")
-    itemImgFlip = itemImg.transpose(Image.FLIP_TOP_BOTTOM)
 
-    # Carga los pixeles de cada imagen
-    atlasImgPixels = atlasImg.load()
-    itemImgFlipPixels = itemImgFlip.load()
+    # Continua solo si la imagen es 16x16
+    width, height = itemImg.size
+    if width == 16 and height == 16:
+        # Voltea verticalmente la imagen del item
+        itemImgFlip = itemImg.transpose(Image.FLIP_TOP_BOTTOM)
 
-    # Posiciona las variables x & y según los offsets
-    atlas_x = 16 * x_offset
-    atlas_y = 16 * y_offset
+        # Obtiene los bytes en una lista del atlas
+        itemAtlasBytes = []
+        for b in itemAtlas:
+            itemAtlasBytes.append(b)
 
-    # Reemplaza la textura en el archivo .png
-    for y in range(0, 16):
-        for x in range(0, 16):
-            atlasImgPixels[atlas_x, atlas_y] = itemImgFlipPixels[x, y]
-            atlas_x += 1
-        atlas_x -= 16
-        atlas_y += 1
-    
-    # Preparaciones para iniciar la conversión de .png a .3dst
-    data = [51, 68, 83, 84, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0]
-    atlas_x = 0
-    atlas_y = 0
+        # Carga los pixeles de la imagen
+        itemImgFlipPixels = itemImgFlip.load()
 
-    # Crea los datos para el archivo .3dst del item atlas
-    for i in range(0, 32):
-        for i in range(0, 64):
+        # Convierte la imagen a 3dst
+        img3dst = []
+        x = 0
+        y = 0
+        for i in range(0, 2):
             for i in range(0, 2):
                 for i in range(0, 2):
                     for i in range(0, 2):
                         for i in range(0, 2):
                             for i in range(0, 2):
                                 for i in range(0, 2):
-                                    r, g, b, a = atlasImgPixels[atlas_x, atlas_y]
-                                    data.append(a)
-                                    if a != 0:
-                                        data.append(b)
-                                        data.append(g)
-                                        data.append(r)
-                                    else:
-                                        for i in range(0, 3):
-                                            data.append(0)
-                                    atlas_x += 1
-                                atlas_x -= 2
-                                atlas_y += 1
-                            atlas_x += 2
-                            atlas_y -= 2
-                        atlas_x -= 4
-                        atlas_y += 2
-                    atlas_x += 4
-                    atlas_y -= 4
-                atlas_x -= 8
-                atlas_y += 4
-            atlas_x += 8
-            atlas_y -= 8
-        atlas_x -= 512
-        atlas_y += 8
+                                    for i in range(0, 2):
+                                        r, g, b, a = itemImgFlipPixels[x, y]
+                                        print(r, g, b, a)
 
-    # Crea la carpeta de atlas si aun no existe
-    if not os.path.exists(f"{outputFolder}/atlas"):
-        os.mkdir(f"{outputFolder}/atlas")
+                                        img3dst.append(a)
+                                        if a != 0:
+                                            img3dst.append(b)
+                                            img3dst.append(g)
+                                            img3dst.append(r)
+                                        else:
+                                            for i in range(0, 3):
+                                                img3dst.append(0)
+                                        x += 1
+                                    y += 1
+                                    x -= 2
+                                y -= 2
+                                x += 2
+                            y += 2
+                            x -= 4
+                        y -= 4
+                        x += 4
+                    y += 4
+                    x -= 8
+                y -= 8
+                x += 8
+            y += 8
+            x -= 16
+        
+        # Establece variables de indexado
+        atlas_i = 32 + (((((16 * 4) * 8) * 2) * 32) * (y_offset + 3)) + (((16 * 4) * 8) * x_offset)
+        img3dstIndex = 0
 
-    # Convierte la lista a binario
-    byte_arr = bytearray(data)
+        # Reemplazar infromacion del atlas
+        for i in range(0, (128 * 4)):
+            itemAtlasBytes[atlas_i] = img3dst[img3dstIndex]
+            atlas_i += 1
+            img3dstIndex += 1
 
-    # Guarda las modificaciones al archivo .png
-    atlasImg.save(f"{outputFolder}/atlas/atlas.items.meta_79954554_0.png")
+        # (Necesario ya que cada item en el archivo se divide en 2 partes)
+        atlas_i += (((16 * 4) * 8) * 31)
 
-    # Guarda el archivo .3dst
-    with open(f"{outputFolder}/atlas/atlas.items.meta_79954554_0.3dst", "wb") as f:
-        f.write(byte_arr)
+        for i in range(0, (128 * 4)):
+            itemAtlasBytes[atlas_i] = img3dst[img3dstIndex]
+            atlas_i += 1
+            img3dstIndex += 1
+
+        # Crea el directorio de salida si no existe
+        if not os.path.exists(f"{output_folder}"):
+            os.mkdir(f"{output_folder}")
+        if not os.path.exists(f"{output_folder}/atlas"):
+            os.mkdir(f"{output_folder}/atlas")
+
+        # Convierte la lista de bytes en bytesarray
+        byte_arr = bytearray(itemAtlasBytes)
+
+        # Guarda el atlas modificado
+        with open(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst", "wb") as f:
+            f.write(byte_arr)
+
+        # Retorna la lista de bytes
+        return itemAtlasBytes
+    else:
+        return None
 
 def addToBlockAtlas(itemData, itemImgPath):
     # Establece variables necesarias para la conversión
@@ -293,21 +314,15 @@ if __name__ == "__main__":
                         print(f"Path selected: {filePath}")
                         clear()
                         print("Converting Image...")
-                        createOutputDirectory(outputFolder)
-                        outputData, bytes_list = convertImageTo3dst(filePath)
-                        if outputData != None and bytes_list != None:
-                            createOutputDirectory(f"{outputFolder}/items")
-                            with open(f"{outputFolder}/items/{itemName[0]}.3dst", "wb") as outputFile:
-                                outputFile.write(outputData)
-
-                            print(itemName)
-                            addToItemAtlas(itemName, filePath)
+                        print(itemName)
+                        outputData = addToItemAtlas(itemName, filePath, outputFolder)
+                        if outputData != None:
                             clear()
                             print("Success")
                             print(f"File created at: {outputFolder}/items/{itemName[0]}.3dst")
                         else:
                             clear()
-                            print("Error: Image must be 16x16 pixels")
+                            print("Error: The image must be 16x16")
                     else:
                         clear()
                         print("Error: No file selected")
