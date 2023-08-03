@@ -308,26 +308,30 @@ if __name__ == "__main__":
                     if selection != None:
                         clear()
                         itemName = items[selection-1].split(".")
-                        print(f"Selection: {itemName[0]}")
+                        if len(itemName) > 2:
+                            print(f"Selection: {itemName[0]}")
 
-                        print("Enter the image file path: ")
-                        filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                        if filePath != '':
-                            print(f"Path selected: {filePath}")
-                            clear()
-                            print("Converting Image...")
-                            print(itemName)
-                            outputData = addToItemAtlas(itemName, filePath, outputFolder)
-                            if outputData != None:
+                            print("Enter the image file path: ")
+                            filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                            if filePath != '':
+                                print(f"Path selected: {filePath}")
                                 clear()
-                                print("Success")
-                                print(f"File created at: {outputFolder}/items/{itemName[0]}.3dst")
+                                print("Converting Image...")
+                                print(itemName)
+                                outputData = addToItemAtlas(itemName, filePath, outputFolder)
+                                if outputData != None:
+                                    clear()
+                                    print("Success")
+                                    print(f"File created at: {outputFolder}/items/{itemName[0]}.3dst")
+                                else:
+                                    clear()
+                                    print("Error: The image must be 16x16")
                             else:
                                 clear()
-                                print("Error: The image must be 16x16")
+                                print("Error: No file selected")
                         else:
                             clear()
-                            print("Error: No file selected")
+                            print("Error: Item not supported yet")
                     else:
                         clear()
                         print("Error: Invalid selection")
@@ -356,32 +360,36 @@ if __name__ == "__main__":
                     if selection != None:
                         clear()
                         blockName = blocks[selection-1].split(".")
-                        print(f"Selection: {blockName[0]}")
+                        if len(blockName) > 2:
+                            print(f"Selection: {blockName[0]}")
 
-                        print("Enter the image file path: ")
-                        filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                        if filePath != '':
-                            print(f"Path selected: {filePath}")
-                            clear()
-                            print("Converting image...")
-                            createOutputDirectory(outputFolder)
-                            outputData, bytes_list = convertImageTo3dst(filePath)
-                            if outputData != None and bytes_list != None:
-                                createOutputDirectory(f"{outputFolder}/items")
-                                with open(f"{outputFolder}/items/{blockName[0]}.3dst", "wb") as outputFile:
-                                    outputFile.write(outputData)
-
-                                print(blockName)
-                                addToBlockAtlas(blockName, filePath)
+                            print("Enter the image file path: ")
+                            filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                            if filePath != '':
+                                print(f"Path selected: {filePath}")
                                 clear()
-                                print("Success")
-                                print(f"File created at: {outputFolder}/items/{blockName[0]}.3dst")
+                                print("Converting image...")
+                                createOutputDirectory(outputFolder)
+                                outputData, bytes_list = convertImageTo3dst(filePath)
+                                if outputData != None and bytes_list != None:
+                                    createOutputDirectory(f"{outputFolder}/items")
+                                    with open(f"{outputFolder}/items/{blockName[0]}.3dst", "wb") as outputFile:
+                                        outputFile.write(outputData)
+
+                                    print(blockName)
+                                    addToBlockAtlas(blockName, filePath)
+                                    clear()
+                                    print("Success")
+                                    print(f"File created at: {outputFolder}/items/{blockName[0]}.3dst")
+                                else:
+                                    clear()
+                                    print("Error: Image must be 16x16 pixels")
                             else:
                                 clear()
-                                print("Error: Image must be 16x16 pixels")
+                                print("Error: No file selected")
                         else:
                             clear()
-                            print("Error: No file selected")
+                            print("Error: Block not supported yet")
                     else:
                         clear()
                         print("Error: Invalid selection")
