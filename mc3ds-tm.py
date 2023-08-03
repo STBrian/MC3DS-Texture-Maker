@@ -299,7 +299,8 @@ if __name__ == "__main__":
                     noAddedItems = []
                     for element in items:
                         if element not in addedItems:
-                            noAddedItems.append(element)
+                            if len(element.split(".")) > 2:
+                                noAddedItems.append(element)
 
                     # Imprime todos los items de la lista
                     for i in range(len(noAddedItems)):
