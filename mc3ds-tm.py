@@ -290,24 +290,34 @@ if __name__ == "__main__":
                 if os.path.exists("assets/atlas/atlas.items.meta_79954554_0.3dst") or os.path.exists(f"{outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"):
                     clear()
                     items = getItemsFromIndexFile("assets/itemslist.txt")
+                    addedItems = []
+                    if os.path.exists(f"{outputFolder}/addedItems.txt"):
+                        addedItems = getItemsFromIndexFile(f"{outputFolder}/addedItems.txt")
+
+                    print(addedItems)
+
+                    noAddedItems = []
+                    for element in items:
+                        if element not in addedItems:
+                            noAddedItems.append(element)
 
                     # Imprime todos los items de la lista
-                    for i in range(len(items)):
-                        itemName = items[i].split(".")
+                    for i in range(len(noAddedItems)):
+                        itemName = noAddedItems[i].split(".")
                         print(f"{i+1}: {itemName[0]}")
                     
                     selection = input("Enter the texture id to change: ")
 
                     try: 
                         selection = int(selection)
-                        if selection < 1 or selection > (len(items)):
+                        if selection < 1 or selection > (len(noAddedItems)):
                             selection = None
                     except:
                         selection = None
 
                     if selection != None:
                         clear()
-                        itemName = items[selection-1].split(".")
+                        itemName = noAddedItems[selection-1].split(".")
                         if len(itemName) > 2:
                             print(f"Selection: {itemName[0]}")
 
@@ -323,6 +333,11 @@ if __name__ == "__main__":
                                     clear()
                                     print("Success")
                                     print(f"File created at: {outputFolder}/items/{itemName[0]}.3dst")
+                                    if not os.path.exists(f"{outputFolder}/addedItems.txt"):
+                                        with open(f"{outputFolder}/addedItems.txt", "w") as f:
+                                            f.write("")
+                                    with open(f"{outputFolder}/addedItems.txt", "a") as f:
+                                            f.write(f"{itemName[0]}.{itemName[1]}.{itemName[2]}\n")
                                 else:
                                     clear()
                                     print("Error: The image must be 16x16")
