@@ -181,87 +181,171 @@ def addToItemAtlas(itemData, itemImgPath, output_folder):
     else:
         return None
 
-def addToBlockAtlas(itemData, itemImgPath):
-    # Establece variables necesarias para la conversión
-    x_offset = int(itemData[2])
-    y_offset = int(itemData[1])
-
-    # Carga las imagenes necesarias a la memoria
-    if os.path.exists(f"{outputFolder}/atlas/atlas.terrain.meta_79954554_0.png"):
-        atlasImg = Image.open(f"{outputFolder}/atlas/atlas.terrain.meta_79954554_0.png").convert("RGBA")
-    else:
-        atlasImg = Image.open("assets/atlas/atlas.terrain.meta_79954554_0.png").convert("RGBA")
-    itemImg = Image.open(itemImgPath).convert("RGBA")
-    itemImgFlip = itemImg.transpose(Image.FLIP_TOP_BOTTOM)
-
-    # Carga los pixeles de cada imagen
-    atlasImgPixels = atlasImg.load()
-    itemImgFlipPixels = itemImgFlip.load()
-
-    # Posiciona las variables x & y según los offsets
-    atlas_x = (20 * x_offset) + 2
-    atlas_y = 72 + (20 * y_offset) + 2
-
-    # Reemplaza la textura en el archivo .png
-    for y in range(0, 16):
-        for x in range(0, 16):
-            atlasImgPixels[atlas_x, atlas_y] = itemImgFlipPixels[x, y]
-            atlas_x += 1
-        atlas_x -= 16
-        atlas_y += 1
+def addToBlockAtlas(blockData, textureImgPath, output_folder):
+    # Establece variables necesarias para el proceso
+    x_offset = int(blockData[2])
+    y_offset = int(blockData[1])
     
-    # Preparaciones para iniciar la conversión de .png a .3dst
-    data = [51, 68, 83, 84, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0]
-    atlas_x = 0
-    atlas_y = 0
+    # Carga los archivos necesarios
+    print("Loading files")
+    if not os.path.exists(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst"):
+        with open("assets/atlas/atlas.terrain.meta_79954554_0.3dst", "rb") as f:
+            blockAtlas = f.read()
+    else:
+        with open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst", "rb") as f:
+            blockAtlas = f.read()
+    textureImg = Image.open(textureImgPath).convert("RGBA")
+    
+    # Continua solo si la imagen es 16x16
+    if textureImg.size[0] == 16 and textureImg.size[1] == 16:
+        # Voltea verticalmente la textura
+        textureImgFlip = textureImg.transpose(Image.FLIP_TOP_BOTTOM)
 
-    # Crea los datos para el archivo .3dst del item atlas
-    for i in range(0, 64):
+        # Obtiene la lista de bytes
+        blockAtlasBytes = []
+        for b in blockAtlas:
+            blockAtlasBytes.append(b)
+
+        # Obtiene los bytes de imagen del atlas
+        atlas_index = 32
+        blockAtlasBytesImg = []
+        for i in range(0, ((((4 * 16) * 8) * 32) * 64)):
+            blockAtlasBytesImg.append(blockAtlasBytes[atlas_index])
+            atlas_index += 1
+
+        # Ordena los bytes en un coordenadas
+        print("Converting Atlas...")
+        pixel_format = (0, 0, 0, 0)
+        line_format = []
+        blockAtlasBytesOrd = []
+        for i in range(0, 512):
+            line_format.append(pixel_format)
+        for i in range(0, 512):
+            blockAtlasBytesOrd.append(line_format)
+        
+        byte_index = 0
+        y = 0
+        x = 0
         for i in range(0, 64):
-            for i in range(0, 2):
+            for i in range(0, 64):
                 for i in range(0, 2):
                     for i in range(0, 2):
                         for i in range(0, 2):
                             for i in range(0, 2):
                                 for i in range(0, 2):
-                                    r, g, b, a = atlasImgPixels[atlas_x, atlas_y]
-                                    data.append(a)
-                                    if a != 0:
-                                        data.append(b)
-                                        data.append(g)
-                                        data.append(r)
-                                    else:
-                                        for i in range(0, 3):
-                                            data.append(0)
-                                    atlas_x += 1
-                                atlas_x -= 2
-                                atlas_y += 1
-                            atlas_x += 2
-                            atlas_y -= 2
-                        atlas_x -= 4
-                        atlas_y += 2
-                    atlas_x += 4
-                    atlas_y -= 4
-                atlas_x -= 8
-                atlas_y += 4
-            atlas_x += 8
-            atlas_y -= 8
-        atlas_x -= 512
-        atlas_y += 8
+                                    for i in range(0, 2):
+                                        x_pixel = (blockAtlasBytesImg[byte_index], blockAtlasBytesImg[(byte_index + 1)], blockAtlasBytesImg[(byte_index + 2)], blockAtlasBytesImg[(byte_index + 3)])                                
+                                        y_line = blockAtlasBytesOrd[y]
+                                        y_line[x] = x_pixel
+                                        blockAtlasBytesOrd[y] = y_line
+                                        x += 1
+                                        byte_index += 4
+                                    x -= 2
+                                    y += 1
+                                x += 2
+                                y -= 2
+                            x -= 4
+                            y += 2
+                        x += 4
+                        y -= 4
+                    x -= 8
+                    y += 4
+                x += 8
+                y -= 8
+            x = 0
+            y += 8
 
-    # Crea la carpeta de atlas si aun no existe
-    if not os.path.exists(f"{outputFolder}/atlas"):
-        os.mkdir(f"{outputFolder}/atlas")
+        # Carga los pixeles de la nueva textura
+        textureImgFlipPixels = textureImgFlip.load()
 
-    # Convierte la lista a binario
-    byte_arr = bytearray(data)
+        # Calcula los offsets
+        x_offset = (x_offset * 20) + 2
+        y_offset = 72 + (y_offset * 20) + 2
 
-    # Guarda las modificaciones al archivo .png
-    atlasImg.save(f"{outputFolder}/atlas/atlas.terrain.meta_79954554_0.png")
+        # Reemplaza la textura
+        print("Replacing texture...")
+        x_atlas = x_offset
+        y_atlas = y_offset
+        x = 0
+        y = 0
+        for i in range(0, 16):
+            for i in range(0, 16):
+                r, g, b, a = textureImgFlipPixels[x, y]
+                if a != 0:
+                    x_pixel = (a, b, g, r)
+                else:
+                    x_pixel = (a, 0, 0, 0)
+                print(x_pixel)
+                y_line = blockAtlasBytesOrd[y_atlas]
+                y_line[x_atlas] = x_pixel
+                blockAtlasBytesOrd[y_atlas] = y_line
+                x_atlas += 1
+                x += 1
+            x_atlas -= 16
+            x = 0
+            y_atlas += 1
+            y += 1
 
-    # Guarda el archivo .3dst
-    with open(f"{outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst", "wb") as f:
-        f.write(byte_arr)
+        # Ordenar los bytes al formato original
+        print("Making output file...")
+        print(len(blockAtlasBytesOrd))
+        modifiedBlockAtlasBytes = []
+        x = 0
+        y = 0
+        for i in range(0, 64):
+            for i in range(0, 64):
+                for i in range(0, 2):
+                    for i in range(0, 2):
+                        for i in range(0, 2):
+                            for i in range(0, 2):
+                                for i in range(0, 2):
+                                    for i in range(0, 2):
+                                        y_line = blockAtlasBytesOrd[y]
+                                        x_pixel = y_line[x]
+                                        modifiedBlockAtlasBytes.append(x_pixel[0])
+                                        modifiedBlockAtlasBytes.append(x_pixel[1])
+                                        modifiedBlockAtlasBytes.append(x_pixel[2])
+                                        modifiedBlockAtlasBytes.append(x_pixel[2])
+                                        x += 1
+                                    x -= 2
+                                    y += 1
+                                x += 2
+                                y -= 2
+                            x -= 4
+                            y += 2
+                        x += 4
+                        y -= 4
+                    x -= 8
+                    y += 4
+                x += 8
+                y -= 8
+            x = 0
+            y += 8
+
+        # Sustituir los bytes del archivo original por el modificado
+        atlas_index = 32
+        for i in modifiedBlockAtlasBytes:
+            blockAtlasBytes[atlas_index] = i
+            atlas_index += 1
+
+        # Convierte los bytes en un bytearray
+        byte_arr = bytearray(blockAtlasBytes)
+
+        # Crea el directorio de salida si no existe
+        if not os.path.exists(f"{output_folder}"):
+            os.mkdir(f"{output_folder}")
+        if not os.path.exists(f"{output_folder}/atlas"):
+            os.mkdir(f"{output_folder}/atlas")
+
+        # Guarda el archivo modificado
+        with open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst", "wb") as f:
+            f.write(byte_arr)
+
+        # Retorna la lista de bytes
+        return blockAtlasBytes
+
+    else:
+        return None
 
 if __name__ == "__main__":
     Tk().withdraw()
@@ -291,10 +375,8 @@ if __name__ == "__main__":
                     clear()
                     items = getItemsFromIndexFile("assets/itemslist.txt")
                     addedItems = []
-                    if os.path.exists(f"{outputFolder}/addedItems.txt"):
-                        addedItems = getItemsFromIndexFile(f"{outputFolder}/addedItems.txt")
-
-                    print(addedItems)
+                    if os.path.exists(f"{outputFolder}/changedItems.txt"):
+                        addedItems = getItemsFromIndexFile(f"{outputFolder}/changedItems.txt")
 
                     noAddedItems = []
                     for element in items:
@@ -333,11 +415,11 @@ if __name__ == "__main__":
                                 if outputData != None:
                                     clear()
                                     print("Success")
-                                    print(f"File created at: {outputFolder}/items/{itemName[0]}.3dst")
+                                    print(f"Atlas created at: {outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")
                                     if not os.path.exists(f"{outputFolder}/addedItems.txt"):
-                                        with open(f"{outputFolder}/addedItems.txt", "w") as f:
+                                        with open(f"{outputFolder}/changedItems.txt", "w") as f:
                                             f.write("")
-                                    with open(f"{outputFolder}/addedItems.txt", "a") as f:
+                                    with open(f"{outputFolder}/changedItems.txt", "a") as f:
                                             f.write(f"{itemName[0]}.{itemName[1]}.{itemName[2]}\n")
                                 else:
                                     clear()
@@ -359,23 +441,32 @@ if __name__ == "__main__":
                 if os.path.exists("assets/atlas/atlas.terrain.meta_79954554_0.3dst") or os.path.exists(f"{outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"):
                     clear()
                     blocks = getItemsFromIndexFile("assets/blockslist.txt")
+                    addedBlocks = []
+                    if os.path.exists(f"{outputFolder}/changedBlocks.txt"):
+                        addedBlocks = getItemsFromIndexFile(f"{outputFolder}/changedBlocks.txt")
+                    
+                    noAddedBlocks = []
+                    for element in blocks:                    
+                        if element not in addedBlocks:
+                            if len(element.split(".")) > 2:
+                                noAddedBlocks.append(element)
 
-                    for i in range(len(blocks)):
-                        blockName = blocks[i].split(".")
+                    for i in range(len(noAddedBlocks)):
+                        blockName = noAddedBlocks[i].split(".")
                         print(f"{i+1}: {blockName[0]}")
 
                     selection = input("Enter the texture id to change: ")
 
                     try: 
                         selection = int(selection)
-                        if selection < 1 or selection > (len(blocks)):
+                        if selection < 1 or selection > (len(noAddedBlocks)):
                             selection = None
                     except:
                         selection = None
 
                     if selection != None:
                         clear()
-                        blockName = blocks[selection-1].split(".")
+                        blockName = noAddedBlocks[selection-1].split(".")
                         if len(blockName) > 2:
                             print(f"Selection: {blockName[0]}")
 
@@ -385,18 +476,17 @@ if __name__ == "__main__":
                                 print(f"Path selected: {filePath}")
                                 clear()
                                 print("Converting image...")
-                                createOutputDirectory(outputFolder)
-                                outputData, bytes_list = convertImageTo3dst(filePath)
-                                if outputData != None and bytes_list != None:
-                                    createOutputDirectory(f"{outputFolder}/items")
-                                    with open(f"{outputFolder}/items/{blockName[0]}.3dst", "wb") as outputFile:
-                                        outputFile.write(outputData)
-
-                                    print(blockName)
-                                    addToBlockAtlas(blockName, filePath)
+                                print(blockName)
+                                outputData = addToBlockAtlas(blockName, filePath, outputFolder)
+                                if outputData != None:
                                     clear()
                                     print("Success")
-                                    print(f"File created at: {outputFolder}/items/{blockName[0]}.3dst")
+                                    print(f"Atlas created at: {outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")
+                                    if not os.path.exists(f"{outputFolder}/changedBlocks.txt"):
+                                        with open(f"{outputFolder}/changedBlocks.txt", "w") as f:
+                                            f.write("")
+                                    with open(f"{outputFolder}/changedBlocks.txt", "a") as f:
+                                        f.write(f"{blockName[0]}.{blockName[1]}.{blockName[2]}\n")
                                 else:
                                     clear()
                                     print("Error: Image must be 16x16 pixels")
