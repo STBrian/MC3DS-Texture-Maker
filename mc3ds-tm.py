@@ -221,13 +221,8 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
 
         # Ordena los bytes en un coordenadas
         print("Converting Atlas...")
-        pixel_format = (0, 0, 0, 0)
-        line_format = []
-        blockAtlasBytesOrd = []
-        for i in range(0, 512):
-            line_format.append(pixel_format)
-        for i in range(0, 512):
-            blockAtlasBytesOrd.append(line_format)
+        tmpAtlas = Image.new(mode="RGBA", size=(512, 512))
+        tmpAtlasPixels = tmpAtlas.load()
         
         byte_index = 0
         y = 0
@@ -240,10 +235,7 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
                             for i in range(0, 2):
                                 for i in range(0, 2):
                                     for i in range(0, 2):
-                                        x_pixel = (blockAtlasBytesImg[byte_index], blockAtlasBytesImg[(byte_index + 1)], blockAtlasBytesImg[(byte_index + 2)], blockAtlasBytesImg[(byte_index + 3)])                                
-                                        y_line = blockAtlasBytesOrd[y]
-                                        y_line[x] = x_pixel
-                                        blockAtlasBytesOrd[y] = y_line
+                                        tmpAtlasPixels[x, y] = (blockAtlasBytesImg[byte_index + 3], blockAtlasBytesImg[byte_index + 2], blockAtlasBytesImg[byte_index + 1], blockAtlasBytesImg[byte_index])
                                         x += 1
                                         byte_index += 4
                                     x -= 2
@@ -278,13 +270,9 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
             for i in range(0, 16):
                 r, g, b, a = textureImgFlipPixels[x, y]
                 if a != 0:
-                    x_pixel = (a, b, g, r)
+                    tmpAtlasPixels[x_atlas, y_atlas] = (r, g, b, a)
                 else:
-                    x_pixel = (a, 0, 0, 0)
-                print(x_pixel)
-                y_line = blockAtlasBytesOrd[y_atlas]
-                y_line[x_atlas] = x_pixel
-                blockAtlasBytesOrd[y_atlas] = y_line
+                    tmpAtlasPixels[x_atlas, y_atlas] = (0, 0, 0, a)
                 x_atlas += 1
                 x += 1
             x_atlas -= 16
@@ -294,7 +282,6 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
 
         # Ordenar los bytes al formato original
         print("Making output file...")
-        print(len(blockAtlasBytesOrd))
         modifiedBlockAtlasBytes = []
         x = 0
         y = 0
@@ -306,12 +293,11 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
                             for i in range(0, 2):
                                 for i in range(0, 2):
                                     for i in range(0, 2):
-                                        y_line = blockAtlasBytesOrd[y]
-                                        x_pixel = y_line[x]
-                                        modifiedBlockAtlasBytes.append(x_pixel[0])
-                                        modifiedBlockAtlasBytes.append(x_pixel[1])
-                                        modifiedBlockAtlasBytes.append(x_pixel[2])
-                                        modifiedBlockAtlasBytes.append(x_pixel[2])
+                                        r, g, b, a = tmpAtlasPixels[x, y]
+                                        modifiedBlockAtlasBytes.append(a)
+                                        modifiedBlockAtlasBytes.append(b)
+                                        modifiedBlockAtlasBytes.append(g)
+                                        modifiedBlockAtlasBytes.append(r)
                                         x += 1
                                     x -= 2
                                     y += 1
