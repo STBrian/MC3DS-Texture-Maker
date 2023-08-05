@@ -24,8 +24,8 @@ def printMenu():
     print("\t2: Change a block texture")
     print("\t3: Exit")
 
-def convertImageTo3dst(path):
-    img = Image.open(path).convert('RGBA')
+def convertImageTo3dst(item_data, texture_path, output_folder):
+    img = Image.open(texture_path).convert('RGBA')
     width, height = img.size
     if width == 16 and height == 16:
         flip_img = img.transpose(Image.FLIP_TOP_BOTTOM)
@@ -71,6 +71,12 @@ def convertImageTo3dst(path):
             x -= 16
 
         byte_arr = bytearray(outputData)
+
+        if not os.path.exists(f"{output_folder}"):
+            os.makedirs(f"{output_folder}")
+
+        with open(f"{output_folder}/{item_data[0]}.3dst", "wb") as f:
+            f.write(byte_arr)
 
         return byte_arr, outputData
     else:
@@ -411,6 +417,7 @@ if __name__ == "__main__":
                                 clear()
                                 print("Converting Image...")
                                 print(itemName)
+                                convertImageTo3dst(itemName, filePath, f"{outputFolder}/items")
                                 outputData = addToItemAtlas(itemName, filePath, outputFolder)
                                 if outputData != None:
                                     clear()
@@ -438,6 +445,7 @@ if __name__ == "__main__":
                     print("Error: No items atlas found in 'assets/atlas'")
 
             case 2:
+                # Cambiar la textura de un bloque
                 if os.path.exists("assets/atlas/atlas.terrain.meta_79954554_0.3dst") or os.path.exists(f"{outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"):
                     clear()
                     blocks = getItemsFromIndexFile("assets/blockslist.txt")
@@ -477,6 +485,7 @@ if __name__ == "__main__":
                                 clear()
                                 print("Converting image...")
                                 print(blockName)
+                                convertImageTo3dst(blockName, filePath, f"{outputFolder}/blocks")
                                 outputData = addToBlockAtlas(blockName, filePath, outputFolder)
                                 if outputData != None:
                                     clear()
