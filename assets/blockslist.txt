@@ -104,7 +104,7 @@ door_dark_oak_upper.15.5
 door_iron_lower.16.24
 door_iron_upper.15.6
 door_jungle_lower.16.21
-door_jungle_upper.15.4
+door_jungle_upper.15.3
 door_spruce_lower.16.19
 door_spruce_upper.15.1
 door_wood_lower.16.18
