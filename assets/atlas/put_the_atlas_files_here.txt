@@ -1,1 +1,0 @@
-You need the atlas files in order the python script to work.
