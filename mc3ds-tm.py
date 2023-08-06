@@ -88,8 +88,8 @@ def addToItemAtlas(itemData, textureImgPath, output_folder):
     y_offset = int(itemData[1])
 
     # Carga los archivos necesarios a la memoria
-    if os.path.exists(f"{output_folder}/atlas/atlas.items.meta_79954554_0.png"):
-        itemAtlas = Image.open(f"{output_folder}/atlas/atlas.items.meta_79954554_0.png")
+    if os.path.exists(f"{output_folder}/atlas.items.meta_79954554_0.png"):
+        itemAtlas = Image.open(f"{output_folder}/atlas.items.meta_79954554_0.png")
     else:
         itemAtlas = Image.open(f"assets/atlas/atlas.items.meta_79954554_0.png")
     textureImg = Image.open(textureImgPath).convert("RGBA")
@@ -121,6 +121,14 @@ def addToItemAtlas(itemData, textureImgPath, output_folder):
             x_atlas -= 16
             y += 1
             y_atlas += 1
+
+        # Crea el directorio de salida si no existe
+        if not os.path.exists(f"{output_folder}/atlas"):
+            os.makedirs(f"{output_folder}/atlas")
+
+        # Guarda los cambios hechos en la imagen
+        print("Saving changes...")
+        itemAtlas.save(f"{output_folder}/atlas.items.meta_79954554_0.png")
 
         # Crea la version completa del atlas
         print("Making full version atlas...")
@@ -239,10 +247,6 @@ def addToItemAtlas(itemData, textureImgPath, output_folder):
             x = 0
             y += 8
 
-        # Crea el directorio de salida si no existe
-        if not os.path.exists(f"{output_folder}/atlas"):
-            os.makedirs(f"{output_folder}/atlas")
-
         # Convierte la lista de bytes en bytesarray
         byte_arr = bytearray(modifiedItemAtlas)
 
@@ -263,10 +267,10 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
     
     # Carga los archivos necesarios
     print("Loading files")
-    if not os.path.exists(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.png"):
+    if not os.path.exists(f"{output_folder}/atlas.terrain.meta_79954554_0.png"):
         blockAtlas = Image.open("assets/atlas/atlas.terrain.meta_79954554_0.png")
     else:
-        blockAtlas = Image.open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.png")
+        blockAtlas = Image.open(f"{output_folder}/atlas.terrain.meta_79954554_0.png")
     textureImg = Image.open(textureImgPath).convert("RGBA")
     
     # Continua solo si la imagen es 16x16
@@ -396,6 +400,15 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
             x_atlas -= 16
             y_atlas += 1
 
+        
+        # Crea el directorio de salida si no existe
+        if not os.path.exists(f"{output_folder}/atlas"):
+            os.makedirs(f"{output_folder}/atlas")
+
+        # Guarda los cambios hecho en la imagen
+        print("Saving changes...")
+        blockAtlas.save(f"{output_folder}/atlas.terrain.meta_79954554_0.png")
+
         # Crea la version completa del atlas
         print("Making full version atlas...")
         x = 0
@@ -515,10 +528,6 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
 
         # Convierte los bytes en un bytearray
         byte_arr = bytearray(modifiedBlockAtlas)
-
-        # Crea el directorio de salida si no existe
-        if not os.path.exists(f"{output_folder}/atlas"):
-            os.makedirs(f"{output_folder}/atlas")
 
         # Guarda el archivo modificado
         print("Saving changes...")
