@@ -187,7 +187,7 @@ def addToItemAtlas(itemData, itemImgPath, output_folder):
     else:
         return None
     
-def addToBlockAtlas2(blockData, textureImgPath, output_folder):
+def addToBlockAtlas(blockData, textureImgPath, output_folder):
     # Establece variables necesarias para el proceso
     x_offset = int(blockData[2])
     y_offset = int(blockData[1])
@@ -597,7 +597,7 @@ if __name__ == "__main__":
                                 print("Converting image...")
                                 print(blockName)
                                 convertImageTo3dst(blockName, filePath, f"{outputFolder}/blocks")
-                                outputData = addToBlockAtlas2(blockName, filePath, outputFolder)
+                                outputData = addToBlockAtlas(blockName, filePath, outputFolder)
                                 if outputData != None:
                                     clear()
                                     print("Success")
