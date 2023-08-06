@@ -186,20 +186,18 @@ def addToItemAtlas(itemData, itemImgPath, output_folder):
         return itemAtlasBytes
     else:
         return None
-
-def addToBlockAtlas(blockData, textureImgPath, output_folder):
+    
+def addToBlockAtlas2(blockData, textureImgPath, output_folder):
     # Establece variables necesarias para el proceso
     x_offset = int(blockData[2])
     y_offset = int(blockData[1])
     
     # Carga los archivos necesarios
     print("Loading files")
-    if not os.path.exists(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst"):
-        with open("assets/atlas/atlas.terrain.meta_79954554_0.3dst", "rb") as f:
-            blockAtlas = f.read()
+    if not os.path.exists(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.png"):
+        blockAtlas = Image.open("assets/atlas/atlas.terrain.meta_79954554_0.png")
     else:
-        with open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst", "rb") as f:
-            blockAtlas = f.read()
+        blockAtlas = Image.open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.png")
     textureImg = Image.open(textureImgPath).convert("RGBA")
     
     # Continua solo si la imagen es 16x16
@@ -207,82 +205,130 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
         # Voltea verticalmente la textura
         textureImgFlip = textureImg.transpose(Image.FLIP_TOP_BOTTOM)
 
-        # Obtiene la lista de bytes
-        blockAtlasBytes = []
-        for b in blockAtlas:
-            blockAtlasBytes.append(b)
-
-        # Obtiene los bytes de imagen del atlas
-        atlas_index = 32
-        blockAtlasBytesImg = []
-        for i in range(0, ((((4 * 16) * 8) * 32) * 64)):
-            blockAtlasBytesImg.append(blockAtlasBytes[atlas_index])
-            atlas_index += 1
-
-        # Ordena los bytes en un coordenadas
-        print("Converting Atlas...")
-        tmpAtlas = Image.new(mode="RGBA", size=(512, 512))
-        tmpAtlasPixels = tmpAtlas.load()
-        
-        byte_index = 0
-        y = 0
-        x = 0
-        for i in range(0, 64):
-            for i in range(0, 64):
-                for i in range(0, 2):
-                    for i in range(0, 2):
-                        for i in range(0, 2):
-                            for i in range(0, 2):
-                                for i in range(0, 2):
-                                    for i in range(0, 2):
-                                        tmpAtlasPixels[x, y] = (blockAtlasBytesImg[byte_index + 3], blockAtlasBytesImg[byte_index + 2], blockAtlasBytesImg[byte_index + 1], blockAtlasBytesImg[byte_index])
-                                        x += 1
-                                        byte_index += 4
-                                    x -= 2
-                                    y += 1
-                                x += 2
-                                y -= 2
-                            x -= 4
-                            y += 2
-                        x += 4
-                        y -= 4
-                    x -= 8
-                    y += 4
-                x += 8
-                y -= 8
-            x = 0
-            y += 8
-
-        # Carga los pixeles de la nueva textura
-        textureImgFlipPixels = textureImgFlip.load()
+        # Establece la lista de salida
+        modifiedBlockAtlas = [51, 68, 83, 84, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0]
 
         # Calcula los offsets
-        x_offset = (x_offset * 20) + 2
-        y_offset = 72 + (y_offset * 20) + 2
+        x_atlas = (20 * x_offset)
+        y_atlas = 72 + (20 * y_offset)
 
-        # Reemplaza la textura
-        print("Replacing texture...")
-        x_atlas = x_offset
-        y_atlas = y_offset
+        # Carga el atlas a la memoria
+        blockAtlasPixels = blockAtlas.load()
+
+        # Reemplaza la textura original por la nueva
+        ## Esquinas
+        for i in range(0, 2):
+            for i in range(0, 2):
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((0, 0))
+                x_atlas += 1
+            x_atlas -= 2
+            y_atlas += 1
+
+        x_atlas = (20 * x_offset) + 18
+        y_atlas = 72 + (20 * y_offset)
+
+        for i in range(0, 2):
+            for i in range(0, 2):
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((15, 0))
+                x_atlas += 1
+            x_atlas -= 2
+            y_atlas += 1
+
+        x_atlas = (20 * x_offset)
+        y_atlas = 72 + (20 * y_offset) + 18
+
+        for i in range(0, 2):
+            for i in range(0, 2):
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((0, 15))
+                x_atlas += 1
+            x_atlas -= 2
+            y_atlas += 1
+
+        x_atlas = (20 * x_offset) + 18
+        y_atlas = 72 + (20 * y_offset) + 18
+
+        for i in range(0, 2):
+            for i in range(0, 2):
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((15, 15))
+                x_atlas += 1
+            x_atlas -= 2
+            y_atlas += 1
+
+        ## Laterales
+        x_atlas = (20 * x_offset) + 2
+        y_atlas = 72 + (20 * y_offset)
+
+        x = 0
+        y = 0
+        for i in range(0, 2):
+            for i in range(0, 16):
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
+                x += 1
+                x_atlas += 1
+            x -= 16
+            x_atlas -= 16
+            y_atlas += 1
+
+        x_atlas = (20 * x_offset) + 2
+        y_atlas = 72 + (20 * y_offset) + 18
+
+        x = 0
+        y = 15
+        for i in range(0, 2):
+            for i in range(0, 16):
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
+                x += 1
+                x_atlas += 1
+            x -= 16
+            x_atlas -= 16
+            y_atlas += 1
+
+        x_atlas = (20 * x_offset)
+        y_atlas = 72 + (20 * y_offset) + 2
+
+        x = 0
+        y = 0
+        for i in range(0, 2):
+            for i in range(0, 16):
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
+                y += 1
+                y_atlas += 1
+            y -= 16
+            y_atlas -= 16
+            x_atlas += 1
+
+        x_atlas = (20 * x_offset) + 18
+        y_atlas = 72 + (20 * y_offset) + 2
+
+        x = 15
+        y = 0
+        for i in range(0, 2):
+            for i in range(0, 16):
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
+                y += 1
+                y_atlas += 1
+            y -= 16
+            y_atlas -= 16
+            x_atlas += 1
+
+        ## Centro
+        x_atlas = (20 * x_offset) + 2
+        y_atlas = 72 + (20 * y_offset) + 2
+
         x = 0
         y = 0
         for i in range(0, 16):
             for i in range(0, 16):
-                r, g, b, a = textureImgFlipPixels[x, y]
-                if a != 0:
-                    tmpAtlasPixels[x_atlas, y_atlas] = (r, g, b, a)
-                else:
-                    tmpAtlasPixels[x_atlas, y_atlas] = (0, 0, 0, a)
-                x_atlas += 1
+                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
                 x += 1
-            x_atlas -= 16
+                x_atlas += 1
             x = 0
-            y_atlas += 1
             y += 1
+            x_atlas -= 16
+            y_atlas += 1
 
-        # Ordenar los bytes al formato original
-        print("Making output file...")
-        modifiedBlockAtlasBytes = []
+        # Crea la version completa del atlas
+        print("Making full version atlas...")
         x = 0
         y = 0
         for i in range(0, 64):
@@ -293,11 +339,11 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
                             for i in range(0, 2):
                                 for i in range(0, 2):
                                     for i in range(0, 2):
-                                        r, g, b, a = tmpAtlasPixels[x, y]
-                                        modifiedBlockAtlasBytes.append(a)
-                                        modifiedBlockAtlasBytes.append(b)
-                                        modifiedBlockAtlasBytes.append(g)
-                                        modifiedBlockAtlasBytes.append(r)
+                                        r, g, b, a = blockAtlasPixels[x, y]
+                                        modifiedBlockAtlas.append(a)
+                                        modifiedBlockAtlas.append(b)
+                                        modifiedBlockAtlas.append(g)
+                                        modifiedBlockAtlas.append(r)
                                         x += 1
                                     x -= 2
                                     y += 1
@@ -314,14 +360,92 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
             x = 0
             y += 8
 
-        # Sustituir los bytes del archivo original por el modificado
-        atlas_index = 32
-        for i in modifiedBlockAtlasBytes:
-            blockAtlasBytes[atlas_index] = i
-            atlas_index += 1
+        # Reduce a la mitad la resolucion del atlas
+        basewidth = 256
+        wpercent = (basewidth/float(blockAtlas.size[0]))
+        hsize = int((float(blockAtlas.size[1])*float(wpercent)))
+        blockAtlas = blockAtlas.resize((basewidth,hsize), Image.Resampling.LANCZOS)
+
+        # Carga el atlas a la memoria
+        blockAtlasPixels = blockAtlas.load()
+
+        # Crea la version con la resolucion a la mitad respecto a la resolucion original
+        print("Making half resolution atlas...")
+        x = 0
+        y = 0
+        for i in range(0, 32):
+            for i in range(0, 32):
+                for i in range(0, 2):
+                    for i in range(0, 2):
+                        for i in range(0, 2):
+                            for i in range(0, 2):
+                                for i in range(0, 2):
+                                    for i in range(0, 2):
+                                        r, g, b, a = blockAtlasPixels[x, y]
+                                        modifiedBlockAtlas.append(a)
+                                        modifiedBlockAtlas.append(b)
+                                        modifiedBlockAtlas.append(g)
+                                        modifiedBlockAtlas.append(r)
+                                        x += 1
+                                    x -= 2
+                                    y += 1
+                                x += 2
+                                y -= 2
+                            x -= 4
+                            y += 2
+                        x += 4
+                        y -= 4
+                    x -= 8
+                    y += 4
+                x += 8
+                y -= 8
+            x = 0
+            y += 8
+
+        # Reduce a un cuarto la resolucion del atlas referente a la resolución inicial
+        basewidth = 128
+        wpercent = (basewidth/float(blockAtlas.size[0]))
+        hsize = int((float(blockAtlas.size[1])*float(wpercent)))
+        blockAtlas = blockAtlas.resize((basewidth,hsize), Image.Resampling.LANCZOS)
+
+        # Carga el atlas a la memoria
+        blockAtlasPixels = blockAtlas.load()
+
+        # Crea la version en resolucion de un cuarto respecto a la resolucion original del atlas
+        print("Making 1/4 resolution atlas...")
+        x = 0
+        y = 0
+        for i in range(0, 16):
+            for i in range(0, 16):
+                for i in range(0, 2):
+                    for i in range(0, 2):
+                        for i in range(0, 2):
+                            for i in range(0, 2):
+                                for i in range(0, 2):
+                                    for i in range(0, 2):
+                                        r, g, b, a = blockAtlasPixels[x, y]
+                                        modifiedBlockAtlas.append(a)
+                                        modifiedBlockAtlas.append(b)
+                                        modifiedBlockAtlas.append(g)
+                                        modifiedBlockAtlas.append(r)
+                                        x += 1
+                                    x -= 2
+                                    y += 1
+                                x += 2
+                                y -= 2
+                            x -= 4
+                            y += 2
+                        x += 4
+                        y -= 4
+                    x -= 8
+                    y += 4
+                x += 8
+                y -= 8
+            x = 0
+            y += 8
 
         # Convierte los bytes en un bytearray
-        byte_arr = bytearray(blockAtlasBytes)
+        byte_arr = bytearray(modifiedBlockAtlas)
 
         # Crea el directorio de salida si no existe
         if not os.path.exists(f"{output_folder}"):
@@ -330,11 +454,12 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
             os.mkdir(f"{output_folder}/atlas")
 
         # Guarda el archivo modificado
+        print("Saving changes...")
         with open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst", "wb") as f:
             f.write(byte_arr)
 
         # Retorna la lista de bytes
-        return blockAtlasBytes
+        return byte_arr
 
     else:
         return None
@@ -472,7 +597,7 @@ if __name__ == "__main__":
                                 print("Converting image...")
                                 print(blockName)
                                 convertImageTo3dst(blockName, filePath, f"{outputFolder}/blocks")
-                                outputData = addToBlockAtlas(blockName, filePath, outputFolder)
+                                outputData = addToBlockAtlas2(blockName, filePath, outputFolder)
                                 if outputData != None:
                                     clear()
                                     print("Success")
