@@ -553,8 +553,8 @@ if __name__ == "__main__":
             option = None
 
         match option:
-            # Cambiar la textura de un item
             case 1:
+                # Cambiar la textura de un item
                 clear()
                 items = getItemsFromIndexFile("assets/itemslist.txt")
                 addedItems = []
