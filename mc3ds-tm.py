@@ -600,7 +600,7 @@ if __name__ == "__main__":
                                 clear()
                                 print("Success")
                                 print(f"Atlas created at: {outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")
-                                if not os.path.exists(f"{outputFolder}/addedItems.txt"):
+                                if not os.path.exists(f"{outputFolder}/changedItems.txt"):
                                     with open(f"{outputFolder}/changedItems.txt", "w") as f:
                                         f.write("")
                                 with open(f"{outputFolder}/changedItems.txt", "a") as f:
