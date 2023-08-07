@@ -1,4 +1,5 @@
 import os
+import sys
 from PIL import Image
 from tkinter import Tk
 from tkinter import filedialog
@@ -461,7 +462,14 @@ if __name__ == "__main__":
     
     items = []
     blocks = []
-    outputFolder = "3dsTexture"
+
+    if getattr(sys, 'frozen', False):
+        print("Running from executable file")
+        os.chdir(sys._MEIPASS)
+        outputFolder = os.path.join(os.path.dirname(sys.executable), "3dsTexture")
+    elif __file__:
+        print("Running from source file")
+        outputFolder = "3dsTexture"
 
     clear()
     close = False
