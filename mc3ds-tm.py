@@ -92,7 +92,7 @@ def addToItemAtlas(itemData, textureImgPath, output_folder):
     if os.path.exists(f"{output_folder}/atlas.items.meta_79954554_0.png"):
         itemAtlas = Image.open(f"{output_folder}/atlas.items.meta_79954554_0.png")
     else:
-        itemAtlas = Image.open(f"assets/atlas/atlas.items.meta_79954554_0.png")
+        itemAtlas = Image.open(f"{sourceFolder}/atlas/atlas.items.meta_79954554_0.png")
     textureImg = Image.open(textureImgPath).convert("RGBA")
 
     # Continua solo si la imagen es 16x16
@@ -185,7 +185,7 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
     # Carga los archivos necesarios
     print("Loading files")
     if not os.path.exists(f"{output_folder}/atlas.terrain.meta_79954554_0.png"):
-        blockAtlas = Image.open("assets/atlas/atlas.terrain.meta_79954554_0.png")
+        blockAtlas = Image.open(f"{sourceFolder}/atlas/atlas.terrain.meta_79954554_0.png")
     else:
         blockAtlas = Image.open(f"{output_folder}/atlas.terrain.meta_79954554_0.png")
     textureImg = Image.open(textureImgPath).convert("RGBA")
@@ -463,13 +463,14 @@ if __name__ == "__main__":
     items = []
     blocks = []
 
+    sourceFolder = "src"
     if getattr(sys, 'frozen', False):
         print("Running from executable file")
         os.chdir(sys._MEIPASS)
-        outputFolder = os.path.join(os.path.dirname(sys.executable), "3dsTexture")
+        outputFolder = os.path.join(os.path.dirname(sys.executable), "MC3DS")
     elif __file__:
         print("Running from source file")
-        outputFolder = "3dsTexture"
+        outputFolder = "MC3DS"
 
     clear()
     close = False
@@ -489,7 +490,7 @@ if __name__ == "__main__":
             case 1:
                 # Cambiar la textura de un item
                 clear()
-                items = getItemsFromIndexFile("assets/itemslist.txt")
+                items = getItemsFromIndexFile(f"{sourceFolder}/itemslist.txt")
                 addedItems = []
                 if os.path.exists(f"{outputFolder}/changedItems.txt"):
                     addedItems = getItemsFromIndexFile(f"{outputFolder}/changedItems.txt")
@@ -554,7 +555,7 @@ if __name__ == "__main__":
             case 2:
                 # Cambiar la textura de un bloque
                 clear()
-                blocks = getItemsFromIndexFile("assets/blockslist.txt")
+                blocks = getItemsFromIndexFile(f"{sourceFolder}/blockslist.txt")
                 addedBlocks = []
                 if os.path.exists(f"{outputFolder}/changedBlocks.txt"):
                     addedBlocks = getItemsFromIndexFile(f"{outputFolder}/changedBlocks.txt")
