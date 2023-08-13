@@ -1,5 +1,5 @@
 # mc3ds-texture-maker
-mc3ds-texture maker is a python program that runs only in the console for the moment, that helps with the creation of new textures packs for the Minecraft 3DS Edition.
+MC3DS Texture Maker is a python script that helps with the creation of new textures packs for the Minecraft 3DS Edition.
 
 # How to use
 When you open the program it will looks like this
