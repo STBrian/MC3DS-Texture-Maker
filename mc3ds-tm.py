@@ -491,84 +491,184 @@ if __name__ == "__main__":
         printMenu()
         
         option = input("Enter an option: ")
-
-        try:
-            option = int(option)
-        except:
-            option = None
+        clear()
 
         match option:
-            case 1:
-                # Cambiar la textura de un item
-                clear()
-                items = getItemsFromIndexFile(f"{sourceFolder}/itemslist.txt")
-                addedItems = []
-                if os.path.exists(f"{outputFolder}/changedItems.txt"):
-                    addedItems = getItemsFromIndexFile(f"{outputFolder}/changedItems.txt")
-
-                noAddedItems = []
-                for element in items:
-                    if element not in addedItems:
-                        # Si el item no está agregado aún, no se mostrará
-                        if len(element.split(".")) > 2:
-                            noAddedItems.append(element)
-
-                # Imprime todos los items de la lista
-                for i in range(len(noAddedItems)):
-                    itemName = noAddedItems[i].split(".")
-                    print(f"{i+1}: {itemName[0]}")
-                    
-                selection = input("Enter the texture id to change: ")
-
-                try: 
-                    selection = int(selection)
-                    if selection < 1 or selection > (len(noAddedItems)):
-                        selection = None
-                except:
-                    selection = None
-
-                if selection != None:
-                    clear()
-                    itemName = noAddedItems[selection-1].split(".")
-                    # Si el elemento contiene más de 2 valores (es decir: nombre, y position, x position)
-                    if len(itemName) > 2:
-                        print(f"Selection: {itemName[0]}")
-                        print("Enter the image file path: ")
-                        clear()
-                        filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                        if filePath != '':
-                            print(f"Path selected: {filePath}")
-                            if isImage16x16(filePath):
-                                print("Converting Image...")
-                                print(itemName)
-                                convertImageTo3dst(itemName[0], filePath, f"{outputFolder}/items")
-                                outputData = addToItemAtlas(itemName, filePath, outputFolder)
-                                if outputData != None:
-                                    if not os.path.exists(f"{outputFolder}/changedItems.txt"):
-                                        with open(f"{outputFolder}/changedItems.txt", "w") as f:
-                                            f.write("")
-                                    with open(f"{outputFolder}/changedItems.txt", "a") as f:
-                                            f.write(f"{itemName[0]}.{itemName[1]}.{itemName[2]}\n")
-                                    clear()
-                                    print("Success")
-                                    print(f"Atlas created at: {outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")
-                                else:
-                                    clear()
-                                    print("Error: Unknown error")
-                            else:
-                                clear()
-                                print("Error: The image must be 16x16")
-                        else:
+            case "1":
+                while True:
+                    # Cambiar la textura de un item
+                    print("Choose an option:")
+                    print("\t1: Search unmodified item by text")
+                    print("\t2: Search modified item by text")
+                    print("\t3: Show unmodified items")
+                    print("\t4: Show modified items")
+                    print("\t0: Exit")
+                    option2 = input("Enter an option: ")
+                    match option2:
+                        case "3":
+                            # Mostrar items no modificados
                             clear()
-                            print("Error: No file selected")
-                    else:
-                        clear()
-                        print("Error: Item not supported yet")
-                else:
-                    clear()
-                    print("Error: Invalid selection")
+                            items = getItemsFromIndexFile(f"{sourceFolder}/itemslist.txt")
+                            updateItems = True
+                            while True:
+                                # Imprime todos los items de la lista
+                                if updateItems == True:
+                                    addedItems = []
+                                    if os.path.exists(f"{outputFolder}/changedItems.txt"):
+                                        addedItems = getItemsFromIndexFile(f"{outputFolder}/changedItems.txt")
 
-            case 2:
+                                    noAddedItems = []
+                                    for element in items:
+                                        if element not in addedItems:
+                                            # Si el item no está agregado aún, no se mostrará
+                                            if len(element.split(".")) > 2:
+                                                noAddedItems.append(element)
+
+                                    for i in range(len(noAddedItems)):
+                                        itemName = noAddedItems[i].split(".")
+                                        print(f"{i+1}: {itemName[0]}")
+                                    print("0: Exit")
+                                    updateItems = False
+
+                                selection = input("Enter the texture id to change: ")
+
+                                try: 
+                                    selection = int(selection)
+                                    if selection < 0 or selection > (len(noAddedItems)):
+                                        selection = None
+                                except:
+                                    selection = None
+
+                                if selection != None:
+                                    if selection != 0:
+                                        itemName = noAddedItems[selection-1].split(".")
+                                        # Si el elemento contiene más de 2 valores (es decir: nombre, y position, x position)
+                                        if len(itemName) > 2:
+                                            print(f"Selection: {itemName[0]}")
+                                            print("Enter the image file path: ")
+                                            filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                                            if filePath != '':
+                                                print(f"Path selected: {filePath}")
+                                                if isImage16x16(filePath):
+                                                    print("Converting Image...")
+                                                    print(itemName)
+                                                    convertImageTo3dst(itemName[0], filePath, f"{outputFolder}/items")
+                                                    outputData = addToItemAtlas(itemName, filePath, outputFolder)
+                                                    if outputData != None:
+                                                        if not os.path.exists(f"{outputFolder}/changedItems.txt"):
+                                                            with open(f"{outputFolder}/changedItems.txt", "w") as f:
+                                                                f.write("")
+                                                        with open(f"{outputFolder}/changedItems.txt", "a") as f:
+                                                                f.write(f"{itemName[0]}.{itemName[1]}.{itemName[2]}\n")
+                                                        clear()
+                                                        print("Success")
+                                                        print(f"Atlas created at: {outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")
+                                                        updateItems = True
+                                                    else:
+                                                        clear()
+                                                        print("Error: Unknown error")
+                                                        updateItems = True
+                                                else:
+                                                    print("Error: The image must be 16x16")
+                                            else:
+                                                print("Error: No file selected")
+                                        else:
+                                            print("Error: Item not supported yet")
+                                    else:
+                                        print("Exit")
+                                        clear()
+                                        break
+                                else:
+                                    print("Error: Invalid selection")
+
+                        case "4":
+                            # Mostrar items modificados
+                            clear()
+                            items = getItemsFromIndexFile(f"{sourceFolder}/itemslist.txt")
+
+                            addedItems = []
+                            if os.path.exists(f"{outputFolder}/changedItems.txt"):
+                                addedItems = getItemsFromIndexFile(f"{outputFolder}/changedItems.txt")
+
+                            listItems = []
+                            for element in addedItems:
+                                if element in items:
+                                    # Si el item no está agregado aún, no se mostrará
+                                    if len(element.split(".")) > 2:
+                                        listItems.append(element)
+
+                            updateItems = True
+
+                            while True:
+                                # Imprime todos los items de la lista
+                                if updateItems == True:
+                                    for i in range(len(listItems)):
+                                        itemName = listItems[i].split(".")
+                                        print(f"{i+1}: {itemName[0]}")
+                                    print("0: Exit")
+                                    updateItems = False
+
+                                selection = input("Enter the texture id to change: ")
+
+                                try: 
+                                    selection = int(selection)
+                                    if selection < 0 or selection > (len(listItems)):
+                                        selection = None
+                                except:
+                                    selection = None
+
+                                if selection != None:
+                                    if selection != 0:
+                                        itemName = listItems[selection-1].split(".")
+                                        # Si el elemento contiene más de 2 valores (es decir: nombre, y position, x position)
+                                        if len(itemName) > 2:
+                                            print(f"Selection: {itemName[0]}")
+                                            print("Enter the image file path: ")
+                                            filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                                            if filePath != '':
+                                                print(f"Path selected: {filePath}")
+                                                if isImage16x16(filePath):
+                                                    print("Converting Image...")
+                                                    print(itemName)
+                                                    convertImageTo3dst(itemName[0], filePath, f"{outputFolder}/items")
+                                                    outputData = addToItemAtlas(itemName, filePath, outputFolder)
+                                                    if outputData != None:
+                                                        if not os.path.exists(f"{outputFolder}/changedItems.txt"):
+                                                            with open(f"{outputFolder}/changedItems.txt", "w") as f:
+                                                                f.write("")
+                                                        with open(f"{outputFolder}/changedItems.txt", "a") as f:
+                                                                f.write(f"{itemName[0]}.{itemName[1]}.{itemName[2]}\n")
+                                                        clear()
+                                                        print("Success")
+                                                        print(f"Atlas created at: {outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")
+                                                        updateItems = True
+                                                    else:
+                                                        clear()
+                                                        print("Error: Unknown error")
+                                                        updateItems = True
+                                                else:
+                                                    print("Error: The image must be 16x16")
+                                            else:
+                                                print("Error: No file selected")
+                                        else:
+                                            print("Error: Item not supported yet")
+                                    else:
+                                        print("Exit")
+                                        clear()
+                                        break
+                                else:
+                                    print("Error: Invalid selection")
+
+                        case "0":
+                            print("Exit")
+                            clear()
+                            break
+
+                        case _:
+                            clear()
+                            print("Error: Invalid option")
+
+            case "2":
                 # Cambiar la textura de un bloque
                 clear()
                 blocks = getItemsFromIndexFile(f"{sourceFolder}/blockslist.txt")
@@ -637,7 +737,7 @@ if __name__ == "__main__":
                     clear()
                     print("Error: Invalid selection")
 
-            case 3:
+            case "3":
                 # Agrega o cambia el icono del paquete
                 clear()
                 print("Enter the image file path: ")
@@ -660,7 +760,7 @@ if __name__ == "__main__":
                 else:
                     clear()
                     print("Error: No file selected")
-            case 0:
+            case "0":
                 clear()
                 print("Exit")
                 break
