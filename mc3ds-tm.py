@@ -477,7 +477,8 @@ if __name__ == "__main__":
     if getattr(sys, 'frozen', False):
         print("Running from executable file")
         os.chdir(sys._MEIPASS)
-        outputFolder = os.path.join(os.path.dirname(sys.executable), "MC3DS")
+        outFolder = input("Enter the output folder: ")
+        outputFolder = os.path.join(os.path.dirname(sys.executable), outFolder)
     elif __file__:
         print("Running from source file")
         outputFolder = "MC3DS"
