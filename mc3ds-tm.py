@@ -23,9 +23,19 @@ def printMenu():
     print("Choose an option:")
     print("\t1: Change an item texture")
     print("\t2: Change a block texture")
-    print("\t3: Exit")
+    print("\t3: Change texture pack icon")
+    print("\t0: Exit")
 
-def convertImageTo3dst(item_data, texture_path, output_folder):
+def isImage16x16(texture_path):
+    img = Image.open(texture_path)
+    if img.size[0] == 16 and img.size[1] == 16:
+        img.close()
+        return True
+    else:
+        img.close()
+        return False
+
+def convertImageTo3dst(output_filename, texture_path, output_folder):
     img = Image.open(texture_path).convert('RGBA')
     width, height = img.size
     if width == 16 and height == 16:
@@ -76,7 +86,7 @@ def convertImageTo3dst(item_data, texture_path, output_folder):
         if not os.path.exists(f"{output_folder}"):
             os.makedirs(f"{output_folder}")
 
-        with open(f"{output_folder}/{item_data[0]}.3dst", "wb") as f:
+        with open(f"{output_folder}/{output_filename}.3dst", "wb") as f:
             f.write(byte_arr)
 
         return byte_arr, outputData
@@ -498,6 +508,7 @@ if __name__ == "__main__":
                 noAddedItems = []
                 for element in items:
                     if element not in addedItems:
+                        # Si el item no está agregado aún, no se mostrará
                         if len(element.split(".")) > 2:
                             noAddedItems.append(element)
 
@@ -518,27 +529,31 @@ if __name__ == "__main__":
                 if selection != None:
                     clear()
                     itemName = noAddedItems[selection-1].split(".")
+                    # Si el elemento contiene más de 2 valores (es decir: nombre, y position, x position)
                     if len(itemName) > 2:
                         print(f"Selection: {itemName[0]}")
-
                         print("Enter the image file path: ")
+                        clear()
                         filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
                         if filePath != '':
                             print(f"Path selected: {filePath}")
-                            clear()
-                            print("Converting Image...")
-                            print(itemName)
-                            convertImageTo3dst(itemName, filePath, f"{outputFolder}/items")
-                            outputData = addToItemAtlas(itemName, filePath, outputFolder)
-                            if outputData != None:
-                                clear()
-                                print("Success")
-                                print(f"Atlas created at: {outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")
-                                if not os.path.exists(f"{outputFolder}/changedItems.txt"):
-                                    with open(f"{outputFolder}/changedItems.txt", "w") as f:
-                                        f.write("")
-                                with open(f"{outputFolder}/changedItems.txt", "a") as f:
-                                        f.write(f"{itemName[0]}.{itemName[1]}.{itemName[2]}\n")
+                            if isImage16x16(filePath):
+                                print("Converting Image...")
+                                print(itemName)
+                                convertImageTo3dst(itemName[0], filePath, f"{outputFolder}/items")
+                                outputData = addToItemAtlas(itemName, filePath, outputFolder)
+                                if outputData != None:
+                                    if not os.path.exists(f"{outputFolder}/changedItems.txt"):
+                                        with open(f"{outputFolder}/changedItems.txt", "w") as f:
+                                            f.write("")
+                                    with open(f"{outputFolder}/changedItems.txt", "a") as f:
+                                            f.write(f"{itemName[0]}.{itemName[1]}.{itemName[2]}\n")
+                                    clear()
+                                    print("Success")
+                                    print(f"Atlas created at: {outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")
+                                else:
+                                    clear()
+                                    print("Error: Unknown error")
                             else:
                                 clear()
                                 print("Error: The image must be 16x16")
@@ -563,6 +578,7 @@ if __name__ == "__main__":
                 noAddedBlocks = []
                 for element in blocks:                    
                     if element not in addedBlocks:
+                        # Si el bloque no está agregado aún, no se mostrará
                         if len(element.split(".")) > 2:
                             noAddedBlocks.append(element)
 
@@ -582,27 +598,31 @@ if __name__ == "__main__":
                 if selection != None:
                     clear()
                     blockName = noAddedBlocks[selection-1].split(".")
+                    # Si el elemento contiene más de 2 valores (es decir: nombre, y position, x position)
                     if len(blockName) > 2:
                         print(f"Selection: {blockName[0]}")
-
                         print("Enter the image file path: ")
+                        clear()
                         filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
                         if filePath != '':
                             print(f"Path selected: {filePath}")
-                            clear()
-                            print("Converting image...")
-                            print(blockName)
-                            convertImageTo3dst(blockName, filePath, f"{outputFolder}/blocks")
-                            outputData = addToBlockAtlas(blockName, filePath, outputFolder)
-                            if outputData != None:
-                                clear()
-                                print("Success")
-                                print(f"Atlas created at: {outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")
-                                if not os.path.exists(f"{outputFolder}/changedBlocks.txt"):
-                                    with open(f"{outputFolder}/changedBlocks.txt", "w") as f:
-                                        f.write("")
-                                with open(f"{outputFolder}/changedBlocks.txt", "a") as f:
-                                    f.write(f"{blockName[0]}.{blockName[1]}.{blockName[2]}\n")
+                            if isImage16x16(filePath):
+                                print("Converting image...")
+                                print(blockName)
+                                convertImageTo3dst(blockName[0], filePath, f"{outputFolder}/blocks")
+                                outputData = addToBlockAtlas(blockName, filePath, outputFolder)
+                                if outputData != None:
+                                    if not os.path.exists(f"{outputFolder}/changedBlocks.txt"):
+                                        with open(f"{outputFolder}/changedBlocks.txt", "w") as f:
+                                            f.write("")
+                                    with open(f"{outputFolder}/changedBlocks.txt", "a") as f:
+                                        f.write(f"{blockName[0]}.{blockName[1]}.{blockName[2]}\n")
+                                    clear()
+                                    print("Success")
+                                    print(f"Atlas created at: {outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")
+                                else:
+                                    clear()
+                                    print("Error: Unknown error")
                             else:
                                 clear()
                                 print("Error: Image must be 16x16 pixels")
@@ -617,6 +637,29 @@ if __name__ == "__main__":
                     print("Error: Invalid selection")
 
             case 3:
+                # Agrega o cambia el icono del paquete
+                clear()
+                print("Enter the image file path: ")
+                filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                if filePath != '':
+                    print(f"Path selected: {filePath}")
+                    if isImage16x16(filePath):
+                        print("Converting image...")
+                        outputData = convertImageTo3dst("pack", filePath, outputFolder)
+                        if outputData != None:
+                            clear()
+                            print("Success")
+                            print(f"Pack icon created at: {outputFolder}/pack.3dst")
+                        else:
+                            clear()
+                            print("Error: Unknown error")
+                    else:
+                        clear()
+                        print("Error: Image must be 16x16 pixels")
+                else:
+                    clear()
+                    print("Error: No file selected")
+            case 0:
                 clear()
                 print("Exit")
                 break
