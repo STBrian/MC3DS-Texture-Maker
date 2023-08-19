@@ -27,3 +27,7 @@ jobs:
     - name: Build with PyInstaller
       run: |
         pyinstaller mc3ds-tm.spec
+    - uses: actions/upload-artifact@v2
+      with:
+        name: mc3ds-tm.exe
+        path: dist/
