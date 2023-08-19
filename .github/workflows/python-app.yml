@@ -23,11 +23,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller
+        pip install pyinstaller pillow
     - name: Build with PyInstaller
       run: |
         pyinstaller mc3ds-tm.spec
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
-        name: mc3ds-tm.exe
+        name: mc3ds-tm
         path: dist/
