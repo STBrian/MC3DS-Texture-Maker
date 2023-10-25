@@ -703,7 +703,6 @@ if __name__ == "__main__":
                     if len(blockName) > 2:
                         print(f"Selection: {blockName[0]}")
                         print("Enter the image file path: ")
-                        clear()
                         filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
                         if filePath != '':
                             print(f"Path selected: {filePath}")
