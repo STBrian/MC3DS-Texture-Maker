@@ -131,8 +131,10 @@ iron_trapdoor.12.15
 ladder.12.19
 lapis_block.12.20
 lapis_ore.12.21
-log_acacia.11.24
-log_acacia_top.10.3
+log_acacia.11.18
+log_acacia_top.11.19
+log_birch.11.24
+log_birch_top.10.3
 magma_placeholder.10.6
 mycelium_top.9.0
 netherrack.9.6
@@ -199,3 +201,9 @@ cauldron_bottom.20.21
 cauldron_inner.20.22
 cauldron_side.20.23
 cauldron_top.20.24
+leaves_oak_opaque.11.1
+leaves_oak.12.22
+leaves_oak_carried.11.9
+leaves_acacia.11.5
+leaves_acacia_carried.11.13
+leaves_acacia_opaque.11.7
