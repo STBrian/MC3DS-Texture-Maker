@@ -4,6 +4,8 @@ from PIL import Image
 from tkinter import Tk
 from tkinter import filedialog
 
+import tex3dst
+
 def clear():
     os.system('cls')
 
