@@ -8,6 +8,79 @@ class Texture3dst:
     def __init__(self):
         return
 
+    def open(self, path: str):
+        if type(path) != str:
+            raise Texture3dstException("path expected to be a string.")
+        
+        with open(f"{path}", "rb") as f:
+            fileData = f.read()
+        
+        # Empieza el analisis de la cabecera
+        if not (fileData[0] == 51 and fileData[1] == 68 and fileData[2] == 83 and fileData[3] == 84):
+            raise Texture3dstException("The texture does not contain the type mark.")
+        if not (fileData[4] == 3):
+            raise Texture3dstException("Texture mode not supported.")
+        
+        # Verifica que no haya bytes no esperados
+        for i in range(0, 7):
+            if not (fileData[5 + i] == 0):
+                raise Texture3dstException(f"Unexpected byte at {hex(5 + i)} position.")
+        
+        # Verifica que las dimensiones de la textura textura no sean mayor a las soportadas
+        if not (fileData[14] == 0 and fileData[15] == 0):
+            raise Texture3dstException("Texture width greater than supported.")
+        if not (fileData[18] == 0 and fileData[19] == 0):
+            raise Texture3dstException("Texture height greater than supported.")
+
+        # Verifica que las dimensiones no sean 0
+        if fileData[12] == 0 and fileData[13] == 0:
+            raise Texture3dstException("The texture width cannot be 0.")
+        if fileData[16] == 0 and fileData[17] == 0:
+            raise Texture3dstException("The texture height cannot be 0.")
+        
+        # Verifica que las dimensiones y el checksum sean las mismas
+        if not (fileData[12] == fileData[20] and fileData[13] == fileData[21]):
+            raise Texture3dstException("The texture width must be the same as width checksum.")
+        if not (fileData[16] == fileData[24] and fileData[17] == fileData[25]):
+            raise Texture3dstException("The texture height must be the same as height checksum.")
+        
+        width1 = fileData[12]
+        width2 = fileData[13]
+        height1 = fileData[16]
+        height2 = fileData[17]
+
+        localwidth = width1 + (width2 * 256)
+        localheight = height1 + (height2 * 256)
+
+        if localwidth % 8 != 0 and localheight % 8 != 0:
+            raise Texture3dstException("Unsupported texture resolution.")
+        
+        # Verifica que el nivel de mip este dentro de los valores soportados
+        if fileData[28] == 0:
+            raise Texture3dstException("MaxMipLevel cannot be equal to 0.")
+        if fileData[29] != 0 and fileData[30] != 0 and fileData[31] != 0:
+            raise Texture3dstException("MaxMipLevel greater than supported.")
+        
+        localmiplevel = fileData[28]
+
+        if not ((localwidth / (2 ** (localmiplevel - 1)) >= 8) and (localheight / (2 ** (localmiplevel - 1)) >= 8)):
+            raise Texture3dstException("MaxMipLevel not supported.")
+
+        self.texturemode = 3
+        self.width = localwidth
+        self.height = localheight
+        self.maxmiplevel = localmiplevel
+
+        localdata = []
+        for i in range(32, len(fileData)):
+            localdata.append(fileData[i])
+
+        self.data = self.convertFunction(localdata, localwidth, localheight)
+
+        print(self.width, self.height, self.maxmiplevel)
+
+        return self
+
     def new(self, width: int, height: int, maxmiplevel: int):
         if type(width) != int:
             raise Texture3dstException("Width expected to be an integer.")
@@ -241,9 +314,9 @@ class Texture3dst:
             
         return
     
-    def export(self, directory: str):
-        if type(directory) != str:
-            raise Texture3dstException("directory expected to be a string.")
+    def export(self, path: str):
+        if type(path) != str:
+            raise Texture3dstException("path expected to be a string.")
         
         self.output = []
 
@@ -287,7 +360,7 @@ class Texture3dst:
         fileData = bytearray(self.output)
 
         # Se escriben los bytes en un archivo
-        with open(f"{directory}", "wb") as f:
+        with open(f"{path}", "wb") as f:
             f.write(fileData)
 
         return
