@@ -201,7 +201,7 @@ class Texture3dst:
                 x = 0
                 y += 1
 
-            for i in range(0, self.maxmiplevel):
+            for i in range(0, self.maxmiplevel - 1):
                 # Se reescala la imagen
                 resizedwidth = resizedwidth // 2
                 resizedheight = resizedheight // 2

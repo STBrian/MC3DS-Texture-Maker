@@ -1,7 +1,7 @@
 from src.tex3dst import *
 from PIL import Image
 
-image = Image.open("atlas.terrain.meta_79954554_0.png").convert("RGBA")
+image = Image.open("src/atlas/atlas.terrain.meta_79954554_0.png").convert("RGBA")
 texture = Texture3dst().new(512, 512, 3)
 print(len(texture.data))
 x = 0
