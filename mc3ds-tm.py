@@ -377,6 +377,8 @@ def addToBlockAtlas(blockData, textureImgPath, output_folder):
         hsize = int((float(blockAtlas.size[1])*float(wpercent)))
         blockAtlas = blockAtlas.resize((basewidth,hsize), Image.Resampling.LANCZOS)
 
+        blockAtlas.save("out2.png")
+
         # Carga el atlas a la memoria
         blockAtlasPixels = blockAtlas.load()
 
