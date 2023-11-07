@@ -4,6 +4,44 @@ class Texture3dstException(Exception):
     def __init__(self, message):
         super().__init__(message)
 
+def setPixelRGBAformList(data: list, x: int, y: int, width: int, height: int, red: int, green: int, blue: int, alpha: int):
+        if type(data) != list:
+            raise Texture3dstException("data expected to be a list.")
+        if type(x) != int:
+            raise Texture3dstException("x coordinates expected to be an integer.")
+        if type(y) != int:
+            raise Texture3dstException("y coordinates expected to be an integer.")
+        if type(width) != int:
+            raise Texture3dstException("width expected to be an integer.")
+        if type(height) != int:
+            raise Texture3dstException("height expected to be an integer.")
+        if x < 0 or x >= width:
+            raise Texture3dstException("x coordinates out of range.")
+        if y < 0 or y >= height:
+            raise Texture3dstException("y coordinates out of range.")
+        if type(red) != int:
+            raise Texture3dstException("red value expected to be an integer.")
+        if type(green) != int:
+            raise Texture3dstException("green value expected to be an integer.")
+        if type(blue) != int:
+            raise Texture3dstException("blue value expected to be an integer.")
+        if type(alpha) != int:
+            raise Texture3dstException("alpha value expected to be an integer.")
+        if red < 0 or red > 255:
+            raise Texture3dstException("red value must be between 0 and 255.")
+        if green < 0 or green > 255:
+            raise Texture3dstException("green value must be between 0 and 255.")
+        if blue < 0 or blue > 255:
+            raise Texture3dstException("blue value must be between 0 and 255.")
+        if alpha < 0 or alpha > 255:
+            raise Texture3dstException("alpha value must be between 0 and 255.")
+        listPosition = ((y * width) + x) * 4
+        data[listPosition] = red
+        data[listPosition + 1] = green
+        data[listPosition + 2] = blue
+        data[listPosition + 3] = alpha
+        return data
+
 def getPixelDataFromList(data: list, x: int, y: int, width: int, height: int):
         if type(data) != list:
             raise Texture3dstException("data expected to be a list.")
@@ -37,9 +75,17 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
             raise Texture3dstException("conversiontype must be and integer.")
         if not (conversiontype >= 1 and conversiontype <= 2):
             raise Texture3dstException("conversiontype must be 1 or 2.")
+        
         convertedData = []
+        if conversiontype == 2:
+            for i in range(0, width):
+                for j in range(0, height):
+                    for k in range(0, 4):
+                        convertedData.append(0)
+
         x = 0
         y = 0
+        z = 0
         for i in range(0, height // 8):
             for j in range(0, width // 8):
                 for k in range(0, 2):
@@ -48,21 +94,23 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
                             for n in range(0, 2):
                                 for o in range(0, 2):
                                     for p in range(0, 2):
-                                        pixelData = getPixelDataFromList(data, x, y, width, height)
-                                        if pixelData[3] == 0:
-                                            for q in range(0, 4):
-                                                convertedData.append(0)
-                                        else:
-                                            if conversiontype == 1:
-                                                convertedData.append(pixelData[3])
-                                                convertedData.append(pixelData[2])
-                                                convertedData.append(pixelData[1])
-                                                convertedData.append(pixelData[0])
+                                        if conversiontype == 1:
+                                            pixelData = getPixelDataFromList(data, x, y, width, height)
+                                            if pixelData[3] == 0:
+                                                for q in range(0, 4):
+                                                    convertedData.append(0)
                                             else:
-                                                convertedData.append(pixelData[0])
-                                                convertedData.append(pixelData[1])
-                                                convertedData.append(pixelData[2])
                                                 convertedData.append(pixelData[3])
+                                                convertedData.append(pixelData[2])
+                                                convertedData.append(pixelData[1])
+                                                convertedData.append(pixelData[0])
+                                        else:
+                                            r = data[z + 3]
+                                            g = data[z + 2]
+                                            b = data[z + 1]
+                                            a = data[z]
+                                            convertedData = setPixelRGBAformList(convertedData, x, y, width, height, r, g, b, a)
+                                            z += 4
                                         x += 1
                                     x -= 2
                                     y += 1
@@ -152,12 +200,11 @@ class Texture3dst:
         for i in range(32, len(fileData)):
             localdata.append(fileData[i])
 
-        # Se realizan dos pasos para convertir el formato 
-        step1 = convertFunction(localdata, localwidth, localheight, 1)
-        step2 = convertFunction(step1, localwidth, localheight, 2)
+        # Se utiliza el segundo método de conversion para cargar la textura
+        data = convertFunction(localdata, localwidth, localheight, 2)
 
         # Finalmente se pasa los datos a la lista de pixeles
-        self.data = step2
+        self.data = data
 
         return self
 
