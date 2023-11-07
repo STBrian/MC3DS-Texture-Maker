@@ -77,6 +77,8 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
             raise Texture3dstException("conversiontype must be 1 or 2.")
         
         convertedData = []
+        # Si es de tipo 2 significa que va a abrir una textura
+        # Y se ocupa tener una lista con todos los espacios necesarios que represente una imagen vacia
         if conversiontype == 2:
             for i in range(0, width):
                 for j in range(0, height):
@@ -86,6 +88,7 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
         x = 0
         y = 0
         z = 0
+        # Bucle que itera siguiendo el patron de guardado visto en estas texturas
         for i in range(0, height // 8):
             for j in range(0, width // 8):
                 for k in range(0, 2):
@@ -100,11 +103,17 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
                                                 for q in range(0, 4):
                                                     convertedData.append(0)
                                             else:
-                                                convertedData.append(pixelData[3])
-                                                convertedData.append(pixelData[2])
-                                                convertedData.append(pixelData[1])
-                                                convertedData.append(pixelData[0])
+                                                # Como es de tipo 1 se tendrán que guardar los valores rgba invertidos
+                                                r = pixelData[0]
+                                                g = pixelData[1]
+                                                b = pixelData[2]
+                                                a = pixelData[3]
+                                                convertedData.append(a)
+                                                convertedData.append(b)
+                                                convertedData.append(g)
+                                                convertedData.append(r)
                                         else:
+                                            # Como es de tipo 2 los valores rgba están en posiciones invertidas
                                             r = data[z + 3]
                                             g = data[z + 2]
                                             b = data[z + 1]
