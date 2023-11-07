@@ -19,8 +19,4 @@ print(texture.getPixelData(0, 0))
 
 tex = Texture3dst().open("atlas.terrain.meta_79954554_0.3dst")
 tex.convertData()
-tex.export("atlastest.3dst")
-
-tex2 = Texture3dst().open("atlas.terrain.meta_79954554_0.3dst")
-tex2.convertData()
-tex2.export("atlastest.3dst")
+tex.export("apple2.3dst")

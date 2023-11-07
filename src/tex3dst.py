@@ -4,6 +4,83 @@ class Texture3dstException(Exception):
     def __init__(self, message):
         super().__init__(message)
 
+def getPixelDataFromList(data: list, x: int, y: int, width: int, height: int):
+        if type(data) != list:
+            raise Texture3dstException("data expected to be a list.")
+        if type(x) != int:
+            raise Texture3dstException("x coordinates expected to be an integer.")
+        if type(y) != int:
+            raise Texture3dstException("y coordinates expected to be an integer.")
+        if type(width) != int:
+            raise Texture3dstException("width expected to be an integer.")
+        if type(height) != int:
+            raise Texture3dstException("height expected to be an integer.")
+        if x < 0 or x >= width:
+            raise Texture3dstException("x coordinates out of range.")
+        if y < 0 or y >= height:
+            raise Texture3dstException("y coordinates out of range.")
+        listPosition = ((y * width) + x) * 4
+        r = data[listPosition]
+        g = data[listPosition + 1]
+        b = data[listPosition + 2]
+        a = data[listPosition + 3]
+        return [r, g, b, a]
+
+def convertFunction(data: list, width: int, height: int, conversiontype: int):
+        if type(data) != list:
+            raise Texture3dstException("data expected to be a list.")
+        if type(width) != int:
+            raise Texture3dstException("width expected to be an integer.")
+        if type(height) != int:
+            raise Texture3dstException("height expected to be an integer.")
+        if type(conversiontype) != int:
+            raise Texture3dstException("conversiontype must be and integer.")
+        if not (conversiontype >= 1 and conversiontype <= 2):
+            raise Texture3dstException("conversiontype must be 1 or 2.")
+        convertedData = []
+        x = 0
+        y = 0
+        for i in range(0, height // 8):
+            for j in range(0, width // 8):
+                for k in range(0, 2):
+                    for l in range(0, 2):
+                        for m in range(0, 2):
+                            for n in range(0, 2):
+                                for o in range(0, 2):
+                                    for p in range(0, 2):
+                                        pixelData = getPixelDataFromList(data, x, y, width, height)
+                                        if pixelData[3] == 0:
+                                            for q in range(0, 4):
+                                                convertedData.append(0)
+                                        else:
+                                            if conversiontype == 1:
+                                                convertedData.append(pixelData[3])
+                                                convertedData.append(pixelData[2])
+                                                convertedData.append(pixelData[1])
+                                                convertedData.append(pixelData[0])
+                                            else:
+                                                convertedData.append(pixelData[0])
+                                                convertedData.append(pixelData[1])
+                                                convertedData.append(pixelData[2])
+                                                convertedData.append(pixelData[3])
+                                        x += 1
+                                    x -= 2
+                                    y += 1
+                                x += 2
+                                y -= 2
+                            x -= 4
+                            y += 2
+                        x += 4
+                        y -= 4
+                    x -= 8
+                    y += 4
+                x += 8
+                y -= 8
+            x = 0
+            y += 8
+
+        return convertedData
+
 class Texture3dst:
     def __init__(self):
         return
@@ -75,9 +152,12 @@ class Texture3dst:
         for i in range(32, len(fileData)):
             localdata.append(fileData[i])
 
-        self.data = self.convertFunction(localdata, localwidth, localheight)
+        # Se realizan dos pasos para convertir el formato 
+        step1 = convertFunction(localdata, localwidth, localheight, 1)
+        step2 = convertFunction(step1, localwidth, localheight, 2)
 
-        print(self.width, self.height, self.maxmiplevel)
+        # Finalmente se pasa los datos a la lista de pixeles
+        self.data = step2
 
         return self
 
@@ -166,73 +246,6 @@ class Texture3dst:
         a = self.data[listPosition + 3]
         return [r, g, b, a]
     
-    def getPixelDataFromList(self, data: list, x: int, y: int, width: int, height: int):
-        if type(data) != list:
-            raise Texture3dstException("data expected to be a list.")
-        if type(x) != int:
-            raise Texture3dstException("x coordinates expected to be an integer.")
-        if type(y) != int:
-            raise Texture3dstException("y coordinates expected to be an integer.")
-        if type(width) != int:
-            raise Texture3dstException("width expected to be an integer.")
-        if type(height) != int:
-            raise Texture3dstException("height expected to be an integer.")
-        if x < 0 or x >= width:
-            raise Texture3dstException("x coordinates out of range.")
-        if y < 0 or y >= height:
-            raise Texture3dstException("y coordinates out of range.")
-        listPosition = ((y * width) + x) * 4
-        r = data[listPosition]
-        g = data[listPosition + 1]
-        b = data[listPosition + 2]
-        a = data[listPosition + 3]
-        return [r, g, b, a]
-
-    def convertFunction(self, data: list, width: int, height: int):
-        if type(data) != list:
-            raise Texture3dstException("data expected to be a list.")
-        if type(width) != int:
-            raise Texture3dstException("width expected to be an integer.")
-        if type(height) != int:
-            raise Texture3dstException("height expected to be an integer.")
-        convertedData = []
-        x = 0
-        y = 0
-        for i in range(0, height // 8):
-            for j in range(0, width // 8):
-                for k in range(0, 2):
-                    for l in range(0, 2):
-                        for m in range(0, 2):
-                            for n in range(0, 2):
-                                for o in range(0, 2):
-                                    for p in range(0, 2):
-                                        pixelData = self.getPixelDataFromList(data, x, y, width, height)
-                                        if pixelData[3] == 0:
-                                            for q in range(0, 4):
-                                                convertedData.append(0)
-                                        else:
-                                            convertedData.append(pixelData[3])
-                                            convertedData.append(pixelData[2])
-                                            convertedData.append(pixelData[1])
-                                            convertedData.append(pixelData[0])
-                                        x += 1
-                                    x -= 2
-                                    y += 1
-                                x += 2
-                                y -= 2
-                            x -= 4
-                            y += 2
-                        x += 4
-                        y -= 4
-                    x -= 8
-                    y += 4
-                x += 8
-                y -= 8
-            x = 0
-            y += 8
-
-        return convertedData
-
     def flipX(self):
         return
 
@@ -247,7 +260,7 @@ class Texture3dst:
 
     def convertData(self):        
         self.convertedData = []
-        self.convertedData = self.convertFunction(self.data, self.width, self.height)
+        self.convertedData = convertFunction(self.data, self.width, self.height, 1)
 
         if self.maxmiplevel > 1:
             mipToExport = []
@@ -264,7 +277,7 @@ class Texture3dst:
             y = 0
             for i in range(0, height):
                 for j in range(0, width):
-                    pixelData = self.getPixelDataFromList(self.data, x, y, width, height)
+                    pixelData = getPixelDataFromList(self.data, x, y, width, height)
                     r = pixelData[0]
                     g = pixelData[1]
                     b = pixelData[2]
@@ -299,7 +312,7 @@ class Texture3dst:
                     y += 1
 
                 # Se convierte los datos usando la funcion
-                mipToExport = self.convertFunction(mipTmpData, resizedwidth, resizedheight)
+                mipToExport = convertFunction(mipTmpData, resizedwidth, resizedheight, 1)
 
                 # Se copian los datos a la lista de salida
                 for j in range(0, len(mipToExport)):
