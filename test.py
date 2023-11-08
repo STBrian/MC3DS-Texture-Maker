@@ -19,3 +19,7 @@ texture.export("atlas.terrain.meta_79954554_0.3dst")
 tex = Texture3dst().open("atlas.terrain.meta_79954554_0.3dst")
 tex.convertData()
 tex.export("apple2.3dst")
+
+glint = Texture3dst().new(128, 128, 1)
+glint.convertData()
+glint.export("enchanted_item_glint.3dst")
