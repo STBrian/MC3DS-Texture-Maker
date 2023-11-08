@@ -303,6 +303,30 @@ class Texture3dst:
         return [r, g, b, a]
     
     def flipX(self):
+        flippedTexture = []
+        for i in range(0, self.height):
+            for j in range(0, self.width):
+                for k in range(0, 4):
+                    flippedTexture.append(0)
+
+        x = 0
+        y = 0
+        y_flipped = self.height - 1
+        for i in range(0, self.height):
+            for j in range(0, self.width):
+                pixelData = self.getPixelData(x, y)
+                r = pixelData[0]
+                g = pixelData[1]
+                b = pixelData[2]
+                a = pixelData[3]
+                flippedTexture = setPixelRGBAformList(flippedTexture, x, y_flipped, self.width, self.height, r, g, b, a)
+                x += 1
+            x = 0
+            y += 1
+            y_flipped -= 1
+
+        self.data = flippedTexture
+
         return
 
     def flipY(self):
