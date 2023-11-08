@@ -147,6 +147,8 @@ def addToItemAtlas(pixelPosition, textureImgPath, output_folder):
     # Carga los archivos necesarios a la memoria
     if os.path.exists(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst"):
         itemAtlas = Texture3dst().open(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst")
+        # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
+        itemAtlas.flipX()
     else:
         itemAtlas = Texture3dst().new(512, 256, 1)
         itemAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.items.vanilla.png").convert("RGBA")
