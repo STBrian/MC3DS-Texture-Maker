@@ -4,7 +4,8 @@
 block_cipher = None
 
 added_files = [
-    ('src', 'src')
+    ('src', 'src'),
+    ('modules', 'modules')
 ]
 
 a = Analysis(

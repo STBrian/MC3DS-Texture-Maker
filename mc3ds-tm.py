@@ -5,7 +5,7 @@ from PIL import Image
 from tkinter import Tk
 from tkinter import filedialog
 
-from src.tex3dst import *
+from modules.tex3dst import *
 
 def clear():
     os.system('cls')
@@ -527,7 +527,7 @@ if __name__ == "__main__":
                         if option2 >= 1 and option2 <= 4:
                             escapemenu3 = False
                             update = True
-                            items = getItemsFromIndexFile(f"{sourceFolder}/newitemslist.txt")
+                            items = getItemsFromIndexFile(f"{sourceFolder}/indexes/newitemslist.txt")
 
                             while escapemenu3 == False:
                                 if update == True:
@@ -614,7 +614,7 @@ if __name__ == "__main__":
             case "2":
                 # Cambiar la textura de un bloque
                 clear()
-                blocks = getItemsFromIndexFile(f"{sourceFolder}/blockslist.txt")
+                blocks = getItemsFromIndexFile(f"{sourceFolder}/indexes/blockslist.txt")
                 addedBlocks = []
                 if os.path.exists(f"{outputFolder}/changedBlocks.txt"):
                     addedBlocks = getItemsFromIndexFile(f"{outputFolder}/changedBlocks.txt")
