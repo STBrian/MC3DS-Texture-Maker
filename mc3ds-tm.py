@@ -8,7 +8,13 @@ from tkinter import filedialog
 from modules.tex3dst import *
 
 def clear():
-    os.system('cls')
+    os_type = os.name
+    if os_type == "posix":
+        os.system("clear")
+    elif os_type == "nt":
+        os.system("cls")
+    else:
+        print("Unsupported OS")
 
 def printList(list1: list):
     for i in range(0, len(list1)):
@@ -59,7 +65,7 @@ def addElementToFile(value, filePath: str):
 
 def createOutputDirectory(directoryName):
     if not os.path.exists(directoryName):
-        os.mkdir(directoryName)
+        os.makedirs(directoryName)
 
 def getItemsFromIndexFile(filename):
     items = []
@@ -85,87 +91,31 @@ def isImage16x16(texture_path):
         img.close()
         return False
 
-def convertImageTo3dst(output_filename, texture_path, output_folder):
-    img = Image.open(texture_path).convert('RGBA')
-    width, height = img.size
-    if width == 16 and height == 16:
-        flip_img = img.transpose(Image.FLIP_TOP_BOTTOM)
-
-        outputData = [51, 68, 83, 84, 3, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 16, 0, 0, 0, 16, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0]
-
-        x = 0
-        y = 0
-        for i in range(0, 2):
-            for i in range(0, 2):
-                for i in range(0, 2):
-                    for i in range(0, 2):
-                        for i in range(0, 2):
-                            for i in range(0, 2):
-                                for i in range(0, 2):
-                                    for i in range(0, 2):
-                                        r, g, b, a = flip_img.getpixel((x, y))
-                                        print(r, g, b, a)
-
-                                        outputData.append(a)
-                                        if a != 0:
-                                            outputData.append(b)
-                                            outputData.append(g)
-                                            outputData.append(r)
-                                        else:
-                                            for i in range(0, 3):
-                                                outputData.append(0)
-
-                                        x += 1
-                                    y += 1
-                                    x -= 2
-                                y -= 2
-                                x += 2
-                            y += 2
-                            x -= 4
-                        y -= 4
-                        x += 4
-                    y += 4
-                    x -= 8
-                y -= 8
-                x += 8
-            y += 8
-            x -= 16
-
-        byte_arr = bytearray(outputData)
-
-        if not os.path.exists(f"{output_folder}"):
-            os.makedirs(f"{output_folder}")
-
-        with open(f"{output_folder}/{output_filename}.3dst", "wb") as f:
-            f.write(byte_arr)
-
-        return byte_arr, outputData
-    else:
-        return None, None
-
 def addToItemAtlas(pixelPosition, textureImgPath, output_folder):
     # Carga los archivos necesarios a la memoria
     if os.path.exists(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst"):
+        print("Opening modified atlas...")
         itemAtlas = Texture3dst().open(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst")
         # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
         itemAtlas.flipX()
     else:
+        print("Creating new atlas file...")
         itemAtlas = Texture3dst().new(512, 256, 1)
+        print("Opening atlas from assets...")
         itemAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.items.vanilla.png").convert("RGBA")
-        itemAtlasSrcPixels = itemAtlasSource.load()
         x = 0
         y = 0
         for i in range(0, itemAtlasSource.size[1]):
             for j in range(0, itemAtlasSource.size[0]):
-                r, g, b, a = itemAtlasSrcPixels[x, y]
+                r, g, b, a = itemAtlasSource.getpixel((x, y))
                 itemAtlas.setPixelRGBA(x, y, r, g, b, a)
                 x += 1
             x = 0
             y += 1
 
         itemAtlasSource.close()
-        itemAtlasSrcPixels = None
 
+    print("Opening new texture...")
     textureImg = Image.open(textureImgPath).convert("RGBA")
         
     # Define las variables de posición
@@ -173,6 +123,7 @@ def addToItemAtlas(pixelPosition, textureImgPath, output_folder):
     y_atlas = pixelPosition[1]
 
     # Reemplazar la textura original por la nueva
+    print("Replacing new texture...")
     x = 0
     y = 0
     for i in range(0, 16):
@@ -188,299 +139,96 @@ def addToItemAtlas(pixelPosition, textureImgPath, output_folder):
 
     # Crea el directorio de salida si no existe
     if not os.path.exists(f"{output_folder}/atlas"):
-        os.makedirs(f"{output_folder}/atlas")
+        createOutputDirectory(f"{output_folder}/atlas")
 
     # Invierte el atlas en el eje x y convierte los datos del atlas antes de exportarlos
+    print("Inverting x-axis atlas...")
     itemAtlas.flipX()
+    print("Converting data...")
     itemAtlas.convertData()
 
     # Guarda el atlas modificado
     print("Saving changes...")
     itemAtlas.export(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst")
 
-    return
+    return True
     
-def addToBlockAtlas(blockData, textureImgPath, output_folder):
-    # Establece variables necesarias para el proceso
-    x_offset = int(blockData[2])
-    y_offset = int(blockData[1])
-    
-    # Carga los archivos necesarios
-    print("Loading files")
-    if not os.path.exists(f"{output_folder}/atlas.terrain.meta_79954554_0.png"):
-        blockAtlas = Image.open(f"{sourceFolder}/atlas/atlas.terrain.meta_79954554_0.png")
+def addToBlockAtlas(pixelPosition, textureImgPath, output_folder):
+    # Carga los archivos necesarios a la memoria
+    print("Starting...")
+    if os.path.exists(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst"):
+        print("Opening modified atlas...")
+        blockAtlas = Texture3dst().open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst")
+        # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
+        blockAtlas.flipX()
     else:
-        blockAtlas = Image.open(f"{output_folder}/atlas.terrain.meta_79954554_0.png")
-    textureImg = Image.open(textureImgPath).convert("RGBA")
-    
-    # Continua solo si la imagen es 16x16
-    if textureImg.size[0] == 16 and textureImg.size[1] == 16:
-        # Voltea verticalmente la textura
-        textureImgFlip = textureImg.transpose(Image.FLIP_TOP_BOTTOM)
-
-        # Establece la lista de salida
-        modifiedBlockAtlas = [51, 68, 83, 84, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0]
-
-        # Calcula los offsets
-        x_atlas = (20 * x_offset)
-        y_atlas = 72 + (20 * y_offset)
-
-        # Carga el atlas a la memoria
-        blockAtlasPixels = blockAtlas.load()
-
-        # Reemplaza la textura original por la nueva
-        ## Esquinas
-        for i in range(0, 2):
-            for i in range(0, 2):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((0, 0))
-                x_atlas += 1
-            x_atlas -= 2
-            y_atlas += 1
-
-        x_atlas = (20 * x_offset) + 18
-        y_atlas = 72 + (20 * y_offset)
-
-        for i in range(0, 2):
-            for i in range(0, 2):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((15, 0))
-                x_atlas += 1
-            x_atlas -= 2
-            y_atlas += 1
-
-        x_atlas = (20 * x_offset)
-        y_atlas = 72 + (20 * y_offset) + 18
-
-        for i in range(0, 2):
-            for i in range(0, 2):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((0, 15))
-                x_atlas += 1
-            x_atlas -= 2
-            y_atlas += 1
-
-        x_atlas = (20 * x_offset) + 18
-        y_atlas = 72 + (20 * y_offset) + 18
-
-        for i in range(0, 2):
-            for i in range(0, 2):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((15, 15))
-                x_atlas += 1
-            x_atlas -= 2
-            y_atlas += 1
-
-        ## Laterales
-        x_atlas = (20 * x_offset) + 2
-        y_atlas = 72 + (20 * y_offset)
-
+        print("Creating new texture file...")
+        blockAtlas = Texture3dst().new(512, 512, 3)
+        print("Opening atlas from assets...")
+        blockAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.terrain.vanilla.png").convert("RGBA")
         x = 0
         y = 0
-        for i in range(0, 2):
-            for i in range(0, 16):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
+        for i in range(0, blockAtlasSource.size[1]):
+            for j in range(0, blockAtlasSource.size[0]):
+                r, g, b, a = blockAtlasSource.getpixel((x, y))
+                blockAtlas.setPixelRGBA(x, y, r, g, b, a)
                 x += 1
-                x_atlas += 1
-            x -= 16
-            x_atlas -= 16
-            y_atlas += 1
-
-        x_atlas = (20 * x_offset) + 2
-        y_atlas = 72 + (20 * y_offset) + 18
-
-        x = 0
-        y = 15
-        for i in range(0, 2):
-            for i in range(0, 16):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
-                x += 1
-                x_atlas += 1
-            x -= 16
-            x_atlas -= 16
-            y_atlas += 1
-
-        x_atlas = (20 * x_offset)
-        y_atlas = 72 + (20 * y_offset) + 2
-
-        x = 0
-        y = 0
-        for i in range(0, 2):
-            for i in range(0, 16):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
-                y += 1
-                y_atlas += 1
-            y -= 16
-            y_atlas -= 16
-            x_atlas += 1
-
-        x_atlas = (20 * x_offset) + 18
-        y_atlas = 72 + (20 * y_offset) + 2
-
-        x = 15
-        y = 0
-        for i in range(0, 2):
-            for i in range(0, 16):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
-                y += 1
-                y_atlas += 1
-            y -= 16
-            y_atlas -= 16
-            x_atlas += 1
-
-        ## Centro
-        x_atlas = (20 * x_offset) + 2
-        y_atlas = 72 + (20 * y_offset) + 2
-
-        x = 0
-        y = 0
-        for i in range(0, 16):
-            for i in range(0, 16):
-                blockAtlasPixels[x_atlas, y_atlas] = textureImgFlip.getpixel((x, y))
-                x += 1
-                x_atlas += 1
             x = 0
             y += 1
-            x_atlas -= 16
-            y_atlas += 1
 
+        blockAtlasSource.close()
+
+    print("Opening new texture...")
+    textureImg = Image.open(textureImgPath).convert("RGBA")
         
-        # Crea el directorio de salida si no existe
-        if not os.path.exists(f"{output_folder}/atlas"):
-            os.makedirs(f"{output_folder}/atlas")
+    # Define las variables de posición
+    x_atlas = pixelPosition[0]
+    y_atlas = pixelPosition[1]
 
-        # Guarda los cambios hecho en la imagen
-        print("Saving changes...")
-        blockAtlas.save(f"{output_folder}/atlas.terrain.meta_79954554_0.png")
+    # Reemplazar la textura original por la nueva
+    print("Replacing texture...")
+    x = -2
+    y = -2
+    x2 = 0
+    y2 = 0
+    for i in range(0, 20):
+        for i in range(0, 20):
+            if x < 0:
+                x2 = 0
+            if x > 15:
+                x2 = 15
+            if y < 0:
+                y2 = 0
+            if y > 15:
+                y2 = 15
+            if x >= 0 and x <= 15:
+                x2 = x
+            if y >= 0 and y <= 15:
+                y2 = y
+            r, g, b, a = textureImg.getpixel((x2, y2))
+            blockAtlas.setPixelRGBA(x_atlas, y_atlas, r, g, b, a)
+            x += 1
+            x_atlas += 1
+        x = -2
+        x_atlas -= 20
+        y += 1
+        y_atlas += 1
 
-        # Crea la version completa del atlas
-        print("Making full version atlas...")
-        x = 0
-        y = 0
-        for i in range(0, 64):
-            for i in range(0, 64):
-                for i in range(0, 2):
-                    for i in range(0, 2):
-                        for i in range(0, 2):
-                            for i in range(0, 2):
-                                for i in range(0, 2):
-                                    for i in range(0, 2):
-                                        r, g, b, a = blockAtlasPixels[x, y]
-                                        modifiedBlockAtlas.append(a)
-                                        modifiedBlockAtlas.append(b)
-                                        modifiedBlockAtlas.append(g)
-                                        modifiedBlockAtlas.append(r)
-                                        x += 1
-                                    x -= 2
-                                    y += 1
-                                x += 2
-                                y -= 2
-                            x -= 4
-                            y += 2
-                        x += 4
-                        y -= 4
-                    x -= 8
-                    y += 4
-                x += 8
-                y -= 8
-            x = 0
-            y += 8
+    # Crea el directorio de salida si no existe
+    if not os.path.exists(f"{output_folder}/atlas"):
+        createOutputDirectory(f"{output_folder}/atlas")
 
-        # Reduce a la mitad la resolucion del atlas
-        basewidth = 256
-        wpercent = (basewidth/float(blockAtlas.size[0]))
-        hsize = int((float(blockAtlas.size[1])*float(wpercent)))
-        blockAtlas = blockAtlas.resize((basewidth,hsize), Image.Resampling.LANCZOS)
+    # Invierte el atlas en el eje x y convierte los datos del atlas antes de exportarlos
+    print("Inverting x-axis atlas...")
+    blockAtlas.flipX()
+    print("Converting data...")
+    blockAtlas.convertData()
 
-        blockAtlas.save("out2.png")
+    # Guarda el atlas modificado
+    print("Saving changes...")
+    blockAtlas.export(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst")
 
-        # Carga el atlas a la memoria
-        blockAtlasPixels = blockAtlas.load()
-
-        # Crea la version con la resolucion a la mitad respecto a la resolucion original
-        print("Making half resolution atlas...")
-        x = 0
-        y = 0
-        for i in range(0, 32):
-            for i in range(0, 32):
-                for i in range(0, 2):
-                    for i in range(0, 2):
-                        for i in range(0, 2):
-                            for i in range(0, 2):
-                                for i in range(0, 2):
-                                    for i in range(0, 2):
-                                        r, g, b, a = blockAtlasPixels[x, y]
-                                        modifiedBlockAtlas.append(a)
-                                        modifiedBlockAtlas.append(b)
-                                        modifiedBlockAtlas.append(g)
-                                        modifiedBlockAtlas.append(r)
-                                        x += 1
-                                    x -= 2
-                                    y += 1
-                                x += 2
-                                y -= 2
-                            x -= 4
-                            y += 2
-                        x += 4
-                        y -= 4
-                    x -= 8
-                    y += 4
-                x += 8
-                y -= 8
-            x = 0
-            y += 8
-
-        # Reduce a un cuarto la resolucion del atlas referente a la resolución inicial
-        basewidth = 128
-        wpercent = (basewidth/float(blockAtlas.size[0]))
-        hsize = int((float(blockAtlas.size[1])*float(wpercent)))
-        blockAtlas = blockAtlas.resize((basewidth,hsize), Image.Resampling.LANCZOS)
-
-        # Carga el atlas a la memoria
-        blockAtlasPixels = blockAtlas.load()
-
-        # Crea la version en resolucion de un cuarto respecto a la resolucion original del atlas
-        print("Making 1/4 resolution atlas...")
-        x = 0
-        y = 0
-        for i in range(0, 16):
-            for i in range(0, 16):
-                for i in range(0, 2):
-                    for i in range(0, 2):
-                        for i in range(0, 2):
-                            for i in range(0, 2):
-                                for i in range(0, 2):
-                                    for i in range(0, 2):
-                                        r, g, b, a = blockAtlasPixels[x, y]
-                                        modifiedBlockAtlas.append(a)
-                                        modifiedBlockAtlas.append(b)
-                                        modifiedBlockAtlas.append(g)
-                                        modifiedBlockAtlas.append(r)
-                                        x += 1
-                                    x -= 2
-                                    y += 1
-                                x += 2
-                                y -= 2
-                            x -= 4
-                            y += 2
-                        x += 4
-                        y -= 4
-                    x -= 8
-                    y += 4
-                x += 8
-                y -= 8
-            x = 0
-            y += 8
-
-        # Convierte los bytes en un bytearray
-        byte_arr = bytearray(modifiedBlockAtlas)
-
-        # Guarda el archivo modificado
-        print("Saving changes...")
-        with open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst", "wb") as f:
-            f.write(byte_arr)
-
-        # Retorna la lista de bytes
-        return byte_arr
-
-    else:
-        return None
+    return True
 
 if __name__ == "__main__":
     Tk().withdraw()
@@ -511,7 +259,8 @@ if __name__ == "__main__":
 
         match option:
             case "1":
-                while True:
+                escapemenu2 = False
+                while escapemenu2 == False:
                     # Cambiar la textura de un item
                     clear()
                     print("Choose an option:")
@@ -587,7 +336,6 @@ if __name__ == "__main__":
                                                             addToItemAtlas(position, filePath, outputFolder)
                                                             duplicated = checkForMatch(items[matchwith], addedItems)
                                                             if duplicated == -1:
-                                                                print(duplicated)
                                                                 addElementToFile(items[matchwith], f"{outputFolder}/items.txt")
                                                             print("Finished")
                                                             update = True
@@ -605,108 +353,161 @@ if __name__ == "__main__":
                                     print("Invalid ID (Not a digit)")
                         else:
                             if option2 == 0:
-                                break
+                                escapemenu2 = True
                             else:
                                 print("Invalid option (Out of range)")
                     else:
                         print("Invalid option (Not a digit)")
 
             case "2":
-                # Cambiar la textura de un bloque
-                clear()
-                blocks = getItemsFromIndexFile(f"{sourceFolder}/indexes/blockslist.txt")
-                addedBlocks = []
-                if os.path.exists(f"{outputFolder}/changedBlocks.txt"):
-                    addedBlocks = getItemsFromIndexFile(f"{outputFolder}/changedBlocks.txt")
-                    
-                noAddedBlocks = []
-                for element in blocks:                    
-                    if element not in addedBlocks:
-                        # Si el bloque no está agregado aún, no se mostrará
-                        if len(element.split(".")) > 2:
-                            noAddedBlocks.append(element)
+                escapemenu2 = False
 
-                for i in range(len(noAddedBlocks)):
-                    blockName = noAddedBlocks[i].split(".")
-                    print(f"{i+1}: {blockName[0]}")
-
-                selection = input("Enter the texture id to change: ")
-
-                try: 
-                    selection = int(selection)
-                    if selection < 1 or selection > (len(noAddedBlocks)):
-                        selection = None
-                except:
-                    selection = None
-
-                if selection != None:
+                while escapemenu2 == False:
+                    # Cambiar la textura de un bloque
                     clear()
-                    blockName = noAddedBlocks[selection-1].split(".")
-                    # Si el elemento contiene más de 2 valores (es decir: nombre, y position, x position)
-                    if len(blockName) > 2:
-                        print(f"Selection: {blockName[0]}")
-                        print("Enter the image file path: ")
-                        filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                        if filePath != '':
-                            print(f"Path selected: {filePath}")
-                            if isImage16x16(filePath):
-                                print("Converting image...")
-                                print(blockName)
-                                convertImageTo3dst(blockName[0], filePath, f"{outputFolder}/blocks")
-                                outputData = addToBlockAtlas(blockName, filePath, outputFolder)
-                                if outputData != None:
-                                    if not os.path.exists(f"{outputFolder}/changedBlocks.txt"):
-                                        with open(f"{outputFolder}/changedBlocks.txt", "w") as f:
-                                            f.write("")
-                                    with open(f"{outputFolder}/changedBlocks.txt", "a") as f:
-                                        f.write(f"{blockName[0]}.{blockName[1]}.{blockName[2]}\n")
+                    print("Choose an option:")
+                    print("\t1: Search unmodified block by text")
+                    print("\t2: Search modified block by text")
+                    print("\t3: Show unmodified blocks")
+                    print("\t4: Show modified blocks")
+                    print("\t0: Back")
+                    option2 = input("Enter an option: ")
+
+                    if option2.isdigit():
+                        option2 = int(option2)
+                        if option2 >= 1 and option2 <= 4:
+                            escapemenu3 = False
+                            update = True
+                            items = getItemsFromIndexFile(f"{sourceFolder}/indexes/newblockslist.txt")
+
+                            while escapemenu3 == False:
+                                if update == True:
                                     clear()
-                                    print("Success")
-                                    print(f"Atlas created at: {outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")
+                                    addedItems = []
+                                    match option2:
+                                        case 1:
+                                            search = input("Enter the search text: ")
+                                            matches = difflib.get_close_matches(search, items, n=len(items), cutoff=0.5)
+                                            if os.path.exists(f"{outputFolder}/blocks.txt"):
+                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/blocks.txt")
+                                                itemsList = deleteMatches(matches, addedItems)
+                                            else:
+                                                itemsList = matches
+                                        case 2:
+                                            search = input("Enter the search text: ")
+                                            matches = difflib.get_close_matches(search, items, n=len(items), cutoff=0.5)
+                                            if os.path.exists(f"{outputFolder}/blocks.txt"):
+                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/blocks.txt")
+                                                itemsList = checkForMatches(matches, addedItems)
+                                            else:
+                                                itemsList = []
+                                        case 3:
+                                            if os.path.exists(f"{outputFolder}/blocks.txt"):
+                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/blocks.txt")
+                                                itemsList = deleteMatches(items, addedItems)
+                                            else:
+                                                itemsList = items
+                                        case 4:
+                                            if os.path.exists(f"{outputFolder}/blocks.txt"):
+                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/blocks.txt")
+                                                itemsList = checkForMatches(items, addedItems)
+                                            else:
+                                                itemsList = []
+                                    
+                                    printList(itemsList)
+                                    print("0: Back")
+                                    update = False
+                                
+                                id = input("Enter an ID: ")
+                                if id.isdigit():
+                                    id = int(id)
+                                    if id == 0:
+                                        escapemenu3 = True
+                                    else:
+                                        if not (id < 0 and id >= len(itemsList)):
+                                            id -= 1
+                                            matchwith = checkForMatch(itemsList[id], items)
+                                            if matchwith != False:
+                                                position = calculateGrid(matchwith, 25, 22, 20)
+                                                if position != False:
+                                                    print(f"Selection: {items[matchwith]}")
+                                                    filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                                                    if filePath != '':
+                                                        if isImage16x16(filePath):
+                                                            addToBlockAtlas(position, filePath, outputFolder)
+                                                            duplicated = checkForMatch(items[matchwith], addedItems)
+                                                            if duplicated == -1:
+                                                                addElementToFile(items[matchwith], f"{outputFolder}/blocks.txt")
+                                                            print("Finished")
+                                                            update = True
+                                                        else:
+                                                            print("Texture must be 16x16")
+                                                    else:
+                                                        print("No file selected")
+                                                else:
+                                                    print("Error calculating the grid position")
+                                            else:
+                                                print("Unexpected error")
+                                        else:
+                                            print("Invalid ID (Out of range)")
                                 else:
-                                    clear()
-                                    print("Error: Unknown error")
-                            else:
-                                clear()
-                                print("Error: Image must be 16x16 pixels")
+                                    print("Invalid ID (Not a digit)")
                         else:
-                            clear()
-                            print("Error: No file selected")
+                            if option2 == 0:
+                                escapemenu2 = True
+                            else:
+                                print("Invalid option (Out of range)")
                     else:
-                        clear()
-                        print("Error: Block not supported yet")
-                else:
-                    clear()
-                    print("Error: Invalid selection")
-
+                        print("Invalid option (Not a digit)")
             case "3":
-                # Agrega o cambia el icono del paquete
                 clear()
-                print("Enter the image file path: ")
+                # Cambiar icono del paquete
+                print("Choose an image: ")
                 filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
                 if filePath != '':
-                    print(f"Path selected: {filePath}")
-                    if isImage16x16(filePath):
-                        print("Converting image...")
-                        outputData = convertImageTo3dst("pack", filePath, outputFolder)
-                        if outputData != None:
-                            clear()
-                            print("Success")
-                            print(f"Pack icon created at: {outputFolder}/pack.3dst")
-                        else:
-                            clear()
-                            print("Error: Unknown error")
+                    texture = Image.open(filePath).convert("RGBA")
+                    if texture.size[0] == texture.size[1]:
+                        resizedwidth = 64
+                        width = texture.size[0]
+                        height = texture.size[1]
+                        wpercent = (resizedwidth/float(width))
+                        hsize = int((float(height)*float(wpercent)))
+                        texture = texture.resize((resizedwidth, hsize), Image.Resampling.LANCZOS)
+
+                        icon_texture = Texture3dst().new(64, 64, 1)
+
+                        x = 0
+                        y = 0
+                        for i in range(0, 64):
+                            for j in range(0, 64):
+                                r, g, b, a = texture.getpixel((x, y))
+                                icon_texture.setPixelRGBA(x, y, r, g, b, a)
+                                x += 1
+                            x = 0
+                            y += 1
+
+                        texture.close()
+
+                        icon_texture.flipX()
+                        icon_texture.convertData()
+
+                        if not os.path.exists(f"{outputFolder}"):
+                            createOutputDirectory(f"{outputFolder}")
+                        
+                        print("Saving icon...")
+                        icon_texture.export(f"{outputFolder}/icon_pack.3dst")
+                        print("Success!")
+
                     else:
-                        clear()
-                        print("Error: Image must be 16x16 pixels")
+                        print("Image texture must be 1:1")
                 else:
-                    clear()
-                    print("Error: No file selected")
+                    print("No file selected")
+
             case "0":
                 clear()
                 print("Exit")
-                break
+                close = True
 
             case _:
                 clear()
-                print("Error: Invalid option")
+                print("Invalid option")
