@@ -236,7 +236,7 @@ if __name__ == "__main__":
     items = []
     blocks = []
 
-    sourceFolder = "src"
+    sourceFolder = "assets"
     if getattr(sys, 'frozen', False):
         print("Running from executable file")
         os.chdir(sys._MEIPASS)
