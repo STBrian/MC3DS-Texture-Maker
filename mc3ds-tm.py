@@ -6,6 +6,7 @@ from tkinter import Tk
 from tkinter import filedialog
 
 from modules.tex3dst import *
+from modules.config import *
 
 def clear():
     os_type = os.name
@@ -240,8 +241,7 @@ if __name__ == "__main__":
     if getattr(sys, 'frozen', False):
         print("Running from executable file")
         os.chdir(sys._MEIPASS)
-        outFolder = input("Enter the output folder: ")
-        outputFolder = os.path.join(os.path.dirname(sys.executable), outFolder)
+        outputFolder = os.path.join(os.path.dirname(sys.executable), input("Enter the output folder: "))
     elif __file__:
         print("Running from source file")
         outputFolder = "MC3DS"
