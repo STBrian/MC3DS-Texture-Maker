@@ -6,7 +6,6 @@ from tkinter import Tk
 from tkinter import filedialog
 
 from modules.tex3dst import *
-from modules.config import *
 
 def clear():
     os_type = os.name
