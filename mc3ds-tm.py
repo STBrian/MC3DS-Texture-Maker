@@ -322,7 +322,7 @@ if __name__ == "__main__":
                                     if id == 0:
                                         escapemenu3 = True
                                     else:
-                                        if not (id < 0 or id >= len(itemsList)):
+                                        if not (id < 0 or id > len(itemsList)):
                                             id -= 1
                                             matchwith = checkForMatch(itemsList[id], items)
                                             if matchwith != False:
@@ -423,7 +423,7 @@ if __name__ == "__main__":
                                     if id == 0:
                                         escapemenu3 = True
                                     else:
-                                        if not (id < 0 or id >= len(itemsList)):
+                                        if not (id < 0 or id > len(itemsList)):
                                             id -= 1
                                             matchwith = checkForMatch(itemsList[id], items)
                                             if matchwith != False:
