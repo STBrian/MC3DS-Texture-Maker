@@ -472,11 +472,11 @@ black_stained_glass_pane_top
 lava_placeholder
 shulker_top_lime
 granite
-poolished_granite
+polished_granite
 diorite
-poolished_diorite
+polished_diorite
 andesite
-poolished_andesite
+polished_andesite
 double_stone_slab_side
 stonecutter_bottom
 stonecutter_side
