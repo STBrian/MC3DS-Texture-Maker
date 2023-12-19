@@ -79,7 +79,7 @@ def printMenu():
     print("Choose an option:")
     print("\t1: Change an item texture")
     print("\t2: Change a block texture")
-    print("\t3: Change texture pack icon")
+    # print("\t3: Change texture pack icon")
     print("\t0: Exit")
 
 def isImage16x16(texture_path):
@@ -459,48 +459,53 @@ if __name__ == "__main__":
                     else:
                         print("Invalid option (Not a digit)")
             case "3":
-                clear()
-                # Cambiar icono del paquete
-                print("Choose an image: ")
-                filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                if filePath != '':
-                    texture = Image.open(filePath).convert("RGBA")
-                    if texture.size[0] == texture.size[1]:
-                        resizedwidth = 64
-                        width = texture.size[0]
-                        height = texture.size[1]
-                        wpercent = (resizedwidth/float(width))
-                        hsize = int((float(height)*float(wpercent)))
-                        texture = texture.resize((resizedwidth, hsize), Image.Resampling.LANCZOS)
+                # Unused option
+                if True == False:
+                    clear()
+                    # Cambiar icono del paquete
+                    print("Choose an image: ")
+                    filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
+                    if filePath != '':
+                        texture = Image.open(filePath).convert("RGBA")
+                        if texture.size[0] == texture.size[1]:
+                            resizedwidth = 64
+                            width = texture.size[0]
+                            height = texture.size[1]
+                            wpercent = (resizedwidth/float(width))
+                            hsize = int((float(height)*float(wpercent)))
+                            texture = texture.resize((resizedwidth, hsize), Image.Resampling.LANCZOS)
 
-                        icon_texture = Texture3dst().new(64, 64, 1)
+                            icon_texture = Texture3dst().new(64, 64, 1)
 
-                        x = 0
-                        y = 0
-                        for i in range(0, 64):
-                            for j in range(0, 64):
-                                r, g, b, a = texture.getpixel((x, y))
-                                icon_texture.setPixelRGBA(x, y, r, g, b, a)
-                                x += 1
                             x = 0
-                            y += 1
+                            y = 0
+                            for i in range(0, 64):
+                                for j in range(0, 64):
+                                    r, g, b, a = texture.getpixel((x, y))
+                                    icon_texture.setPixelRGBA(x, y, r, g, b, a)
+                                    x += 1
+                                x = 0
+                                y += 1
 
-                        texture.close()
+                            texture.close()
 
-                        icon_texture.flipX()
-                        icon_texture.convertData()
+                            icon_texture.flipX()
+                            icon_texture.convertData()
 
-                        if not os.path.exists(f"{outputFolder}"):
-                            createOutputDirectory(f"{outputFolder}")
-                        
-                        print("Saving icon...")
-                        icon_texture.export(f"{outputFolder}/icon_pack.3dst")
-                        print("Success!")
+                            if not os.path.exists(f"{outputFolder}"):
+                                createOutputDirectory(f"{outputFolder}")
+                            
+                            print("Saving icon...")
+                            icon_texture.export(f"{outputFolder}/icon_pack.3dst")
+                            print("Success!")
 
+                        else:
+                            print("Image texture must be 1:1")
                     else:
-                        print("Image texture must be 1:1")
+                        print("No file selected")
                 else:
-                    print("No file selected")
+                    clear()
+                    print("Invalid option")
 
             case "0":
                 clear()
