@@ -1,6 +1,7 @@
 import os
 import sys
 import difflib
+import glob
 from PIL import Image
 from tkinter import Tk
 from tkinter import filedialog
@@ -79,7 +80,9 @@ def printMenu():
     print("Choose an option:")
     print("\t1: Change an item texture")
     print("\t2: Change a block texture")
-    # print("\t3: Change texture pack icon")
+    if running == "src":
+        print("\t3: Options")
+        print("\t4: Change texture pack icon")
     print("\t0: Exit")
 
 def isImage16x16(texture_path):
@@ -231,30 +234,34 @@ def addToBlockAtlas(pixelPosition, textureImgPath, output_folder):
     return True
 
 if __name__ == "__main__":
-    Tk().withdraw()
+    TkInstance = Tk()
+    TkInstance.withdraw()
     
     items = []
     blocks = []
 
     sourceFolder = "assets"
     if getattr(sys, 'frozen', False):
-        print("Running from executable file")
+        running = "exe"
         os.chdir(sys._MEIPASS)
+        app_path = sys._MEIPASS
         outputFolder = os.path.join(os.path.dirname(sys.executable), input("Enter the output folder: "))
     elif __file__:
-        print("Running from source file")
+        running = "src"
+        app_path = os.path.dirname(__file__)
         outputFolder = "MC3DS"
+    rulesFile = "None"
+
+    TkInstance.iconbitmap(default=os.path.join(app_path, "icon.ico"))
 
     clear()
     close = False
 
     # Main loop
     while close != True:
-        clear()
         printMenu()
         
         option = input("Enter an option: ")
-        clear()
 
         match option:
             case "1":
@@ -353,6 +360,7 @@ if __name__ == "__main__":
                         else:
                             if option2 == 0:
                                 escapemenu2 = True
+                                clear()
                             else:
                                 print("Invalid option (Out of range)")
                     else:
@@ -454,13 +462,73 @@ if __name__ == "__main__":
                         else:
                             if option2 == 0:
                                 escapemenu2 = True
+                                clear()
                             else:
                                 print("Invalid option (Out of range)")
                     else:
                         print("Invalid option (Not a digit)")
+            
             case "3":
+                if running == "src":
+                    # Options
+                    escapemenu2 = False
+                    clear()
+                    while escapemenu2 == False:
+                        print("Options:")
+                        print("\t1: Change rules file")
+                        print("\t0: Back")
+
+                        option2 = input("Enter an option: ")
+                        match option2:
+                            case "1":
+                                clear()
+                                print("This will change the names that the program uses for searching blocks and items, and their name on the displayed list.")
+                                print("If you want to use a custom one, make a folder named 'rules' and place the rules file inside. The folder must be inside the output folder.")
+                                localElements = glob.glob(f"{sourceFolder}"+r"\rules\*.txt")
+                                extElements = glob.glob(f"{outputFolder}"+r"\rules\*.txt")
+
+                                totalElements = localElements
+                                for i in range(0, len(extElements)):
+                                    totalElements.append(extElements[i])
+
+                                printList(totalElements)
+                                print(f"{len(totalElements) + 1}: None")
+                                print("0: Back")
+
+                                escapemenu3 = False
+                                while escapemenu3 == False:
+                                    option3 = input("Enter an option: ")
+                                    if option3.isdigit():
+                                        option3 = int(option3)
+                                        if option3 >= 0 and option3 <= len(totalElements) + 1:
+                                            if option3 == len(totalElements) + 1:
+                                                rulesFile = "None"
+                                            elif option3 == 0:
+                                                print("Back")
+                                            else:
+                                                rulesFile = totalElements[option3 - 1]
+                                            escapemenu3 = True
+                                        else:
+                                            print("Invalid option")
+                                    else:
+                                        print("Invalid option")
+                                clear()
+
+                            case "0":
+                                clear()
+                                escapemenu2 = True
+                            
+                            case _:
+                                clear()
+                                print("Invalid option")
+                    clear()
+                else:
+                    clear()
+                    print("Invalid option")
+
+            case "4":
                 # Unused option
-                if True == False:
+                if running == "src":
                     clear()
                     # Cambiar icono del paquete
                     print("Choose an image: ")

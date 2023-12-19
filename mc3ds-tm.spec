@@ -5,7 +5,8 @@ block_cipher = None
 
 added_files = [
     ('assets', 'assets'),
-    ('modules', 'modules')
+    ('modules', 'modules'),
+    ('icon.ico', '.')
 ]
 
 a = Analysis(
@@ -45,4 +46,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='icon.ico'
 )
