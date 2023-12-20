@@ -1,16 +1,21 @@
 # mc3ds-texture-maker
 MC3DS Texture Maker is a python script that helps with the creation of new textures packs for the Minecraft:  New 3DS Edition.
-
+# Requirements
+The executable does not require nothing since all it's packaged inside, but for running from source you need to install some things
+### Windows
+- Python 3
+- pillow
+### Linux
+- python3
+- python3-tk
 # How to use
 The README file refers to the latest version v1.0.0-beta.
 
 When first opened, if running from the binary it will ask you to enter the name of the output folder you wish to be the folder where output files will be stored
 ```
-Running from executable file
 Enter the output folder:
 ```
 Otherwise, if running from source, the default folder will be used `MC3DS`.
-
 ## Menu
 In the menu there is a list of available options
 ```
@@ -21,7 +26,6 @@ Choose an option:
 Enter an option:
 ```
 The options are self explanatory.
-
 ## Change an item/block texture
 When selected option `1` or `2`, a submenu will show on screen
 ```
@@ -34,17 +38,14 @@ Choose an option:
 Enter an option:
 ```
 Again, the options are self explanatory.
-
 ### Search by text
 If options `1` or `2` selected, then the program will ask for a search text
 ```
 Enter the search text:
 ```
 When you finish of writing the text simply press Enter, and the program will look for coincidences
-
 ### Show
 When options `3` or `4` selected, the program will look for coincidences based on the option. For unmodified items or previously modified items by you, if you wish.
-
 ## Select an ID
 Let's take an example. If you select `items`, the option `1` and type `carrot`, then the result list of items will look like this:
 ```
@@ -64,7 +65,6 @@ Enter the ID:
 In this part you need to enter the ID of the item which corresponds to the texture you want to change. 
 
 If you want to change the `golden_carrot` texture, then need to type `3` and press Enter.
-
 ## Open the texture
 This is the last part before you get the custom atlas.
 
@@ -75,7 +75,6 @@ Search for the image you want to be replaced for
 Once you selected it, just press the Open button.
 
 The program will load you selected image and will automatically start the process.
-
 ## Output files
 When finished, the program will store the custom atlas in the folder which name will be the one you previously selected. Inside the folder there will be an atlas folder where the atlas are stored.
 
@@ -91,7 +90,6 @@ If you don't know your game ID, here's a list with the game IDs for each region 
 |JP|000400000017FD00|
 
 (You must use the one that corresponds to your game's region)
-
 # Building
 #### Windows
 Open the `build.bat` file 
