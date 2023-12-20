@@ -252,7 +252,8 @@ if __name__ == "__main__":
         outputFolder = "MC3DS"
     rulesFile = "None"
 
-    TkInstance.iconbitmap(default=os.path.join(app_path, "icon.ico"))
+    if os.name == "nt":
+        TkInstance.iconbitmap(default=os.path.join(app_path, "icon.ico"))
 
     clear()
     close = False
