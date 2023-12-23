@@ -1,5 +1,6 @@
 import os
 import sys
+import difflib
 import customtkinter
 
 from modules.stbfunctions import *
@@ -104,10 +105,10 @@ class App(customtkinter.CTk):
         self.searchOptionsLabel = customtkinter.CTkLabel(self.searchOptionsFrame, text="Search options:")
         self.searchOptionsLabel.grid(row=0, column=0, padx=5, sticky="wn")
 
-        self.byTextSwitch = customtkinter.CTkSwitch(self.searchOptionsFrame, text="Search by text", onvalue="on", offvalue="off", variable=self.byTextVar, command=self.switchChange)
+        self.byTextSwitch = customtkinter.CTkSwitch(self.searchOptionsFrame, text="Search by text", onvalue="on", offvalue="off", variable=self.byTextVar, command=self.byTextSwitchChange)
         self.byTextSwitch.grid(row=1, column=0, padx=5, pady=5, sticky="wn")
 
-        self.showModifiedSwitch = customtkinter.CTkSwitch(self.searchOptionsFrame, text="Show modified elements", onvalue="on", offvalue="off", variable=self.showModifiedVar)
+        self.showModifiedSwitch = customtkinter.CTkSwitch(self.searchOptionsFrame, text="Show modified elements", onvalue="on", offvalue="off", variable=self.showModifiedVar, command=self.modifiedSwitchChange)
         self.showModifiedSwitch.grid(row=2, column=0, padx=5, pady=5, sticky="wn")
 
         ## Elements Frame
@@ -148,7 +149,7 @@ class App(customtkinter.CTk):
                 added = getItemsFromIndexFile(os.path.join(self.app_path, self.outputFolder.get(), "items.txt"))
 
         if self.byTextVar.get() == "on":
-            dummy = 0
+            elements = difflib.get_close_matches(self.searchText.get(), elements, n=len(elements), cutoff=0.4)
         
         if self.showModifiedVar.get() == "off":
             elements = deleteMatches(elements, added)
@@ -186,13 +187,13 @@ class App(customtkinter.CTk):
         print(self.actualOpt.get())
         self.loadAndDisplayList()
 
-    def switchChange(self):
+    def byTextSwitchChange(self):
         if self.byTextSwitch.get() == "on":
             self.entryTextFrame = customtkinter.CTkFrame(self.searchOptionsFrame)
             self.entryTextFrame.grid(row=3, column=0, padx=5, pady=5, sticky="wen")
             self.entryTextFrame.grid_columnconfigure(0, weight=1)
 
-            self.entryText = customtkinter.CTkEntry(self.entryTextFrame, textvariable=self.searchText)
+            self.entryText = customtkinter.CTkEntry(self.entryTextFrame, textvariable=self.searchText, placeholder_text="Search")
             self.entryText.grid(row=0, column=0, padx=5, pady=5, sticky="wen")
 
             self.button = customtkinter.CTkButton(self.entryTextFrame, text="Search", width=80, command=self.saveSearch)
@@ -200,10 +201,15 @@ class App(customtkinter.CTk):
 
         elif self.byTextSwitch.get() == "off":
             self.entryTextFrame.destroy()
+            self.loadAndDisplayList()
 
     def saveSearch(self):
         if not self.entryText.get() == "":
             self.searchText.set(self.entryText.get())
+            self.loadAndDisplayList()
+
+    def modifiedSwitchChange(self):
+        self.loadAndDisplayList()
 
 customtkinter.set_default_color_theme("blue")
 customtkinter.set_appearance_mode("dark")
