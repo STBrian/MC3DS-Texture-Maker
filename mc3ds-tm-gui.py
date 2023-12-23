@@ -59,7 +59,7 @@ class App(customtkinter.CTk):
 
         ## Extra Buttons Frame
         self.extraButtonsFrame = customtkinter.CTkFrame(self.secFrame)
-        self.extraButtonsFrame.grid(row=2, column=0, padx=5, pady=5, sticky="sw")
+        self.extraButtonsFrame.grid(row=2, column=0, padx=5, pady=(0, 5), sticky="sw")
 
         self.button1 = customtkinter.CTkButton(self.extraButtonsFrame, text="Save")
         self.button1.grid(row=0, column=0, padx=5, pady=5, sticky="wen")
