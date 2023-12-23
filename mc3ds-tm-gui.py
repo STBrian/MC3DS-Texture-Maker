@@ -23,14 +23,14 @@ class App(customtkinter.CTk):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        # Buttons Frame
-        self.buttonsFrame = customtkinter.CTkFrame(self)
-        self.buttonsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="nsw")
-        self.buttonsFrame.grid_rowconfigure((0, 1), weight=0)
-        self.buttonsFrame.grid_rowconfigure(2, weight=1)
+        # Secondary Frame
+        self.secFrame = customtkinter.CTkFrame(self)
+        self.secFrame.grid(row=0, column=0, padx=5, pady=5, sticky="nsw")
+        self.secFrame.grid_rowconfigure((0, 1), weight=0)
+        self.secFrame.grid_rowconfigure(2, weight=1)
 
         ## Working Folder Frame
-        self.workingFolderFrame = customtkinter.CTkFrame(self.buttonsFrame)
+        self.workingFolderFrame = customtkinter.CTkFrame(self.secFrame)
         self.workingFolderFrame.grid(row=0, column=0, padx=5, pady=(5, 0), sticky="wen")
 
         self.outputFolder = "MC3DS"
@@ -48,7 +48,7 @@ class App(customtkinter.CTk):
         self.statusModify = False
 
         ## Show Menu Frame
-        self.showMenuFrame = customtkinter.CTkFrame(self.buttonsFrame)
+        self.showMenuFrame = customtkinter.CTkFrame(self.secFrame)
         self.showMenuFrame.grid(row=1, column=0, padx=5, pady=5)
 
         self.showMenuLabel = customtkinter.CTkLabel(self.showMenuFrame, text="Show:")
@@ -58,7 +58,7 @@ class App(customtkinter.CTk):
         self.showMenuComboBox.grid(row=1, column=0, padx=5, pady=5)
 
         ## Extra Buttons Frame
-        self.extraButtonsFrame = customtkinter.CTkFrame(self.buttonsFrame)
+        self.extraButtonsFrame = customtkinter.CTkFrame(self.secFrame)
         self.extraButtonsFrame.grid(row=2, column=0, padx=5, pady=5, sticky="sw")
 
         self.button1 = customtkinter.CTkButton(self.extraButtonsFrame, text="Save")

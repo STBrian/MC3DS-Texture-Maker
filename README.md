@@ -1,15 +1,23 @@
-# mc3ds-texture-maker
-MC3DS Texture Maker is a python script that helps with the creation of new textures packs for the Minecraft:  New 3DS Edition.
+# What is MC3DS-Texture-Maker?
+MC3DS-Texture-Maker it's a tool with the main purpose of helping texture creators for Minecraft: New Nintendo 3DS Edition, to make their work easier.
+
+Luma's LayeredFS feature is currently used to load custom textures into the game. But in order to create your own textures it is necessary to directly modify the atlas that contains all the blocks or items in the game. And considering that it is necessary to use external tools to convert these atlases from the original format to an editable image in which with your photo editor you need to manually place each texture that you want to change, and later convert that edited image back to the original format, it is a heavy task.
+
+Additionally, the atlas containing the game blocks has several bitmap versions within the file that are not easily modified. For these complicated tasks I have developed this tool.
 # Requirements
 The executable does not require nothing since all it's packaged inside, but for running from source you need to install some things
 ### Windows
 - Python 3
 - pillow
+- customtkinter (for WIP gui)
+- packaging (for WIP gui)
 ### Linux
 - python3
 - python3-tk
+- customtkinter (for WIP gui)
+- packaging (for WIP gui)
 # How to use
-The README file refers to the latest version v1.0.0-beta.
+The README file refers to the latest stable version v1.0-release.
 
 When first opened, if running from the binary it will ask you to enter the name of the output folder you wish to be the folder where output files will be stored
 ```
