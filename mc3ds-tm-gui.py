@@ -129,7 +129,7 @@ class App(customtkinter.CTk):
         self.button.grid(row=0, column=1, padx=(0, 5), pady=5, sticky="wn")
 
         ## Elements Frame
-        self.elementsFrame = customtkinter.CTkScrollableFrame(self.mainFrame)
+        self.elementsFrame = customtkinter.CTkScrollableFrame(self.mainFrame, label_text="Items:")
         self.elementsFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
         self.elementsFrame.grid_columnconfigure(0, weight=1)
 
@@ -305,6 +305,10 @@ class App(customtkinter.CTk):
     def comboBox_callback(self, opt):
         self.actualOpt.set(opt)
         print(self.actualOpt.get())
+        if opt == "Items":
+            self.elementsFrame.configure(label_text="Items:")
+        elif opt == "Blocks":
+            self.elementsFrame.configure(label_text="Blocks:")
         self.loadAndDisplayList()
 
     def saveSearch(self):
