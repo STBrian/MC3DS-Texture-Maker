@@ -404,7 +404,7 @@ shulker_top_orange
 shulker_top_magenta
 shulker_top_light_blue
 shulker_top_yellow
-unknown
+anvil
 shulker_top_pink
 shulker_top_gray
 shulker_top_light_gray
