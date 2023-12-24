@@ -296,8 +296,8 @@ class App(customtkinter.CTk):
             if self.textFolderEntry.get() == "":
                 self.outputFolder.set(self.lastOutputFolder)
             if not self.outputFolder.get() == self.lastOutputFolder:
-                self.loadAndDisplayList()
                 self.lastOutputFolder = self.outputFolder.get()
+                self.loadAndDisplayList()
             self.modifyTextVar.set("Modify")
             self.textFolderEntry.configure(state="disabled")
             self.statusModify = False
