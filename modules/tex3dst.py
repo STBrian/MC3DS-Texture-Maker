@@ -4,7 +4,7 @@ class Texture3dstException(Exception):
     def __init__(self, message):
         super().__init__(message)
 
-def setPixelRGBAformList(data: list, x: int, y: int, width: int, height: int, red: int, green: int, blue: int, alpha: int):
+def setPixelRGBAfromList(data: list, x: int, y: int, width: int, height: int, red: int, green: int, blue: int, alpha: int):
         if type(data) != list:
             raise Texture3dstException("data expected to be a list.")
         if type(x) != int:
@@ -80,10 +80,7 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
         # Si es de tipo 2 significa que va a abrir una textura
         # Y se ocupa tener una lista con todos los espacios necesarios que represente una imagen vacia
         if conversiontype == 2:
-            for i in range(0, width):
-                for j in range(0, height):
-                    for k in range(0, 4):
-                        convertedData.append(0)
+            convertedData = [0] * width * height * 4
 
         x = 0
         y = 0
@@ -108,17 +105,14 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
                                                 g = pixelData[1]
                                                 b = pixelData[2]
                                                 a = pixelData[3]
-                                                convertedData.append(a)
-                                                convertedData.append(b)
-                                                convertedData.append(g)
-                                                convertedData.append(r)
+                                                convertedData.extend([a, b, g, r])
                                         else:
                                             # Como es de tipo 2 los valores rgba están en posiciones invertidas
                                             r = data[z + 3]
                                             g = data[z + 2]
                                             b = data[z + 1]
                                             a = data[z]
-                                            convertedData = setPixelRGBAformList(convertedData, x, y, width, height, r, g, b, a)
+                                            convertedData = setPixelRGBAfromList(convertedData, x, y, width, height, r, g, b, a)
                                             z += 4
                                         x += 1
                                     x -= 2
@@ -147,7 +141,7 @@ class Texture3dst:
             raise Texture3dstException("path expected to be a string.")
         
         with open(f"{path}", "rb") as f:
-            fileData = f.read()
+            fileData = list(f.read())
         
         # Empieza el analisis de la cabecera
         if not (fileData[0] == 51 and fileData[1] == 68 and fileData[2] == 83 and fileData[3] == 84):
@@ -178,13 +172,8 @@ class Texture3dst:
         if not (fileData[16] == fileData[24] and fileData[17] == fileData[25]):
             raise Texture3dstException("The texture height must be the same as height checksum.")
         
-        width1 = fileData[12]
-        width2 = fileData[13]
-        height1 = fileData[16]
-        height2 = fileData[17]
-
-        localwidth = width1 + (width2 * 256)
-        localheight = height1 + (height2 * 256)
+        localwidth = int.from_bytes(bytearray([fileData[12], fileData[13]]), "little")
+        localheight = int.from_bytes(bytearray([fileData[16], fileData[17]]), "little")
 
         if localwidth % 8 != 0 and localheight % 8 != 0:
             raise Texture3dstException("Unsupported texture resolution.")
@@ -205,15 +194,10 @@ class Texture3dst:
         self.height = localheight
         self.maxmiplevel = localmiplevel
 
-        localdata = []
-        for i in range(32, len(fileData)):
-            localdata.append(fileData[i])
+        localdata = fileData[32:len(fileData)]
 
         # Se utiliza el segundo método de conversion para cargar la textura
-        data = convertFunction(localdata, localwidth, localheight, 2)
-
-        # Finalmente se pasa los datos a la lista de pixeles
-        self.data = data
+        self.data = convertFunction(localdata, localwidth, localheight, 2)
 
         return self
 
@@ -244,11 +228,7 @@ class Texture3dst:
         self.height = height
         self.maxmiplevel = maxmiplevel
         self.texturemode = 3
-        self.data = []
-        for i in range(0, height):
-            for j in range(0, width):
-                for k in range(0, 4):
-                    self.data.append(0)
+        self.data = [0] * height * width * 4
         self.convertedData = []
         self.mipoutput = []
         self.output = []
@@ -319,7 +299,7 @@ class Texture3dst:
                 g = pixelData[1]
                 b = pixelData[2]
                 a = pixelData[3]
-                flippedTexture = setPixelRGBAformList(flippedTexture, x, y_flipped, self.width, self.height, r, g, b, a)
+                flippedTexture = setPixelRGBAfromList(flippedTexture, x, y_flipped, self.width, self.height, r, g, b, a)
                 x += 1
             x = 0
             y += 1
@@ -383,10 +363,7 @@ class Texture3dst:
                 for j in range(0, resizedheight):
                     for k in range(0, resizedwidth):
                         pixelData = tmpImage.getpixel((x, y))
-                        mipTmpData.append(pixelData[0])
-                        mipTmpData.append(pixelData[1])
-                        mipTmpData.append(pixelData[2])
-                        mipTmpData.append(pixelData[3])
+                        mipTmpData.extend(pixelData[0], pixelData[1], pixelData[2], pixelData[3])
                         x += 1
                     x = 0
                     y += 1
@@ -395,8 +372,7 @@ class Texture3dst:
                 mipToExport = convertFunction(mipTmpData, resizedwidth, resizedheight, 1)
 
                 # Se copian los datos a la lista de salida
-                for j in range(0, len(mipToExport)):
-                    self.mipoutput.append(mipToExport[j])
+                self.mipoutput.extend(mipToExport)
 
                 # Se reducen las dimensiones en caso de usarse de nuevo
                 width = width // 2
@@ -410,50 +386,34 @@ class Texture3dst:
     def export(self, path: str):
         if type(path) != str:
             raise Texture3dstException("path expected to be a string.")
-        
-        self.output = []
 
         # Convierte las dimensiones al formato de 16, 256
-        width2 = self.width // 256
-        height2 = self.height // 256
-        width1 = self.width - (width2 * 256)
-        height1 = self.height - (height2 * 256)
+        width = list(self.width.to_bytes(2, "little"))
+        height = list(self.height.to_bytes(2, "little"))
 
         # Se crea la cabecera
         ## Marca de formato
         self.output = [51, 68, 83, 84]
         self.output.append(self.texturemode)
-        for i in range(0, 7):
-            self.output.append(0)
+        self.output.extend([0] * 7)
 
         ## Se repite dos veces para las dimensiones y el checksum
         for i in range(0, 2):
-            self.output.append(width1)
-            self.output.append(width2)
-            for j in range(0, 2):
-                self.output.append(0)
-            self.output.append(height1)
-            self.output.append(height2)
-            for j in range(0, 2):
-                self.output.append(0)
+            self.output.extend(width)
+            self.output.extend([0] * 2)
+            self.output.extend(height)
+            self.output.extend([0] * 2)
         self.output.append(self.maxmiplevel)
-        for i in range(0, 3):
-            self.output.append(0)
+        self.output.extend([0] * 3)
 
         ## Se copia la lista de convertedData a output (Nivel primario)
-        for i in range(0, len(self.convertedData)):
-            self.output.append(self.convertedData[i])
+        self.output.extend(self.convertedData)
         
         ## Se copia la lista mipoutput (Niveles de mip)
         if self.maxmiplevel > 1:
-            for i in range(0, len(self.mipoutput)):
-                self.output.append(self.mipoutput[i])
-
-        # Convierte los numeros de informacion a bytes
-        fileData = bytearray(self.output)
+            self.output.extend(self.mipoutput)
 
         # Se escriben los bytes en un archivo
         with open(f"{path}", "wb") as f:
-            f.write(fileData)
-
+            f.write(bytearray(self.output))
         return
