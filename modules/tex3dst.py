@@ -36,10 +36,7 @@ def setPixelRGBAfromList(data: list, x: int, y: int, width: int, height: int, re
         if alpha < 0 or alpha > 255:
             raise Texture3dstException("alpha value must be between 0 and 255.")
         listPosition = ((y * width) + x) * 4
-        data[listPosition] = red
-        data[listPosition + 1] = green
-        data[listPosition + 2] = blue
-        data[listPosition + 3] = alpha
+        data[listPosition:(listPosition + 4)] = [red, green, blue, alpha]
         return data
 
 def getPixelDataFromList(data: list, x: int, y: int, width: int, height: int):
@@ -58,11 +55,8 @@ def getPixelDataFromList(data: list, x: int, y: int, width: int, height: int):
         if y < 0 or y >= height:
             raise Texture3dstException("y coordinates out of range.")
         listPosition = ((y * width) + x) * 4
-        r = data[listPosition]
-        g = data[listPosition + 1]
-        b = data[listPosition + 2]
-        a = data[listPosition + 3]
-        return [r, g, b, a]
+        rgba = data[listPosition:(listPosition + 4)]
+        return rgba
 
 def convertFunction(data: list, width: int, height: int, conversiontype: int):
         if type(data) != list:
@@ -143,53 +137,53 @@ class Texture3dst:
         with open(f"{path}", "rb") as f:
             fileData = list(f.read())
         
-        # Empieza el analisis de la cabecera
-        if not (fileData[0] == 51 and fileData[1] == 68 and fileData[2] == 83 and fileData[3] == 84):
+        # Empieza el analisis de la cabecera-Marca de agua
+        if fileData[0:4] != [51, 68, 83, 84]:
             raise Texture3dstException("The texture does not contain the type mark.")
-        if not (fileData[4] == 3):
+        
+        # Modo de textura
+        localmode = int.from_bytes(bytearray(fileData[4:8]), "little")
+        if localmode != 3:
             raise Texture3dstException("Texture mode not supported.")
         
         # Verifica que no haya bytes no esperados
-        for i in range(0, 7):
-            if not (fileData[5 + i] == 0):
-                raise Texture3dstException(f"Unexpected byte at {hex(5 + i)} position.")
+        if int.from_bytes(bytearray(fileData[8:12]), "little") != 0:
+            raise Texture3dstException(f"Unexpected byte between {hex(8)} and {hex(11)} positions.")
         
-        # Verifica que las dimensiones de la textura textura no sean mayor a las soportadas
-        if not (fileData[14] == 0 and fileData[15] == 0):
-            raise Texture3dstException("Texture width greater than supported.")
-        if not (fileData[18] == 0 and fileData[19] == 0):
-            raise Texture3dstException("Texture height greater than supported.")
+        # Obtiene las dimensiones de la textura
+        localwidth = int.from_bytes(bytearray(fileData[12:16]), "little")
+        localheight = int.from_bytes(bytearray(fileData[16:20]), "little")
 
         # Verifica que las dimensiones no sean 0
-        if fileData[12] == 0 and fileData[13] == 0:
+        if localwidth <= 0:
             raise Texture3dstException("The texture width cannot be 0.")
-        if fileData[16] == 0 and fileData[17] == 0:
+        if localheight <= 0:
             raise Texture3dstException("The texture height cannot be 0.")
         
-        # Verifica que las dimensiones y el checksum sean las mismas
-        if not (fileData[12] == fileData[20] and fileData[13] == fileData[21]):
-            raise Texture3dstException("The texture width must be the same as width checksum.")
-        if not (fileData[16] == fileData[24] and fileData[17] == fileData[25]):
-            raise Texture3dstException("The texture height must be the same as height checksum.")
-        
-        localwidth = int.from_bytes(bytearray([fileData[12], fileData[13]]), "little")
-        localheight = int.from_bytes(bytearray([fileData[16], fileData[17]]), "little")
+        # Obtiene el checksum
+        localcwidth = int.from_bytes(bytearray(fileData[20:24]), "little")
+        localcheight = int.from_bytes(bytearray(fileData[24:28]), "little")
 
+        # Verifica que las dimensiones sean iguales al checksum
+        if localwidth != localcwidth:
+            raise Texture3dstException("The texture width must be the same as width checksum.")
+        if localheight != localcheight:
+            raise Texture3dstException("The texture height must be the same as height checksum.")
+
+        # Verifica que las dimensiones sean soportadas
         if localwidth % 8 != 0 and localheight % 8 != 0:
             raise Texture3dstException("Unsupported texture resolution.")
         
         # Verifica que el nivel de mip este dentro de los valores soportados
-        if fileData[28] == 0:
-            raise Texture3dstException("MaxMipLevel cannot be equal to 0.")
-        if fileData[29] != 0 and fileData[30] != 0 and fileData[31] != 0:
-            raise Texture3dstException("MaxMipLevel greater than supported.")
+        localmiplevel = int.from_bytes(bytearray(fileData[28:32]), "little")
+        if localmiplevel <= 0:
+            raise Texture3dstException("MaxMipLevel must be greater than 0.")
         
-        localmiplevel = fileData[28]
-
+        # Verifica el nivel de mipmap
         if not ((localwidth / (2 ** (localmiplevel - 1)) >= 8) and (localheight / (2 ** (localmiplevel - 1)) >= 8)):
             raise Texture3dstException("MaxMipLevel not supported.")
 
-        self.texturemode = 3
+        self.texturemode = localmode
         self.width = localwidth
         self.height = localheight
         self.maxmiplevel = localmiplevel
@@ -260,10 +254,7 @@ class Texture3dst:
         if alpha < 0 or alpha > 255:
             raise Texture3dstException("alpha value must be between 0 and 255.")
         listPosition = ((y * self.width) + x) * 4
-        self.data[listPosition] = red
-        self.data[listPosition + 1] = green
-        self.data[listPosition + 2] = blue
-        self.data[listPosition + 3] = alpha
+        self.data[listPosition:(listPosition + 4)] = [red, green, blue, alpha]
         return
 
     def getPixelData(self, x: int, y: int):
@@ -276,18 +267,11 @@ class Texture3dst:
         if y < 0 or y >= self.height:
             raise Texture3dstException("y coordinates out of range.")
         listPosition = ((y * self.width) + x) * 4
-        r = self.data[listPosition]
-        g = self.data[listPosition + 1]
-        b = self.data[listPosition + 2]
-        a = self.data[listPosition + 3]
-        return [r, g, b, a]
+        rgba = self.data[listPosition:(listPosition + 4)]
+        return rgba
     
     def flipX(self):
-        flippedTexture = []
-        for i in range(0, self.height):
-            for j in range(0, self.width):
-                for k in range(0, 4):
-                    flippedTexture.append(0)
+        flippedTexture = [0] * self.height * self.width * 4
 
         x = 0
         y = 0
@@ -295,10 +279,7 @@ class Texture3dst:
         for i in range(0, self.height):
             for j in range(0, self.width):
                 pixelData = self.getPixelData(x, y)
-                r = pixelData[0]
-                g = pixelData[1]
-                b = pixelData[2]
-                a = pixelData[3]
+                r, g, b, a = pixelData[0:4]
                 flippedTexture = setPixelRGBAfromList(flippedTexture, x, y_flipped, self.width, self.height, r, g, b, a)
                 x += 1
             x = 0
@@ -306,10 +287,24 @@ class Texture3dst:
             y_flipped -= 1
 
         self.data = flippedTexture
-
         return
 
     def flipY(self):
+        flippedTexture = [0] * self.height * self.width * 4
+
+        y = 0
+        for i in range(0, self.height):
+            x = 0
+            x_flipped = self.width - 1
+            for j in range(0, self.width):
+                pixelData = self.getPixelData(x, y)
+                r, g, b, a = pixelData[0:4]
+                flippedTexture = setPixelRGBAfromList(flippedTexture, x_flipped, y, self.width, self.height, r, g, b, a)
+                x += 1
+                x_flipped -= 1
+            y += 1
+
+        self.data = flippedTexture
         return
 
     def getData(self):
@@ -319,7 +314,6 @@ class Texture3dst:
         return self.output
 
     def convertData(self):        
-        self.convertedData = []
         self.convertedData = convertFunction(self.data, self.width, self.height, 1)
 
         if self.maxmiplevel > 1:
@@ -338,10 +332,7 @@ class Texture3dst:
             for i in range(0, height):
                 for j in range(0, width):
                     pixelData = getPixelDataFromList(self.data, x, y, width, height)
-                    r = pixelData[0]
-                    g = pixelData[1]
-                    b = pixelData[2]
-                    a = pixelData[3]
+                    r, g, b, a = pixelData[0:4]
                     tmpImagePixels[x, y] = (r, g, b, a)
                     x += 1
                 x = 0
@@ -363,7 +354,7 @@ class Texture3dst:
                 for j in range(0, resizedheight):
                     for k in range(0, resizedwidth):
                         pixelData = tmpImage.getpixel((x, y))
-                        mipTmpData.extend(pixelData[0], pixelData[1], pixelData[2], pixelData[3])
+                        mipTmpData.extend([pixelData[0], pixelData[1], pixelData[2], pixelData[3]])
                         x += 1
                     x = 0
                     y += 1
@@ -394,8 +385,8 @@ class Texture3dst:
         # Se crea la cabecera
         ## Marca de formato
         self.output = [51, 68, 83, 84]
-        self.output.append(self.texturemode)
-        self.output.extend([0] * 7)
+        self.output.extend(self.texturemode.to_bytes(4, "little"))
+        self.output.extend([0] * 4)
 
         ## Se repite dos veces para las dimensiones y el checksum
         for i in range(0, 2):
