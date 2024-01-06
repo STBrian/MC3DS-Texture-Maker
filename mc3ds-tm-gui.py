@@ -160,8 +160,7 @@ class App(customtkinter.CTk):
         self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newitemslist.txt"))
         self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newblockslist.txt"))
 
-        self.destroyAllDisplayListElements()
-        threading.Thread(target=self.loadAndDisplayList).start()
+        self.threadLoadAndDisplayList()
 
     def threadChangeTexture(self):
         threading.Thread(target=self.changeTexture).start()
@@ -209,6 +208,11 @@ class App(customtkinter.CTk):
                         if duplicated == -1:
                             addElementToFile(blocks[matchwith], os.path.join(runningDir, lastOutputFolder, "blocks.txt"))
                     self.threadListElement(value)
+
+    def threadLoadAndDisplayList(self):
+        self.destroyAllDisplayListElements()
+        thread = threading.Thread(target=self.loadAndDisplayList)
+        thread.start()
 
     def destroyAllDisplayListElements(self):
         for element in self.elementsList:
@@ -315,8 +319,7 @@ class App(customtkinter.CTk):
                 self.outputFolder.set(self.lastOutputFolder)
             if not self.outputFolder.get() == self.lastOutputFolder:
                 self.lastOutputFolder = self.outputFolder.get()
-                self.destroyAllDisplayListElements()
-                threading.Thread(target=self.loadAndDisplayList).start()
+                self.threadLoadAndDisplayList()
             self.modifyTextVar.set("Modify")
             self.textFolderEntry.configure(state="disabled")
             self.statusModify = False
@@ -328,16 +331,14 @@ class App(customtkinter.CTk):
             self.elementsFrame.configure(label_text="Items:")
         elif opt == "Blocks":
             self.elementsFrame.configure(label_text="Blocks:")
-        self.destroyAllDisplayListElements()
-        threading.Thread(target=self.loadAndDisplayList).start()
+        self.threadLoadAndDisplayList()
 
     def saveSearch(self):
         if (not self.lastSearchText == self.searchText.get()) or (not self.lastModifiedVar == self.showModifiedVar.get()) or (not self.lastUnmodifiedVar == self.showUnmodifiedVar.get()):
             self.lastSearchText = self.searchText.get()
             self.lastModifiedVar = self.showModifiedVar.get()
             self.lastUnmodifiedVar = self.showUnmodifiedVar.get()
-            self.destroyAllDisplayListElements()
-            threading.Thread(target=self.loadAndDisplayList).start()
+            self.threadLoadAndDisplayList()
 
 customtkinter.set_default_color_theme("blue")
 customtkinter.set_appearance_mode("dark")
