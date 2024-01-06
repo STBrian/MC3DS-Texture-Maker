@@ -2,6 +2,7 @@ import os
 import sys
 import difflib
 import customtkinter
+import threading
 from PIL import Image
 
 from modules.stbmodule import *
@@ -150,7 +151,7 @@ class App(customtkinter.CTk):
         self.selectionLabel = customtkinter.CTkLabel(self.infoDispFrame, textvariable=self.selected)
         self.selectionLabel.grid(row=2, column=0, padx=5, pady=5)
 
-        self.buttonChange = customtkinter.CTkButton(self.infoDispFrame, text="Change", command=self.changeTexture, state="disabled")
+        self.buttonChange = customtkinter.CTkButton(self.infoDispFrame, text="Change", command=self.threadChangeTexture, state="disabled")
         self.buttonChange.grid(row=3, column=0, padx=5, pady=5, sticky="wes")
 
         # --------------------------------------------
@@ -159,48 +160,61 @@ class App(customtkinter.CTk):
         self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newitemslist.txt"))
         self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newblockslist.txt"))
 
-        self.loadAndDisplayList()
+        self.destroyAllDisplayListElements()
+        threading.Thread(target=self.loadAndDisplayList).start()
+
+    def threadChangeTexture(self):
+        threading.Thread(target=self.changeTexture).start()
+        return
 
     def changeTexture(self):
         if not self.selected.get() == "":
             value = self.selected.get()
+            actualOpt = self.actualOpt.get()
+            runningDir = self.runningDir
+            lastOutputFolder = self.lastOutputFolder
+            items = self.items
+            blocks = self.blocks
+            app_path = self.app_path
+            sourceFolder = self.sourceFolder
 
             # Load indexes
             added = []
-            if self.actualOpt.get() == "Items":
-                if os.path.exists(os.path.join(self.runningDir, self.lastOutputFolder, "items.txt")):
-                    added = getItemsFromIndexFile(os.path.join(self.runningDir, self.lastOutputFolder, "items.txt"))
-            elif self.actualOpt.get() == "Blocks":
-                if os.path.exists(os.path.join(self.runningDir, self.lastOutputFolder, "blocks.txt")):
-                    added = getItemsFromIndexFile(os.path.join(self.runningDir, self.lastOutputFolder, "blocks.txt"))
+            if actualOpt == "Items":
+                if os.path.exists(os.path.join(runningDir, lastOutputFolder, "items.txt")):
+                    added = getItemsFromIndexFile(os.path.join(runningDir, lastOutputFolder, "items.txt"))
+            elif actualOpt == "Blocks":
+                if os.path.exists(os.path.join(runningDir, lastOutputFolder, "blocks.txt")):
+                    added = getItemsFromIndexFile(os.path.join(runningDir, lastOutputFolder, "blocks.txt"))
 
             # Calculate positions
-            if self.actualOpt.get() == "Items":
-                matchwith = checkForMatch(value, self.items)
+            if actualOpt == "Items":
+                matchwith = checkForMatch(value, items)
                 position = calculateGrid(matchwith, 32, 13, 16)
-            elif self.actualOpt.get() == "Blocks":
-                matchwith = checkForMatch(value, self.blocks)
+            elif actualOpt == "Blocks":
+                matchwith = checkForMatch(value, blocks)
                 position = calculateGrid(matchwith, 25, 22, 20)
 
             filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".png .jpg")])
             if filePath != '':
                 if isImage16x16(filePath):
-                    if self.actualOpt.get() == "Items":
-                        addToItemAtlas(position, filePath, os.path.join(self.app_path, self.sourceFolder), os.path.join(self.runningDir, self.lastOutputFolder))
-                        duplicated = checkForMatch(self.items[matchwith], added)
+                    if actualOpt == "Items":
+                        addToItemAtlas(position, filePath, os.path.join(app_path, sourceFolder), os.path.join(runningDir, lastOutputFolder))
+                        duplicated = checkForMatch(items[matchwith], added)
                         if duplicated == -1:
-                            addElementToFile(self.items[matchwith], os.path.join(self.runningDir, self.lastOutputFolder, "items.txt"))
-                    elif self.actualOpt.get() == "Blocks":
-                        addToBlockAtlas(position, filePath, os.path.join(self.app_path, self.sourceFolder), os.path.join(self.runningDir, self.lastOutputFolder))
-                        duplicated = checkForMatch(self.blocks[matchwith], added)
+                            addElementToFile(items[matchwith], os.path.join(runningDir, lastOutputFolder, "items.txt"))
+                    elif actualOpt == "Blocks":
+                        addToBlockAtlas(position, filePath, os.path.join(app_path, sourceFolder), os.path.join(runningDir, lastOutputFolder))
+                        duplicated = checkForMatch(blocks[matchwith], added)
                         if duplicated == -1:
-                            addElementToFile(self.blocks[matchwith], os.path.join(self.runningDir, self.lastOutputFolder, "blocks.txt"))
-                    self.listElementClicked(value)
+                            addElementToFile(blocks[matchwith], os.path.join(runningDir, lastOutputFolder, "blocks.txt"))
+                    self.threadListElement(value)
 
-    def loadAndDisplayList(self):
+    def destroyAllDisplayListElements(self):
         for element in self.elementsList:
             element.destroy()
 
+    def loadAndDisplayList(self):
         elements = []
         added = []
         if self.actualOpt.get() == "Items":
@@ -222,9 +236,13 @@ class App(customtkinter.CTk):
             elements = checkForMatches(elements, added)
 
         for i in range(0, len(elements)):
-            self.listElement = customtkinter.CTkButton(self.elementsFrame, text=elements[i], fg_color="transparent", anchor="w", command=lambda v=elements[i]: self.listElementClicked(v))
+            self.listElement = customtkinter.CTkButton(self.elementsFrame, text=elements[i], fg_color="transparent", anchor="w", command=lambda v=elements[i]: self.threadListElement(v))
             self.listElement.grid(row=i, column=0, padx=5, pady=(5, 0), sticky="w")
             self.elementsList.append(self.listElement)
+
+    def threadListElement(self, value):
+        threading.Thread(target=self.listElementClicked, args=(value,)).start()
+        return
 
     def listElementClicked(self, value):
         if self.selected.get() == "":
@@ -297,7 +315,8 @@ class App(customtkinter.CTk):
                 self.outputFolder.set(self.lastOutputFolder)
             if not self.outputFolder.get() == self.lastOutputFolder:
                 self.lastOutputFolder = self.outputFolder.get()
-                self.loadAndDisplayList()
+                self.destroyAllDisplayListElements()
+                threading.Thread(target=self.loadAndDisplayList).start()
             self.modifyTextVar.set("Modify")
             self.textFolderEntry.configure(state="disabled")
             self.statusModify = False
@@ -309,14 +328,16 @@ class App(customtkinter.CTk):
             self.elementsFrame.configure(label_text="Items:")
         elif opt == "Blocks":
             self.elementsFrame.configure(label_text="Blocks:")
-        self.loadAndDisplayList()
+        self.destroyAllDisplayListElements()
+        threading.Thread(target=self.loadAndDisplayList).start()
 
     def saveSearch(self):
         if (not self.lastSearchText == self.searchText.get()) or (not self.lastModifiedVar == self.showModifiedVar.get()) or (not self.lastUnmodifiedVar == self.showUnmodifiedVar.get()):
             self.lastSearchText = self.searchText.get()
             self.lastModifiedVar = self.showModifiedVar.get()
             self.lastUnmodifiedVar = self.showUnmodifiedVar.get()
-            self.loadAndDisplayList()
+            self.destroyAllDisplayListElements()
+            threading.Thread(target=self.loadAndDisplayList).start()
 
 customtkinter.set_default_color_theme("blue")
 customtkinter.set_appearance_mode("dark")
