@@ -4,6 +4,7 @@ import difflib
 import customtkinter
 import threading
 import time
+import numpy
 from PIL import Image
 
 from modules.stbmodule import *
@@ -135,7 +136,6 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
             self.searchDataLoc[0] = self.lastSearchText
             self.searchDataLoc[1] = self.lastModifiedVar
             self.searchDataLoc[2] = self.lastUnmodifiedVar
-            print("Updated")
 
 class ElementsFrame(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
@@ -197,6 +197,8 @@ class App(customtkinter.CTk):
         self.sourceFolder = "assets"
         self.selected = ""
         self.elementsList = []
+        self.updateElement = False
+        self.atlas = []
 
         # --------------------------------------------
 
@@ -231,6 +233,7 @@ class App(customtkinter.CTk):
         # Initial loading
         self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newitemslist.txt"))
         self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newblockslist.txt"))
+        self.reloadAtlas()
 
         # Start daemon threads
         threadParams = threading.Thread(target=self.updateParamsThread)
@@ -257,17 +260,18 @@ class App(customtkinter.CTk):
 
             if self.outputFolder != self.secFrame.workingFolderFrame.lastOutputFolder:
                 self.outputFolder = self.secFrame.workingFolderFrame.lastOutputFolder
+                self.reloadAtlas()
                 self.updateDisplayList = True
 
-            if not checkIfEquals(self.searchData, self.mainFrame.searchOptionsFrame.searchDataLoc):
-                self.searchData = copyList(self.mainFrame.searchOptionsFrame.searchDataLoc)
+            if not (self.searchData == self.mainFrame.searchOptionsFrame.searchDataLoc):
+                self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:3]
                 self.updateDisplayList = True
             time.sleep(0.5)
 
     def changeTextureThread(self):
         while True:
             if self.mainFrame.infoDispFrame.changeTexture == True and self.mainFrame.infoDispFrame.selected.get() != "":
-                self.mainFrame.infoDispFrame.changeTexture == False
+                self.mainFrame.infoDispFrame.changeTexture = False
                 value = self.mainFrame.infoDispFrame.selected.get()
                 actualOpt = self.actualOpt
                 runningDir = self.runningDir
@@ -307,6 +311,8 @@ class App(customtkinter.CTk):
                             duplicated = checkForMatch(blocks[matchwith], added)
                             if duplicated == -1:
                                 addElementToFile(blocks[matchwith], os.path.join(runningDir, outputFolder, "blocks.txt"))
+                        self.reloadAtlas()
+                        self.updateElement = True
             time.sleep(0.5)
 
     def updateDisplayListThread(self):
@@ -354,70 +360,75 @@ class App(customtkinter.CTk):
 
     def listElementCickedThread(self):
         while True:
-            if self.selected != self.mainFrame.infoDispFrame.selected.get() and self.mainFrame.infoDispFrame.selected.get() != "":
+            if (self.selected != self.mainFrame.infoDispFrame.selected.get() and self.mainFrame.infoDispFrame.selected.get() != "") or self.updateElement == True:
+                self.updateElement = False
                 self.mainFrame.infoDispFrame.noSelectedText.grid_remove()
                 self.mainFrame.infoDispFrame.buttonChange.configure(state="normal")
 
                 self.selected = self.mainFrame.infoDispFrame.selected.get()
                 selected = self.selected
+                actualOpt = self.actualOpt
 
                 # Calculate positions
-                if self.actualOpt == "Items":
+                if actualOpt == "Items":
                     matchwith = checkForMatch(selected, self.items)
                     position = calculateGrid(matchwith, 32, 13, 16)
-                elif self.actualOpt == "Blocks":
+                elif actualOpt == "Blocks":
                     matchwith = checkForMatch(selected, self.blocks)
                     position = calculateGrid(matchwith, 25, 22, 20)
                     position = (position[0] + 2, position[1] + 2)
 
-                # Load atlas image from output folder
-                if self.actualOpt == "Items":
-                    if os.path.exists(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
-                        self.atlas = Texture3dst().open(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
-                        self.atlas.flipX()
-                        loaded = True
-                    else:
-                        self.atlas = Texture3dst().new(512, 256, 1)
-                        loaded = False
-                elif self.actualOpt == "Blocks":
-                    if os.path.exists(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
-                        self.atlas = Texture3dst().open(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
-                        self.atlas.flipX()
-                        loaded = True
-                    else:
-                        self.atlas = Texture3dst().new(512, 512, 3)
-                        loaded = False
+                # Load atlas
+                if actualOpt == "Items":
+                    atlas = self.atlas[1]
+                    idx = 0
+                elif actualOpt == "Blocks":
+                    atlas = self.atlas[3]
+                    idx = 2
 
-                # Load atlas image from soruce if not output
-                if loaded == False:
-                    if self.actualOpt == "Items":
-                        atlasImg = Image.open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.items.vanilla.png"))
-                    elif self.actualOpt == "Blocks":
-                        atlasImg = Image.open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.terrain.vanilla.png"))
-                    atlasImg.convert("RGBA")
-                    x = 0
-                    y = 0
-                    for i in range(0, atlasImg.size[1]):
-                        for j in range(0, atlasImg.size[0]):
-                            r, g, b, a = atlasImg.getpixel((x, y))
-                            self.atlas.setPixelRGBA(x, y, r, g, b, a)
-                            x += 1
-                        x = 0
-                        y += 1
-                    atlasImg.close()
-
-                portview = Image.new("RGBA", (16, 16))
-                for i in range(0, 16):
-                    for j in range(0, 16):
-                        pixelrgba = self.atlas.getPixelData(position[0] + j, position[1] + i)
-                        portview.putpixel((j, i), (pixelrgba[0], pixelrgba[1], pixelrgba[2], pixelrgba[3]))
-
+                # Copy region and update display
+                if self.atlas[idx] == 1:
+                    box = (position[0], position[1], position[0] + 16, position[1] + 16)
+                    region = atlas.crop(box)
+                    portview = Image.new("RGBA", (16, 16))
+                    portview.paste(region, (0, 0))
+                else:
+                    region = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
+                    buffer = numpy.asarray(region, dtype=numpy.uint8)
+                    portview = Image.fromarray(buffer)
                 portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
                 self.mainFrame.infoDispFrame.portview.configure(dark_image=portviewRes)
-            
             time.sleep(0.5)
+
+    def reloadAtlas(self):
+        self.atlas = []
+        if os.path.exists(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
+            atlas = Texture3dst().open(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+            atlas.flipX()
+            self.atlas.append(2)
+        else:
+            atlas = Image.open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.items.vanilla.png"))
+            self.atlas.append(1)
+        self.atlas.append(atlas)
+        if os.path.exists(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
+            atlas = Texture3dst().open(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
+            atlas.flipX()
+            self.atlas.append(2)
+        else:
+            atlas = Image.open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.terrain.vanilla.png"))
+            self.atlas.append(1)
+        self.atlas.append(atlas)
+        return
+
+def closeApp(val=None):
+    sys.exit()
 
 customtkinter.set_default_color_theme("blue")
 customtkinter.set_appearance_mode("dark")
+
 app = App()
+
+app.bind('<Alt-F4>', closeApp)
+app.protocol("WM_DELETE_WINDOW", closeApp)
+
 app.mainloop()
