@@ -3,6 +3,21 @@ from PIL import Image
 
 from modules.tex3dst import *
 
+def copyList(list: list):
+    localList = []
+    for element in list:
+        localList.append(element)
+    return localList
+
+def checkIfEquals(list1: list, list2: list):
+    if len(list1) == len(list2):
+        for i in range(0, len(list1)):
+            if list1[i] != list2[i]:
+                return False
+        return True
+    else:
+        return False
+
 def getItemsFromIndexFile(filename):
     items = []
     with open(filename, "r") as f:
