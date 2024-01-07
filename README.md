@@ -17,7 +17,7 @@ The executable does not require nothing since all it's packaged inside, but for 
 - python3-tk
 - numpy 1.26.3
 - customtkinter 5.2.1
-- packaging 5.2.1
+- packaging 23.2
 # How to use
 The README file refers to the latest stable version v1.0-release.
 
