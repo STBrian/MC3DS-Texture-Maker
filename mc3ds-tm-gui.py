@@ -3,6 +3,7 @@ import sys
 import difflib
 import customtkinter
 import threading
+import time
 from PIL import Image
 
 from modules.stbmodule import *
@@ -160,7 +161,51 @@ class App(customtkinter.CTk):
         self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newitemslist.txt"))
         self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newblockslist.txt"))
 
-        self.threadLoadAndDisplayList()
+        self.updateDisplayList = True
+
+        displayListThread = threading.Thread(target=self.updateDisplayListThread)
+        displayListThread.daemon = True
+        displayListThread.start()
+
+    def updateDisplayListThread(self):
+        while True:
+            if self.updateDisplayList == True:
+                self.updateDisplayList = False
+                
+                for element in self.elementsList:
+                    element.grid_remove()
+
+                for element in self.elementsList:
+                    element.destroy()
+
+                self.elementsList = []
+                elements = []
+                added = []
+                if self.actualOpt.get() == "Items":
+                    elements = self.items
+                    if os.path.exists(os.path.join(self.runningDir, self.lastOutputFolder, "items.txt")):
+                        added = getItemsFromIndexFile(os.path.join(self.runningDir, self.lastOutputFolder, "items.txt"))
+                elif self.actualOpt.get() == "Blocks":
+                    elements = self.blocks
+                    if os.path.exists(os.path.join(self.runningDir, self.lastOutputFolder, "blocks.txt")):
+                        added = getItemsFromIndexFile(os.path.join(self.runningDir, self.lastOutputFolder, "blocks.txt"))
+
+                if (not self.lastSearchText == ""):
+                    elements = difflib.get_close_matches(self.lastSearchText, elements, cutoff=0.4)
+                
+                if self.showModifiedVar.get() == "off":
+                    elements = deleteMatches(elements, added)
+
+                if self.showUnmodifiedVar.get() == "off":
+                    elements = checkForMatches(elements, added)
+
+                for i in range(0, len(elements)):
+                    self.listElement = customtkinter.CTkButton(self.elementsFrame, text=elements[i], fg_color="transparent", anchor="w", command=lambda v=elements[i]: self.threadListElement(v))
+                    self.listElement.grid(row=i, column=0, padx=5, pady=(5, 0), sticky="w")
+                    self.elementsList.append(self.listElement)
+                    if self.updateDisplayList == True:
+                        break
+            time.sleep(0.5)
 
     def threadChangeTexture(self):
         threading.Thread(target=self.changeTexture).start()
@@ -207,42 +252,7 @@ class App(customtkinter.CTk):
                         duplicated = checkForMatch(blocks[matchwith], added)
                         if duplicated == -1:
                             addElementToFile(blocks[matchwith], os.path.join(runningDir, lastOutputFolder, "blocks.txt"))
-                    self.threadListElement(value)
-
-    def threadLoadAndDisplayList(self):
-        self.destroyAllDisplayListElements()
-        thread = threading.Thread(target=self.loadAndDisplayList)
-        thread.start()
-
-    def destroyAllDisplayListElements(self):
-        for element in self.elementsList:
-            element.destroy()
-
-    def loadAndDisplayList(self):
-        elements = []
-        added = []
-        if self.actualOpt.get() == "Items":
-            elements = self.items
-            if os.path.exists(os.path.join(self.runningDir, self.lastOutputFolder, "items.txt")):
-                added = getItemsFromIndexFile(os.path.join(self.runningDir, self.lastOutputFolder, "items.txt"))
-        elif self.actualOpt.get() == "Blocks":
-            elements = self.blocks
-            if os.path.exists(os.path.join(self.runningDir, self.lastOutputFolder, "blocks.txt")):
-                added = getItemsFromIndexFile(os.path.join(self.runningDir, self.lastOutputFolder, "blocks.txt"))
-
-        if (not self.lastSearchText == ""):
-            elements = difflib.get_close_matches(self.lastSearchText, elements, n=len(elements), cutoff=0.4)
-        
-        if self.showModifiedVar.get() == "off":
-            elements = deleteMatches(elements, added)
-
-        if self.showUnmodifiedVar.get() == "off":
-            elements = checkForMatches(elements, added)
-
-        for i in range(0, len(elements)):
-            self.listElement = customtkinter.CTkButton(self.elementsFrame, text=elements[i], fg_color="transparent", anchor="w", command=lambda v=elements[i]: self.threadListElement(v))
-            self.listElement.grid(row=i, column=0, padx=5, pady=(5, 0), sticky="w")
-            self.elementsList.append(self.listElement)
+                    self.threadListElement(value)  
 
     def threadListElement(self, value):
         threading.Thread(target=self.listElementClicked, args=(value,)).start()
@@ -319,7 +329,7 @@ class App(customtkinter.CTk):
                 self.outputFolder.set(self.lastOutputFolder)
             if not self.outputFolder.get() == self.lastOutputFolder:
                 self.lastOutputFolder = self.outputFolder.get()
-                self.threadLoadAndDisplayList()
+                self.updateDisplayList = True
             self.modifyTextVar.set("Modify")
             self.textFolderEntry.configure(state="disabled")
             self.statusModify = False
@@ -331,14 +341,14 @@ class App(customtkinter.CTk):
             self.elementsFrame.configure(label_text="Items:")
         elif opt == "Blocks":
             self.elementsFrame.configure(label_text="Blocks:")
-        self.threadLoadAndDisplayList()
+        self.updateDisplayList = True
 
     def saveSearch(self):
         if (not self.lastSearchText == self.searchText.get()) or (not self.lastModifiedVar == self.showModifiedVar.get()) or (not self.lastUnmodifiedVar == self.showUnmodifiedVar.get()):
             self.lastSearchText = self.searchText.get()
             self.lastModifiedVar = self.showModifiedVar.get()
             self.lastUnmodifiedVar = self.showUnmodifiedVar.get()
-            self.threadLoadAndDisplayList()
+            self.updateDisplayList = True
 
 customtkinter.set_default_color_theme("blue")
 customtkinter.set_appearance_mode("dark")
