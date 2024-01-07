@@ -10,12 +10,7 @@ The executable does not require nothing since all it's packaged inside, but for 
 - Python 3.8
 - pillow 9.5.0
 - numpy 1.26.3
-- customtkinter 5.2.1
-- packaging 23.2
-### Linux
-- Python 3.8
-- python3-tk
-- numpy 1.26.3
+- python3-tkinter
 - customtkinter 5.2.1
 - packaging 23.2
 # How to use
