@@ -6,6 +6,7 @@ import threading
 import time
 import numpy
 from PIL import Image
+from PIL import ImageTk
 
 from modules.stbmodule import *
 from modules.tex3dst import *
@@ -78,9 +79,13 @@ class ExtraButtonsFrame(customtkinter.CTkFrame):
         if self.toolsWindow is None or not self.toolsWindow.winfo_exists():
             self.toolsWindow = customtkinter.CTkToplevel(self)
             self.toolsWindow.geometry("400x300")
+            self.after(100, self.focusToolsWindow)
         else:
-            self.toolsWindow.focus()
+            self.focusToolsWindow()
         return
+    
+    def focusToolsWindow(self):
+        self.toolsWindow.focus()
 
 class SecondaryFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -212,8 +217,14 @@ class App(customtkinter.CTk):
             self.runningDir = os.path.dirname(__file__)
 
         self.title("MC3DS Texture Maker")
-        if os.name == "nt":
+        os_name = os.name
+        if os_name == "nt":
             self.iconbitmap(default=os.path.join(self.app_path, "icon.ico"))
+        elif os_name == "posix":
+            iconpath = ImageTk.PhotoImage(file=os.path.join(self.app_path, "icon.png"))
+            self.wm_iconbitmap()
+            self.iconphoto(False, iconpath)
+
         self.geometry("640x400")
         self.minsize(640, 400)
         self.resizable(True, True)
