@@ -271,9 +271,7 @@ class Texture3dst:
         return rgba
     
     def copy(self, x1: int, y1: int, x2: int, y2: int):
-        copyData = []
-        for i in range(0, y2 - y1):
-            copyData.append([])
+        copyData = [[] for i in  range(y2 - y1)]
         for i in range(y1, y2):
             for j in range(x1, x2):
                 #pixelData = self.getPixelData(j, i)

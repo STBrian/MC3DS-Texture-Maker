@@ -266,6 +266,9 @@ class App(customtkinter.CTk):
             if not (self.searchData == self.mainFrame.searchOptionsFrame.searchDataLoc):
                 self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:3]
                 self.updateDisplayList = True
+
+            if f"{self.actualOpt}:" != self.mainFrame.elementsFrame.cget("label_text"):
+                self.mainFrame.elementsFrame.configure(label_text=f"{self.actualOpt}:")
             time.sleep(0.5)
 
     def changeTextureThread(self):
