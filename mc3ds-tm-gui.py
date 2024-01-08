@@ -2,6 +2,7 @@ import os
 import sys
 import difflib
 import customtkinter
+import CTkMenuBar
 import threading
 import time
 import numpy
@@ -91,7 +92,7 @@ class SecondaryFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         
-        self.grid(row=0, column=0, padx=5, pady=5, sticky="nsw")
+        self.pack(side='left', expand=False, fill='y')
         self.grid_rowconfigure((0, 1), weight=0)
         self.grid_rowconfigure(2, weight=1)
 
@@ -111,7 +112,7 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
         self.lastUnmodifiedVar = "on"
         self.searchDataLoc = ["", "off", "on"]
 
-        self.grid(row=0, column=0, padx=5, pady=5, sticky="wen", columnspan=2)
+        self.grid(row=0, column=0, padx=(0, 5), pady=5, sticky="wen", columnspan=2)
         self.grid_columnconfigure(0, weight=1)
 
         self.searchOptionsLabel = customtkinter.CTkLabel(self, text="Search options:")
@@ -146,7 +147,7 @@ class ElementsFrame(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        self.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
+        self.grid(row=1, column=0, padx=(0, 5), pady=(0, 5), sticky="wens")
         self.grid_columnconfigure(0, weight=1)
 
 class InfoDisplayFrame(customtkinter.CTkFrame):
@@ -179,7 +180,7 @@ class MainFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        self.grid(row=0, column=1, padx=(0, 5), pady=5, sticky="wens")
+        self.pack(side='left', expand=True, fill='both')
         self.grid_columnconfigure(0, weight=5)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -229,15 +230,23 @@ class App(customtkinter.CTk):
         self.minsize(640, 400)
         self.resizable(True, True)
 
-        self.grid_columnconfigure(0, weight=0)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        # --------------------------------------------
+
+        # Menu bar
+        menu_bar = CTkMenuBar.CTkMenuBar(master=self)
+        button = menu_bar.add_cascade("File")
+
+        fileMenu = CTkMenuBar.CustomDropdownMenu(widget=button)
+        fileMenu.add_option("Open")
+        fileMenu.add_option("Save")
+        fileMenu.add_separator()
+        fileMenu.add_option("Exit", sys.exit)
 
         # --------------------------------------------
 
         # Frames
-        self.secFrame = SecondaryFrame(self)
-        self.mainFrame = MainFrame(self)
+        self.secFrame = SecondaryFrame(self, fg_color="transparent")
+        self.mainFrame = MainFrame(self, fg_color="transparent")
 
         # --------------------------------------------
 

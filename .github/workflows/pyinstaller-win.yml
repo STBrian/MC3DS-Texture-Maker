@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller pillow customtkinter packaging numpy
+        pip install pyinstaller pillow customtkinter packaging numpy CTkMenuBar
     - name: Build CLI with PyInstaller
       run: |
         pyinstaller mc3ds-tm.spec

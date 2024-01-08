@@ -24,7 +24,7 @@ jobs:
       run: |
         sudo apt install pip
         sudo apt remove python3-pil
-        pip install pyinstaller Pillow customtkinter packaging numpy
+        pip install pyinstaller Pillow customtkinter packaging numpy CTkMenuBar
     - name: Build CLI with PyInstaller
       run: |
         python3 -m PyInstaller mc3ds-tm.spec
