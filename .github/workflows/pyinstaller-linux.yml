@@ -1,4 +1,4 @@
-name: PyInstaller Win
+name: PyInstaller Linux
 
 on:
   push:
