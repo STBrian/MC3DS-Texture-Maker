@@ -6,7 +6,8 @@ block_cipher = None
 added_data = [
     ('assets', 'assets'),
     ('modules', 'modules'),
-    ('icon.ico', '.')
+    ('icon.ico', '.'),
+    ('icon.png', '.')
     ]
 
 a = Analysis(
