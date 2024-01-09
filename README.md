@@ -13,6 +13,7 @@ The executable does not require nothing since all it's packaged inside, but for 
 - python3-tkinter
 - customtkinter 5.2.1
 - packaging 23.2
+- CTkMenuBar 0.8.0
 # How to use
 The README file refers to the latest stable version v1.0-release.
 
