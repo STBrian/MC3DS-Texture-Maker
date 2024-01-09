@@ -348,16 +348,16 @@ class App(customtkinter.CTk):
 
     def reloadAtlas(self):
         self.atlas = []
-        if os.path.exists(os.path.abspath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
-            atlas = Texture3dst().open(os.path.abspath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+        if os.path.exists(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
+            atlas = Texture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
             atlas.flipX()
             self.atlas.append(2)
         else:
             atlas = Image.open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.items.vanilla.png"))
             self.atlas.append(1)
         self.atlas.append(atlas)
-        if os.path.exists(os.path.abspath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
-            atlas = Texture3dst().open(os.path.abspath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
+        if os.path.exists(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
+            atlas = Texture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
             atlas.flipX()
             self.atlas.append(2)
         else:
