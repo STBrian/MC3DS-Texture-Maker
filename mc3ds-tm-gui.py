@@ -129,12 +129,12 @@ class App(customtkinter.CTk):
             self.running = "exe"
             self.app_path = sys._MEIPASS
             self.runningDir = os.path.dirname(sys.executable)
-            self.outputFolder = os.path.dirname(sys.executable)
+            self.outputFolder = os.path.join(self.runningDir, "MC3DS")
         elif __file__:
             self.running = "src"
             self.app_path = os.path.dirname(__file__)
             self.runningDir = os.path.dirname(__file__)
-            self.outputFolder = "MC3DS"
+            self.outputFolder = os.path.join(self.runningDir, "MC3DS")
 
         self.title("MC3DS Texture Maker")
         os_name = os.name
