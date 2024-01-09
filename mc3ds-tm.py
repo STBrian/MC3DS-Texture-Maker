@@ -6,7 +6,7 @@ from PIL import Image
 from tkinter import Tk
 from tkinter import filedialog
 
-from modules.tex3dst import *
+from modules import *
 
 def clear():
     os_type = os.name

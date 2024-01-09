@@ -9,8 +9,7 @@ import numpy
 from PIL import Image
 from PIL import ImageTk
 
-from modules.stbmodule import *
-from modules.tex3dst import *
+from modules import *
 
 class SearchOptionsFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
