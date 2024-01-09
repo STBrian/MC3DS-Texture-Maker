@@ -7,7 +7,7 @@ Additionally, the atlas containing the game blocks has several bitmap versions w
 # Requirements
 The executable does not require nothing since all it's packaged inside, but for running from source you need to install some things
 ### Windows
-- Python 3.8
+- Python 3.11
 - pillow 9.5.0
 - numpy 1.26.3
 - python3-tkinter
@@ -100,9 +100,10 @@ If you don't know your game ID, here's a list with the game IDs for each region 
 #### Windows
 Open the `build.bat` file 
 
-or 
+#### Linux
 
 Type the following command in a console in the root folder of the project:
 ```bash
-pyinstaller mc3ds-tm.spec
+python3 -m PyInstaller mc3ds-tm.spec
+python3 -m PyInstaller mc3ds-tm-gui.spec
 ```
