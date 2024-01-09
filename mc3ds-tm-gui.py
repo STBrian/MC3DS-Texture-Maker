@@ -12,94 +12,6 @@ from PIL import ImageTk
 from modules.stbmodule import *
 from modules.tex3dst import *
 
-class WorkingFolderFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-        self.grid(row=0, column=0, padx=5, pady=(5, 0), sticky="wen")
-        
-        # Variables
-        self.outputFolder = customtkinter.StringVar(value="MC3DS")
-        self.lastOutputFolder = "MC3DS"
-        self.modifyTextVar = customtkinter.StringVar(value="Modify")
-        self.statusModify = False
-
-        self.workLabel = customtkinter.CTkLabel(self, text="Output folder:")
-        self.workLabel.grid(row=0, column=0, padx=5, pady=0, sticky="wne")
-
-        self.textFolderEntry = customtkinter.CTkEntry(self, textvariable=self.outputFolder)
-        self.textFolderEntry.configure(state="disabled")
-        self.textFolderEntry.grid(row=1, column=0, padx=5, pady=5, sticky="wne")
-
-        self.modifyButton = customtkinter.CTkButton(self, textvariable=self.modifyTextVar, command=self.clickedModify)
-        self.modifyButton.grid(row=2, column=0, padx=5, pady=5, sticky="wne")
-
-    def clickedModify(self):
-        if self.statusModify == False:
-            self.modifyTextVar.set("Save")
-            self.textFolderEntry.configure(state="normal")
-            self.statusModify = True
-            
-        elif self.statusModify == True:
-            if self.textFolderEntry.get() == "":
-                self.outputFolder.set(self.lastOutputFolder)
-            if not self.outputFolder.get() == self.lastOutputFolder:
-                self.lastOutputFolder = self.outputFolder.get()
-            self.modifyTextVar.set("Modify")
-            self.textFolderEntry.configure(state="disabled")
-            self.statusModify = False
-
-class ShowMenuFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-        # Variables
-        self.actualOpt = customtkinter.StringVar(value="Items")
-
-        self.grid(row=1, column=0, padx=5, pady=5)
-
-        self.showMenuLabel = customtkinter.CTkLabel(self, text="Show:")
-        self.showMenuLabel.grid(row=0, column=0, padx=5, pady=0, sticky="wen")
-
-        self.showMenuComboBox = customtkinter.CTkComboBox(self, values=["Items", "Blocks"], variable=self.actualOpt)
-        self.showMenuComboBox.grid(row=1, column=0, padx=5, pady=5)
-
-class ExtraButtonsFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-
-        self.grid(row=2, column=0, padx=5, pady=(0, 5), sticky="sw")
-
-        self.toolsButton = customtkinter.CTkButton(self, text="Tools", state="normal", command=self.openTools)
-        self.toolsButton.grid(row=0, column=0, padx=5, pady=5, sticky="wne")
-
-        self.optionsButton = customtkinter.CTkButton(self, text="Options", state="disabled")
-        self.optionsButton.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wne")
-
-        self.toolsWindow = None
-
-    def openTools(self):
-        if self.toolsWindow is None or not self.toolsWindow.winfo_exists():
-            self.toolsWindow = customtkinter.CTkToplevel(self)
-            self.toolsWindow.geometry("400x300")
-            self.after(100, self.focusToolsWindow)
-        else:
-            self.focusToolsWindow()
-        return
-    
-    def focusToolsWindow(self):
-        self.toolsWindow.focus()
-
-class SecondaryFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-        
-        self.pack(side='left', expand=False, fill='y')
-        self.grid_rowconfigure((0, 1), weight=0)
-        self.grid_rowconfigure(2, weight=1)
-
-        self.workingFolderFrame = WorkingFolderFrame(self)
-        self.showMenuFrame = ShowMenuFrame(self)
-        self.extraButtonsFrame = ExtraButtonsFrame(self)
-
 class SearchOptionsFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
@@ -110,9 +22,11 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
         self.lastModifiedVar = "off"
         self.showUnmodifiedVar = customtkinter.StringVar(value="on")
         self.lastUnmodifiedVar = "on"
-        self.searchDataLoc = ["", "off", "on"]
+        self.actualOpt = customtkinter.StringVar(value="Items")
+        self.lastOpt = "Items"
+        self.searchDataLoc = ["", "off", "on", "Items"]
 
-        self.grid(row=0, column=0, padx=(0, 5), pady=5, sticky="wen", columnspan=2)
+        self.grid(row=0, column=0, padx=5, pady=5, sticky="wen", columnspan=2)
         self.grid_columnconfigure(0, weight=1)
 
         self.searchOptionsLabel = customtkinter.CTkLabel(self, text="Search options:")
@@ -122,32 +36,37 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
         self.showUnmodifiedSwitch.grid(row=1, column=0, padx=5, pady=0, sticky="wn")
 
         self.showModifiedSwitch = customtkinter.CTkSwitch(self, text="Show modified elements", onvalue="on", offvalue="off", variable=self.showModifiedVar)
-        self.showModifiedSwitch.grid(row=2, column=0, padx=5, pady=0, sticky="wn")
+        self.showModifiedSwitch.grid(row=2, column=0, padx=5, pady=5, sticky="wn")
 
         self.entryTextFrame = customtkinter.CTkFrame(self)
         self.entryTextFrame.grid(row=3, column=0, padx=5, pady=5, sticky="wen")
-        self.entryTextFrame.grid_columnconfigure(0, weight=1)
+        self.entryTextFrame.grid_columnconfigure(1, weight=1)
+
+        self.showMenu = customtkinter.CTkComboBox(self.entryTextFrame, values=["Items", "Blocks"], variable=self.actualOpt)
+        self.showMenu.grid(row=0, column=0, padx=5, pady=0, sticky="w")
 
         self.entryText = customtkinter.CTkEntry(self.entryTextFrame, textvariable=self.searchText, placeholder_text="Search")
-        self.entryText.grid(row=0, column=0, padx=5, pady=5, sticky="wen")
+        self.entryText.grid(row=0, column=1, padx=0, pady=5, sticky="wen")
 
         self.button = customtkinter.CTkButton(self.entryTextFrame, text="Search", width=80, command=self.saveSearch)
-        self.button.grid(row=0, column=1, padx=(0, 5), pady=5, sticky="wn")
+        self.button.grid(row=0, column=2, padx=5, pady=5, sticky="wn")
         
     def saveSearch(self):
-        if (not self.lastSearchText == self.searchText.get()) or (not self.lastModifiedVar == self.showModifiedVar.get()) or (not self.lastUnmodifiedVar == self.showUnmodifiedVar.get()):
+        if self.lastSearchText != self.searchText.get() or self.lastModifiedVar != self.showModifiedVar.get() or self.lastUnmodifiedVar != self.showUnmodifiedVar.get() or self.lastOpt != self.actualOpt.get():
             self.lastSearchText = self.searchText.get()
             self.lastModifiedVar = self.showModifiedVar.get()
             self.lastUnmodifiedVar = self.showUnmodifiedVar.get()
+            self.lastOpt = self.actualOpt.get()
             self.searchDataLoc[0] = self.lastSearchText
             self.searchDataLoc[1] = self.lastModifiedVar
             self.searchDataLoc[2] = self.lastUnmodifiedVar
+            self.searchDataLoc[3] = self.lastOpt
 
 class ElementsFrame(customtkinter.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        self.grid(row=1, column=0, padx=(0, 5), pady=(0, 5), sticky="wens")
+        self.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
         self.grid_columnconfigure(0, weight=1)
 
 class InfoDisplayFrame(customtkinter.CTkFrame):
@@ -155,7 +74,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         super().__init__(master, **kwargs)
         self.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
         self.selected = customtkinter.StringVar(value="")
         self.portview = customtkinter.CTkImage(dark_image=Image.new("RGBA", (16, 16)), size=(128, 128))
@@ -196,10 +115,8 @@ class App(customtkinter.CTk):
         # --------------------------------------------
 
         # Variables declaration
-        self.updateDisplayList = False
-        self.outputFolder = "MC3DS"
-        self.actualOpt = "Items"
-        self.searchData = []
+        self.updateDisplayList = True
+        self.searchData = ["", "off", "on", "Items"]
         self.sourceFolder = "assets"
         self.selected = ""
         self.elementsList = []
@@ -212,10 +129,12 @@ class App(customtkinter.CTk):
             self.running = "exe"
             self.app_path = sys._MEIPASS
             self.runningDir = os.path.dirname(sys.executable)
+            self.outputFolder = os.path.dirname(sys.executable)
         elif __file__:
             self.running = "src"
             self.app_path = os.path.dirname(__file__)
             self.runningDir = os.path.dirname(__file__)
+            self.outputFolder = "MC3DS"
 
         self.title("MC3DS Texture Maker")
         os_name = os.name
@@ -226,26 +145,32 @@ class App(customtkinter.CTk):
             self.wm_iconbitmap()
             self.iconphoto(False, iconpath)
 
-        self.geometry("640x400")
-        self.minsize(640, 400)
+        self.geometry("580x420")
+        self.minsize(580, 420)
         self.resizable(True, True)
 
         # --------------------------------------------
 
         # Menu bar
-        menu_bar = CTkMenuBar.CTkMenuBar(master=self)
-        button = menu_bar.add_cascade("File")
+        menu_bar = CTkMenuBar.CTkMenuBar(master=self, height=15)
 
-        fileMenu = CTkMenuBar.CustomDropdownMenu(widget=button)
-        fileMenu.add_option("Open")
-        fileMenu.add_option("Save")
+        fileMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("File"))
+        fileMenu.add_option("Open folder", command=self.openFolder)
+        fileMenu.add_option("Preferences")
         fileMenu.add_separator()
-        fileMenu.add_option("Exit", sys.exit)
+        fileMenu.add_option("Exit", command=sys.exit)
+
+        toolsMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
+        toolsMenu.add_option("Dummy 1")
+        toolsMenu.add_option("Dummy 2")
+        toolsMenu.add_option("Dummy 3")
+
+        helpMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Help"))
+        helpMenu.add_option("About")
 
         # --------------------------------------------
 
-        # Frames
-        self.secFrame = SecondaryFrame(self, fg_color="transparent")
+        # Main frame
         self.mainFrame = MainFrame(self, fg_color="transparent")
 
         # --------------------------------------------
@@ -272,23 +197,21 @@ class App(customtkinter.CTk):
         threadTextureChange.daemon = True
         threadTextureChange.start()
 
+    def openFolder(self):
+        input = customtkinter.filedialog.askdirectory()
+        if self.outputFolder != input and input != '':
+            self.outputFolder = input
+            self.reloadAtlas()
+            self.updateDisplayList = True
+
     def updateParamsThread(self):
         while True:
-            if self.actualOpt != self.secFrame.showMenuFrame.actualOpt.get():
-                self.actualOpt = self.secFrame.showMenuFrame.actualOpt.get()
-                self.updateDisplayList = True
-
-            if self.outputFolder != self.secFrame.workingFolderFrame.lastOutputFolder:
-                self.outputFolder = self.secFrame.workingFolderFrame.lastOutputFolder
-                self.reloadAtlas()
-                self.updateDisplayList = True
-
             if not (self.searchData == self.mainFrame.searchOptionsFrame.searchDataLoc):
-                self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:3]
+                self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:4]
                 self.updateDisplayList = True
 
-            if f"{self.actualOpt}:" != self.mainFrame.elementsFrame.cget("label_text"):
-                self.mainFrame.elementsFrame.configure(label_text=f"{self.actualOpt}:")
+            if f"{self.searchData[3]}:" != self.mainFrame.elementsFrame.cget("label_text"):
+                self.mainFrame.elementsFrame.configure(label_text=f"{self.searchData[3]}:")
             time.sleep(0.5)
 
     def changeTextureThread(self):
@@ -296,8 +219,7 @@ class App(customtkinter.CTk):
             if self.mainFrame.infoDispFrame.changeTexture == True and self.mainFrame.infoDispFrame.selected.get() != "":
                 self.mainFrame.infoDispFrame.changeTexture = False
                 value = self.mainFrame.infoDispFrame.selected.get()
-                actualOpt = self.actualOpt
-                runningDir = self.runningDir
+                actualOpt = self.searchData[3]
                 outputFolder = self.outputFolder
                 items = self.items
                 blocks = self.blocks
@@ -307,11 +229,11 @@ class App(customtkinter.CTk):
                 # Load indexes
                 added = []
                 if actualOpt == "Items":
-                    if os.path.exists(os.path.join(runningDir, outputFolder, "items.txt")):
-                        added = getItemsFromIndexFile(os.path.join(runningDir, outputFolder, "items.txt"))
+                    if os.path.exists(os.path.join(outputFolder, "items.txt")):
+                        added = getItemsFromIndexFile(os.path.join(outputFolder, "items.txt"))
                 elif actualOpt == "Blocks":
-                    if os.path.exists(os.path.join(runningDir, outputFolder, "blocks.txt")):
-                        added = getItemsFromIndexFile(os.path.join(runningDir, outputFolder, "blocks.txt"))
+                    if os.path.exists(os.path.join(outputFolder, "blocks.txt")):
+                        added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
 
                 # Calculate positions
                 if actualOpt == "Items":
@@ -325,15 +247,15 @@ class App(customtkinter.CTk):
                 if filePath != '':
                     if isImage16x16(filePath):
                         if actualOpt == "Items":
-                            addToItemAtlas(position, filePath, os.path.join(app_path, sourceFolder), os.path.join(runningDir, outputFolder))
+                            addToItemAtlas(position, filePath, os.path.join(app_path, sourceFolder), outputFolder)
                             duplicated = checkForMatch(items[matchwith], added)
                             if duplicated == -1:
-                                addElementToFile(items[matchwith], os.path.join(runningDir, outputFolder, "items.txt"))
+                                addElementToFile(items[matchwith], os.path.join(outputFolder, "items.txt"))
                         elif actualOpt == "Blocks":
-                            addToBlockAtlas(position, filePath, os.path.join(app_path, sourceFolder), os.path.join(runningDir, outputFolder))
+                            addToBlockAtlas(position, filePath, os.path.join(app_path, sourceFolder), outputFolder)
                             duplicated = checkForMatch(blocks[matchwith], added)
                             if duplicated == -1:
-                                addElementToFile(blocks[matchwith], os.path.join(runningDir, outputFolder, "blocks.txt"))
+                                addElementToFile(blocks[matchwith], os.path.join(outputFolder, "blocks.txt"))
                         self.reloadAtlas()
                         self.updateElement = True
             time.sleep(0.5)
@@ -342,6 +264,7 @@ class App(customtkinter.CTk):
         while True:
             if self.updateDisplayList == True:
                 self.updateDisplayList = False
+                actualOpt = self.searchData[3]
                 
                 for element in self.elementsList:
                     element.grid_remove()
@@ -352,14 +275,14 @@ class App(customtkinter.CTk):
                 self.elementsList = []
                 elements = []
                 added = []
-                if self.actualOpt == "Items":
+                if actualOpt == "Items":
                     elements = self.items
-                    if os.path.exists(os.path.join(self.runningDir, self.outputFolder, "items.txt")):
-                        added = getItemsFromIndexFile(os.path.join(self.runningDir, self.outputFolder, "items.txt"))
-                elif self.actualOpt == "Blocks":
+                    if os.path.exists(os.path.join(self.outputFolder, "items.txt")):
+                        added = getItemsFromIndexFile(os.path.join(self.outputFolder, "items.txt"))
+                elif actualOpt == "Blocks":
                     elements = self.blocks
-                    if os.path.exists(os.path.join(self.runningDir, self.outputFolder, "blocks.txt")):
-                        added = getItemsFromIndexFile(os.path.join(self.runningDir, self.outputFolder, "blocks.txt"))
+                    if os.path.exists(os.path.join(self.outputFolder, "blocks.txt")):
+                        added = getItemsFromIndexFile(os.path.join(self.outputFolder, "blocks.txt"))
 
                 if (not self.searchData[0] == ""):
                     elements = difflib.get_close_matches(self.searchData[0], elements, cutoff=0.4)
@@ -390,7 +313,7 @@ class App(customtkinter.CTk):
 
                 self.selected = self.mainFrame.infoDispFrame.selected.get()
                 selected = self.selected
-                actualOpt = self.actualOpt
+                actualOpt = self.searchData[3]
 
                 # Calculate positions
                 if actualOpt == "Items":
@@ -425,16 +348,16 @@ class App(customtkinter.CTk):
 
     def reloadAtlas(self):
         self.atlas = []
-        if os.path.exists(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
-            atlas = Texture3dst().open(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+        if os.path.exists(os.path.abspath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
+            atlas = Texture3dst().open(os.path.abspath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
             atlas.flipX()
             self.atlas.append(2)
         else:
             atlas = Image.open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.items.vanilla.png"))
             self.atlas.append(1)
         self.atlas.append(atlas)
-        if os.path.exists(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
-            atlas = Texture3dst().open(os.path.join(self.runningDir, f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
+        if os.path.exists(os.path.abspath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
+            atlas = Texture3dst().open(os.path.abspath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
             atlas.flipX()
             self.atlas.append(2)
         else:
