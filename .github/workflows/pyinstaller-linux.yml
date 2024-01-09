@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt install pip
-        sudo apt remove python3-pil
+        sudo apt install python3-tk
         pip install pyinstaller Pillow customtkinter packaging numpy CTkMenuBar
     - name: Build CLI with PyInstaller
       run: |
