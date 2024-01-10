@@ -1,4 +1,4 @@
-pillow>=10.0.1
+pillow==10.2.0
 numpy==1.26.3
 customtkinter==5.2.1
 packaging==23.2
