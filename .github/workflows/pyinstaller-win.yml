@@ -26,7 +26,7 @@ jobs:
         pip install pyinstaller pillow customtkinter packaging numpy CTkMenuBar
     - name: Build CLI with PyInstaller
       run: |
-        pyinstaller mc3ds-tm.spec
+        pyinstaller  --onefile --icon icon.ico --add-data assets:assets --add-data modules:modules --add-data icon.ico:. --add-data icon.png:. --hidden-import PIL --hidden-import PIL._imagingtk --hidden-import PIL._tkinter_finder mc3ds-tm.py
     - name: Build GUI with PyInstaller
       run: |
         pyinstaller --onefile --hide-console hide-early --icon icon.ico --add-data assets:assets --add-data modules:modules --add-data icon.ico:. --add-data icon.png:. --hidden-import PIL --hidden-import PIL._imagingtk --hidden-import PIL._tkinter_finder mc3ds-tm-gui.py
