@@ -42,6 +42,7 @@ jobs:
         python-version: "3.11"
     - name: Install dependencies
       run: |
+        sudo apt install dos2unix
         sudo apt install pip
         sudo apt install python3-tk
         pip install -r requirements.txt
