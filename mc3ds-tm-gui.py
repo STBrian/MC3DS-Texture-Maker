@@ -3,7 +3,6 @@ import sys
 import difflib
 import customtkinter
 import CTkMenuBar
-import CTkListbox
 import threading
 import time
 import numpy
@@ -61,7 +60,6 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
             self.searchDataLoc[1] = self.lastModifiedVar
             self.searchDataLoc[2] = self.lastUnmodifiedVar
             self.searchDataLoc[3] = self.lastOpt
-            self.master.updateDisplayList()
 
 class InfoDisplayFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -146,49 +144,11 @@ class MainFrame(customtkinter.CTkFrame):
         self.searchOptionsFrame = SearchOptionsFrame(self)
         self.searchOptionsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="wen", columnspan=2)
 
-        self.elementsFrame = CTkListbox.CTkListbox(self, command=self.listElementCall)
+        self.elementsFrame = MyCTkListbox(self, command=self.listElementCall)
         self.elementsFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
 
         self.infoDispFrame = InfoDisplayFrame(self)
         self.infoDispFrame.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
-
-    def updateDisplayList(self):
-        self.elementsFrame.delete("all")
-        thread = threading.Thread(target=self.updateDisplayListFun)
-        thread.daemon = True
-        thread.start()
-
-    def updateDisplayListFun(self):
-        root = self.master
-        mainFrame = self
-        searchData = self.searchOptionsFrame.searchDataLoc
-        actualOpt = searchData[3]
-        items = root.items
-        blocks = root.blocks
-        outputFolder = root.outputFolder
-
-        elements = []
-        added = []
-        if actualOpt == "Items":
-            elements = items
-            if os.path.exists(os.path.join(outputFolder, "items.txt")):
-                added = getItemsFromIndexFile(os.path.join(outputFolder, "items.txt"))
-        elif actualOpt == "Blocks":
-            elements = blocks
-            if os.path.exists(os.path.join(outputFolder, "blocks.txt")):
-                added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
-
-        if (not searchData[0] == ""):
-            elements = difflib.get_close_matches(searchData[0], elements, cutoff=0.4)
-        
-        if searchData[1] == "off":
-            elements = deleteMatches(elements, added)
-
-        if searchData[2] == "off":
-            elements = checkForMatches(elements, added)
-
-        for i in range(0, len(elements)):
-            mainFrame.elementsFrame.insert(i, elements[i])
 
     def listElementCall(self, value):
         listElement = partial(self.listElementFun, value)
@@ -246,7 +206,7 @@ class App(customtkinter.CTk):
         self.sourceFolder = "assets"
         self.selected = ""
         self.elementsList = []
-        self.updateElement = False
+        self.updateList = True
         self.atlas = []
 
         # --------------------------------------------
@@ -306,24 +266,71 @@ class App(customtkinter.CTk):
         self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/items.txt"))
         self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/blocks.txt"))
         self.reloadAtlas()
-        self.mainFrame.updateDisplayList()
 
         # Start daemon threads
         threadParams = threading.Thread(target=self.updateParamsThread)
         threadParams.daemon = True
         threadParams.start()
 
+        listUpdateThread = threading.Thread(target=self.updateListThread)
+        listUpdateThread.daemon = True
+        listUpdateThread.start()
+
     def openFolder(self):
         input = customtkinter.filedialog.askdirectory()
         if self.outputFolder != input and input != '':
             self.outputFolder = input
             self.reloadAtlas()
-            self.updateItemsList()
+            self.updateList = True
 
     def updateParamsThread(self):
         while True:
+            if self.searchData != self.mainFrame.searchOptionsFrame.searchDataLoc:
+                self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:4]
+                self.updateList = True
+
             if f"{self.searchData[3]}:" != self.mainFrame.elementsFrame.cget("label_text"):
                 self.mainFrame.elementsFrame.configure(label_text=f"{self.searchData[3]}:")
+            time.sleep(0.5)
+
+    def updateListThread(self):
+        while True:
+            if self.updateList == True:
+                self.updateList = False
+                root = self
+                mainFrame = self.mainFrame
+                searchData = self.searchData
+                actualOpt = searchData[3]
+                items = root.items
+                blocks = root.blocks
+                outputFolder = root.outputFolder
+
+                mainFrame.elementsFrame.delete("all")
+
+                elements = []
+                added = []
+                if actualOpt == "Items":
+                    elements = items
+                    if os.path.exists(os.path.join(outputFolder, "items.txt")):
+                        added = getItemsFromIndexFile(os.path.join(outputFolder, "items.txt"))
+                elif actualOpt == "Blocks":
+                    elements = blocks
+                    if os.path.exists(os.path.join(outputFolder, "blocks.txt")):
+                        added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
+
+                if (not searchData[0] == ""):
+                    elements = difflib.get_close_matches(searchData[0], elements, cutoff=0.4)
+                
+                if searchData[1] == "off":
+                    elements = deleteMatches(elements, added)
+
+                if searchData[2] == "off":
+                    elements = checkForMatches(elements, added)
+
+                for i in range(0, len(elements)):
+                    mainFrame.elementsFrame.insert(i, elements[i])
+                    if self.updateList == True:
+                        break
             time.sleep(0.5)
 
     def reloadAtlas(self):
