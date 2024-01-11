@@ -1,0 +1,56 @@
+name: Build Windows-Linux
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Build script
+      run: |
+        ./build.bat
+    - uses: actions/upload-artifact@v3
+      with:
+        name: mc3ds-tm-windows-x64
+        path: dist/
+  
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+    - name: Install dependencies
+      run: |
+        sudo apt install dos2unix
+        sudo apt install pip
+        sudo apt install python3-tk
+        pip install -r requirements.txt
+    - name: Build script
+      run: |
+        dos2unix ./build.sh
+        bash ./build.sh
+    - uses: actions/upload-artifact@v3
+      with:
+        name: mc3ds-tm-linux-x64
+        path: dist/
