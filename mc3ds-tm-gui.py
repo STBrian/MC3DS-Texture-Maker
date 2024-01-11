@@ -9,6 +9,7 @@ import time
 import numpy
 from PIL import Image
 from PIL import ImageTk
+from functools import partial
 
 from modules import *
 
@@ -60,6 +61,7 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
             self.searchDataLoc[1] = self.lastModifiedVar
             self.searchDataLoc[2] = self.lastUnmodifiedVar
             self.searchDataLoc[3] = self.lastOpt
+            self.master.updateDisplayList()
 
 class InfoDisplayFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -67,10 +69,12 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
+        # Variables
         self.selected = customtkinter.StringVar(value="")
         self.portview = customtkinter.CTkImage(dark_image=Image.new("RGBA", (16, 16)), size=(128, 128))
         self.changeTexture = False
 
+        # Widgets
         self.noSelectedText = customtkinter.CTkLabel(self, text="No element selected")
         self.noSelectedText.grid(row=0, column=0, padx=5, pady=5)
 
@@ -80,11 +84,56 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.selectionLabel = customtkinter.CTkLabel(self, textvariable=self.selected)
         self.selectionLabel.grid(row=2, column=0, padx=5, pady=5)
 
-        self.buttonChange = customtkinter.CTkButton(self, text="Change", command=self.changeTextureFunc, state="disabled")
+        self.buttonChange = customtkinter.CTkButton(self, text="Change", command=self.changeTextureCall, state="disabled")
         self.buttonChange.grid(row=3, column=0, padx=5, pady=5, sticky="wes")
 
-    def changeTextureFunc(self):
-        self.changeTexture = True
+    def changeTextureCall(self):
+        changeTexture = partial(self.changeTextureFunc, self.selected.get())
+        threading.Thread(target=changeTexture).start()
+
+    def changeTextureFunc(self, value):
+        root = self.master.master
+        mainFrame = self.master
+
+        actualOpt = root.searchData[3]
+        outputFolder = root.outputFolder
+        items = root.items
+        blocks = root.blocks
+        app_path = root.app_path
+        sourceFolder = root.sourceFolder
+
+        # Load indexes
+        added = []
+        if actualOpt == "Items":
+            if os.path.exists(os.path.join(outputFolder, "items.txt")):
+                added = getItemsFromIndexFile(os.path.join(outputFolder, "items.txt"))
+        elif actualOpt == "Blocks":
+            if os.path.exists(os.path.join(outputFolder, "blocks.txt")):
+                added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
+
+        # Calculate positions
+        if actualOpt == "Items":
+            matchwith = checkForMatch(value, items)
+            position = calculateGrid(matchwith, 32, 13, 16)
+        elif actualOpt == "Blocks":
+            matchwith = checkForMatch(value, blocks)
+            position = calculateGrid(matchwith, 25, 22, 20)
+
+        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".png .jpg")])
+        if filePath != '':
+            if isImage16x16(filePath):
+                if actualOpt == "Items":
+                    addToItemAtlas(position, filePath, os.path.join(app_path, sourceFolder), outputFolder)
+                    duplicated = checkForMatch(items[matchwith], added)
+                    if duplicated == -1:
+                        addElementToFile(items[matchwith], os.path.join(outputFolder, "items.txt"))
+                elif actualOpt == "Blocks":
+                    addToBlockAtlas(position, filePath, os.path.join(app_path, sourceFolder), outputFolder)
+                    duplicated = checkForMatch(blocks[matchwith], added)
+                    if duplicated == -1:
+                        addElementToFile(blocks[matchwith], os.path.join(outputFolder, "blocks.txt"))
+                root.reloadAtlas()
+                mainFrame.listElementCall(value)
 
 class MainFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -97,11 +146,94 @@ class MainFrame(customtkinter.CTkFrame):
         self.searchOptionsFrame = SearchOptionsFrame(self)
         self.searchOptionsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="wen", columnspan=2)
 
-        self.elementsFrame = CTkListbox.CTkListbox(self, command=master.listElementDisplay)
+        self.elementsFrame = CTkListbox.CTkListbox(self, command=self.listElementCall)
         self.elementsFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
 
         self.infoDispFrame = InfoDisplayFrame(self)
         self.infoDispFrame.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
+
+    def updateDisplayList(self):
+        self.elementsFrame.delete("all")
+        thread = threading.Thread(target=self.updateDisplayListFun)
+        thread.daemon = True
+        thread.start()
+
+    def updateDisplayListFun(self):
+        root = self.master
+        mainFrame = self
+        searchData = self.searchOptionsFrame.searchDataLoc
+        actualOpt = searchData[3]
+        items = root.items
+        blocks = root.blocks
+        outputFolder = root.outputFolder
+
+        elements = []
+        added = []
+        if actualOpt == "Items":
+            elements = items
+            if os.path.exists(os.path.join(outputFolder, "items.txt")):
+                added = getItemsFromIndexFile(os.path.join(outputFolder, "items.txt"))
+        elif actualOpt == "Blocks":
+            elements = blocks
+            if os.path.exists(os.path.join(outputFolder, "blocks.txt")):
+                added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
+
+        if (not searchData[0] == ""):
+            elements = difflib.get_close_matches(searchData[0], elements, cutoff=0.4)
+        
+        if searchData[1] == "off":
+            elements = deleteMatches(elements, added)
+
+        if searchData[2] == "off":
+            elements = checkForMatches(elements, added)
+
+        for i in range(0, len(elements)):
+            mainFrame.elementsFrame.insert(i, elements[i])
+
+    def listElementCall(self, value):
+        listElement = partial(self.listElementFun, value)
+        threading.Thread(target=listElement).start()
+
+    def listElementFun(self, value):
+        if value != "":
+            self.updateElement = False
+            self.infoDispFrame.noSelectedText.grid_remove()
+            self.infoDispFrame.buttonChange.configure(state="normal")
+            self.infoDispFrame.selected.set(value)
+
+            selected = value
+            actualOpt = self.master.searchData[3]
+            master = self.master
+
+            # Calculate positions
+            if actualOpt == "Items":
+                matchwith = checkForMatch(selected, master.items)
+                position = calculateGrid(matchwith, 32, 13, 16)
+            elif actualOpt == "Blocks":
+                matchwith = checkForMatch(selected, master.blocks)
+                position = calculateGrid(matchwith, 25, 22, 20)
+                position = (position[0] + 2, position[1] + 2)
+
+            # Load atlas
+            if actualOpt == "Items":
+                atlas = master.atlas[1]
+                idx = 0
+            elif actualOpt == "Blocks":
+                atlas = master.atlas[3]
+                idx = 2
+
+            # Copy region and update display
+            if master.atlas[idx] == 1:
+                box = (position[0], position[1], position[0] + 16, position[1] + 16)
+                region = atlas.crop(box)
+                portview = Image.new("RGBA", (16, 16))
+                portview.paste(region, (0, 0))
+            else:
+                region = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
+                buffer = numpy.asarray(region, dtype=numpy.uint8)
+                portview = Image.fromarray(buffer)
+            portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
+            self.infoDispFrame.portview.configure(dark_image=portviewRes)
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -110,7 +242,6 @@ class App(customtkinter.CTk):
         # --------------------------------------------
 
         # Variables declaration
-        self.updateDisplayList = True
         self.searchData = ["", "off", "on", "Items"]
         self.sourceFolder = "assets"
         self.selected = ""
@@ -175,164 +306,24 @@ class App(customtkinter.CTk):
         self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/items.txt"))
         self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/blocks.txt"))
         self.reloadAtlas()
+        self.mainFrame.updateDisplayList()
 
         # Start daemon threads
         threadParams = threading.Thread(target=self.updateParamsThread)
         threadParams.daemon = True
         threadParams.start()
 
-        threadDisplayList = threading.Thread(target=self.updateDisplayListThread)
-        threadDisplayList.daemon = True
-        threadDisplayList.start()
-
-        threadListElement = threading.Thread(target=self.listElementCickedThread)
-        threadListElement.daemon = True
-        threadListElement.start()
-
-        threadTextureChange = threading.Thread(target=self.changeTextureThread)
-        threadTextureChange.daemon = True
-        threadTextureChange.start()
-
     def openFolder(self):
         input = customtkinter.filedialog.askdirectory()
         if self.outputFolder != input and input != '':
             self.outputFolder = input
             self.reloadAtlas()
-            self.updateDisplayList = True
+            self.updateItemsList()
 
     def updateParamsThread(self):
         while True:
-            if not (self.searchData == self.mainFrame.searchOptionsFrame.searchDataLoc):
-                self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:4]
-                self.updateDisplayList = True
-
             if f"{self.searchData[3]}:" != self.mainFrame.elementsFrame.cget("label_text"):
                 self.mainFrame.elementsFrame.configure(label_text=f"{self.searchData[3]}:")
-            time.sleep(0.5)
-
-    def changeTextureThread(self):
-        while True:
-            if self.mainFrame.infoDispFrame.changeTexture == True and self.mainFrame.infoDispFrame.selected.get() != "":
-                self.mainFrame.infoDispFrame.changeTexture = False
-                value = self.mainFrame.infoDispFrame.selected.get()
-                actualOpt = self.searchData[3]
-                outputFolder = self.outputFolder
-                items = self.items
-                blocks = self.blocks
-                app_path = self.app_path
-                sourceFolder = self.sourceFolder
-
-                # Load indexes
-                added = []
-                if actualOpt == "Items":
-                    if os.path.exists(os.path.join(outputFolder, "items.txt")):
-                        added = getItemsFromIndexFile(os.path.join(outputFolder, "items.txt"))
-                elif actualOpt == "Blocks":
-                    if os.path.exists(os.path.join(outputFolder, "blocks.txt")):
-                        added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
-
-                # Calculate positions
-                if actualOpt == "Items":
-                    matchwith = checkForMatch(value, items)
-                    position = calculateGrid(matchwith, 32, 13, 16)
-                elif actualOpt == "Blocks":
-                    matchwith = checkForMatch(value, blocks)
-                    position = calculateGrid(matchwith, 25, 22, 20)
-
-                filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".png .jpg")])
-                if filePath != '':
-                    if isImage16x16(filePath):
-                        if actualOpt == "Items":
-                            addToItemAtlas(position, filePath, os.path.join(app_path, sourceFolder), outputFolder)
-                            duplicated = checkForMatch(items[matchwith], added)
-                            if duplicated == -1:
-                                addElementToFile(items[matchwith], os.path.join(outputFolder, "items.txt"))
-                        elif actualOpt == "Blocks":
-                            addToBlockAtlas(position, filePath, os.path.join(app_path, sourceFolder), outputFolder)
-                            duplicated = checkForMatch(blocks[matchwith], added)
-                            if duplicated == -1:
-                                addElementToFile(blocks[matchwith], os.path.join(outputFolder, "blocks.txt"))
-                        self.reloadAtlas()
-                        self.updateElement = True
-            time.sleep(0.5)
-
-    def updateDisplayListThread(self):
-        while True:
-            if self.updateDisplayList == True:
-                self.updateDisplayList = False
-                actualOpt = self.searchData[3]
-                
-                self.mainFrame.elementsFrame.delete("all")
-
-                elements = []
-                added = []
-                if actualOpt == "Items":
-                    elements = self.items
-                    if os.path.exists(os.path.join(self.outputFolder, "items.txt")):
-                        added = getItemsFromIndexFile(os.path.join(self.outputFolder, "items.txt"))
-                elif actualOpt == "Blocks":
-                    elements = self.blocks
-                    if os.path.exists(os.path.join(self.outputFolder, "blocks.txt")):
-                        added = getItemsFromIndexFile(os.path.join(self.outputFolder, "blocks.txt"))
-
-                if (not self.searchData[0] == ""):
-                    elements = difflib.get_close_matches(self.searchData[0], elements, cutoff=0.4)
-                
-                if self.searchData[1] == "off":
-                    elements = deleteMatches(elements, added)
-
-                if self.searchData[2] == "off":
-                    elements = checkForMatches(elements, added)
-
-                for i in range(0, len(elements)):
-                    self.mainFrame.elementsFrame.insert(i, elements[i])
-                    if self.updateDisplayList == True:
-                        break
-            time.sleep(0.5)
-
-    def listElementDisplay(self, value):
-            self.mainFrame.infoDispFrame.selected.set(value)
-
-    def listElementCickedThread(self):
-        while True:
-            if (self.selected != self.mainFrame.infoDispFrame.selected.get() and self.mainFrame.infoDispFrame.selected.get() != "") or self.updateElement == True:
-                self.updateElement = False
-                self.mainFrame.infoDispFrame.noSelectedText.grid_remove()
-                self.mainFrame.infoDispFrame.buttonChange.configure(state="normal")
-
-                self.selected = self.mainFrame.infoDispFrame.selected.get()
-                selected = self.selected
-                actualOpt = self.searchData[3]
-
-                # Calculate positions
-                if actualOpt == "Items":
-                    matchwith = checkForMatch(selected, self.items)
-                    position = calculateGrid(matchwith, 32, 13, 16)
-                elif actualOpt == "Blocks":
-                    matchwith = checkForMatch(selected, self.blocks)
-                    position = calculateGrid(matchwith, 25, 22, 20)
-                    position = (position[0] + 2, position[1] + 2)
-
-                # Load atlas
-                if actualOpt == "Items":
-                    atlas = self.atlas[1]
-                    idx = 0
-                elif actualOpt == "Blocks":
-                    atlas = self.atlas[3]
-                    idx = 2
-
-                # Copy region and update display
-                if self.atlas[idx] == 1:
-                    box = (position[0], position[1], position[0] + 16, position[1] + 16)
-                    region = atlas.crop(box)
-                    portview = Image.new("RGBA", (16, 16))
-                    portview.paste(region, (0, 0))
-                else:
-                    region = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
-                    buffer = numpy.asarray(region, dtype=numpy.uint8)
-                    portview = Image.fromarray(buffer)
-                portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
-                self.mainFrame.infoDispFrame.portview.configure(dark_image=portviewRes)
             time.sleep(0.5)
 
     def reloadAtlas(self):
