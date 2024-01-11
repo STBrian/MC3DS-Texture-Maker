@@ -3,6 +3,7 @@ import sys
 import difflib
 import customtkinter
 import CTkMenuBar
+import CTkListbox
 import threading
 import time
 import numpy
@@ -25,7 +26,6 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
         self.lastOpt = "Items"
         self.searchDataLoc = ["", "off", "on", "Items"]
 
-        self.grid(row=0, column=0, padx=5, pady=5, sticky="wen", columnspan=2)
         self.grid_columnconfigure(0, weight=1)
 
         self.searchOptionsLabel = customtkinter.CTkLabel(self, text="Search options:")
@@ -61,17 +61,9 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
             self.searchDataLoc[2] = self.lastUnmodifiedVar
             self.searchDataLoc[3] = self.lastOpt
 
-class ElementsFrame(customtkinter.CTkScrollableFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-
-        self.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
-        self.grid_columnconfigure(0, weight=1)
-
 class InfoDisplayFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
@@ -98,14 +90,18 @@ class MainFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
-        self.pack(side='left', expand=True, fill='both')
         self.grid_columnconfigure(0, weight=5)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
         self.searchOptionsFrame = SearchOptionsFrame(self)
-        self.elementsFrame = ElementsFrame(self, label_text="Items:")
+        self.searchOptionsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="wen", columnspan=2)
+
+        self.elementsFrame = CTkListbox.CTkListbox(self, command=master.listElementDisplay)
+        self.elementsFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
+
         self.infoDispFrame = InfoDisplayFrame(self)
+        self.infoDispFrame.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -146,7 +142,7 @@ class App(customtkinter.CTk):
 
         self.geometry("580x420")
         self.minsize(580, 420)
-        self.resizable(True, True)
+        self.resizable(False, False)
 
         # --------------------------------------------
 
@@ -171,6 +167,7 @@ class App(customtkinter.CTk):
 
         # Main frame
         self.mainFrame = MainFrame(self, fg_color="transparent")
+        self.mainFrame.pack(side='left', expand=True, fill='both')
 
         # --------------------------------------------
 
@@ -265,13 +262,8 @@ class App(customtkinter.CTk):
                 self.updateDisplayList = False
                 actualOpt = self.searchData[3]
                 
-                for element in self.elementsList:
-                    element.grid_remove()
+                self.mainFrame.elementsFrame.delete("all")
 
-                for element in self.elementsList:
-                    element.destroy()
-
-                self.elementsList = []
                 elements = []
                 added = []
                 if actualOpt == "Items":
@@ -293,9 +285,7 @@ class App(customtkinter.CTk):
                     elements = checkForMatches(elements, added)
 
                 for i in range(0, len(elements)):
-                    self.listElement = customtkinter.CTkButton(self.mainFrame.elementsFrame, text=elements[i], fg_color="transparent", anchor="w", command=lambda v=elements[i]: self.listElementDisplay(v))
-                    self.listElement.grid(row=i, column=0, padx=5, pady=(5, 0), sticky="w")
-                    self.elementsList.append(self.listElement)
+                    self.mainFrame.elementsFrame.insert(i, elements[i])
                     if self.updateDisplayList == True:
                         break
             time.sleep(0.5)
