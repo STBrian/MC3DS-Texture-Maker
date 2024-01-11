@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller pillow customtkinter packaging numpy CTkMenuBar
+        pip install -r requirements.txt
     - name: Build script
       run: |
         ./build.bat
@@ -44,7 +44,7 @@ jobs:
       run: |
         sudo apt install pip
         sudo apt install python3-tk
-        pip install pyinstaller Pillow customtkinter packaging numpy CTkMenuBar
+        pip install -r requirements.txt
     - name: Build script
       run: |
         bash ./build.sh
