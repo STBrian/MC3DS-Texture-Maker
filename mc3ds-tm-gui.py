@@ -175,8 +175,8 @@ class App(customtkinter.CTk):
         # --------------------------------------------
 
         # Initial loading
-        self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newitemslist.txt"))
-        self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newblockslist.txt"))
+        self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/items.txt"))
+        self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/blocks.txt"))
         self.reloadAtlas()
 
         # Start daemon threads

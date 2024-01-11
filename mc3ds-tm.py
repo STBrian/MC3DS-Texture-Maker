@@ -283,7 +283,7 @@ if __name__ == "__main__":
                         if option2 >= 1 and option2 <= 4:
                             escapemenu3 = False
                             update = True
-                            items = getItemsFromIndexFile(f"{sourceFolder}/indexes/newitemslist.txt")
+                            items = getItemsFromIndexFile(f"{sourceFolder}/indexes/items.txt")
 
                             while escapemenu3 == False:
                                 if update == True:
@@ -386,7 +386,7 @@ if __name__ == "__main__":
                         if option2 >= 1 and option2 <= 4:
                             escapemenu3 = False
                             update = True
-                            items = getItemsFromIndexFile(f"{sourceFolder}/indexes/newblockslist.txt")
+                            items = getItemsFromIndexFile(f"{sourceFolder}/indexes/blocks.txt")
 
                             while escapemenu3 == False:
                                 if update == True:
