@@ -1,4 +1,4 @@
-name: Build Windows and Linux
+name: Build Windows-Linux
 
 on:
   push:
