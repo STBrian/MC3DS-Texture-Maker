@@ -142,7 +142,7 @@ class App(customtkinter.CTk):
 
         self.geometry("580x420")
         self.minsize(580, 420)
-        self.resizable(False, False)
+        self.resizable(True, True)
 
         # --------------------------------------------
 
