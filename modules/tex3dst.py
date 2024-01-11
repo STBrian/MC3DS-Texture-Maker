@@ -274,10 +274,18 @@ class Texture3dst:
         copyData = [[] for i in  range(y2 - y1)]
         for i in range(y1, y2):
             for j in range(x1, x2):
-                #pixelData = self.getPixelData(j, i)
-                #copyData[i - y1].append((pixelData[0], pixelData[1], pixelData[2], pixelData[3]))
                 copyData[i - y1].append(self.getPixelData(j, i))
         return copyData
+
+    def paste(self, image: Image, x: int, y: int):
+        width = image.size[0]
+        height = image.size[1]
+        imageRgba = image.convert("RGBA")
+        imgData = imageRgba.load()
+        for i in range(0, height):
+            for j in range(0, width):
+                r, g, b, a = imgData[j, i]
+                self.setPixelRGBA(j, i, r, g, b, a)
 
     def flipX(self):
         flippedTexture = [0] * self.height * self.width * 4

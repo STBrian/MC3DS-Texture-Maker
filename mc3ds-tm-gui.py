@@ -9,6 +9,7 @@ import numpy
 from PIL import Image
 from PIL import ImageTk
 from functools import partial
+from pathlib import Path
 
 from modules import *
 
@@ -64,7 +65,7 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
 class InfoDisplayFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
         # Variables
@@ -74,16 +75,66 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
         # Widgets
         self.noSelectedText = customtkinter.CTkLabel(self, text="No element selected")
-        self.noSelectedText.grid(row=0, column=0, padx=5, pady=5)
+        self.noSelectedText.grid(row=0, column=0, padx=5, pady=5, columnspan=2)
 
         self.portviewFrame = customtkinter.CTkLabel(self, image=self.portview, text="", compound="top")
-        self.portviewFrame.grid(row=1, column=0, padx=5, pady=5)
+        self.portviewFrame.grid(row=1, column=0, padx=5, pady=5, columnspan=2)
 
         self.selectionLabel = customtkinter.CTkLabel(self, textvariable=self.selected)
-        self.selectionLabel.grid(row=2, column=0, padx=5, pady=5)
+        self.selectionLabel.grid(row=2, column=0, padx=5, pady=5, columnspan=2)
 
-        self.buttonChange = customtkinter.CTkButton(self, text="Change", command=self.changeTextureCall, state="disabled")
+        self.buttonChange = customtkinter.CTkButton(self, text="Change", command=self.changeTextureCall, state="disabled", width=50)
         self.buttonChange.grid(row=3, column=0, padx=5, pady=5, sticky="wes")
+
+        self.buttonExport = customtkinter.CTkButton(self, text="Export", state="disabled", command=self.saveAs, width=50)
+        self.buttonExport.grid(row=3, column=1, padx=(0, 5), pady=5, sticky="wes")
+
+    def saveAs(self):
+        file = customtkinter.filedialog.asksaveasfile(mode="wb", defaultextension=".png", filetypes=(("PNG File", ".png"), ("3DST File", ".3dst")))
+        if file:
+            extension = Path(file.name).suffix
+            value = self.selected.get()
+            root = self.master.master
+            if value != "":
+                selected = value
+                actualOpt = root.searchData[3]
+
+                # Calculate positions
+                if actualOpt == "Items":
+                    matchwith = checkForMatch(selected, root.items)
+                    position = calculateGrid(matchwith, 32, 13, 16)
+                elif actualOpt == "Blocks":
+                    matchwith = checkForMatch(selected, root.blocks)
+                    position = calculateGrid(matchwith, 25, 22, 20)
+                    position = (position[0] + 2, position[1] + 2)
+
+                # Load atlas
+                if actualOpt == "Items":
+                    atlas = root.atlas[1]
+                    idx = 0
+                elif actualOpt == "Blocks":
+                    atlas = root.atlas[3]
+                    idx = 2
+
+                # Copy region and export
+                if root.atlas[idx] == 1:
+                    box = (position[0], position[1], position[0] + 16, position[1] + 16)
+                    region = atlas.crop(box)
+                    export = Image.new("RGBA", (16, 16))
+                    export.paste(region, (0, 0))
+                else:
+                    region = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
+                    buffer = numpy.asarray(region, dtype=numpy.uint8)
+                    export = Image.fromarray(buffer)
+
+                if extension == ".png":
+                    export.save(file)
+                elif extension == ".3dst":
+                    export3dst = Texture3dst().new(16, 16, 1)
+                    export3dst.paste(export, 0, 0)
+                    export3dst.convertData()
+                    export3dst.export(file.name)
+        file.close()
 
     def changeTextureCall(self):
         changeTexture = partial(self.changeTextureFunc, self.selected.get())
@@ -158,7 +209,10 @@ class MainFrame(customtkinter.CTkFrame):
         if value != "":
             self.updateElement = False
             self.infoDispFrame.noSelectedText.grid_remove()
-            self.infoDispFrame.buttonChange.configure(state="normal")
+            if self.infoDispFrame.buttonChange.cget("state") == "disabled":
+                self.infoDispFrame.buttonChange.configure(state="normal")
+            if self.infoDispFrame.buttonExport.cget("state") == "disabled":
+                self.infoDispFrame.buttonExport.configure(state="normal")
             self.infoDispFrame.selected.set(value)
 
             selected = value
