@@ -13,6 +13,41 @@ from pathlib import Path
 
 from modules import *
 
+class AIInputFrame(customtkinter.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+        self.grid_columnconfigure(0, weight=1)
+
+        self.label = customtkinter.CTkLabel(self, text="Select Minecraft texture folder:")
+        self.label.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="w")
+
+        self.button = customtkinter.CTkButton(self, text="Select folder", width=100)
+        self.button.grid(row=1, column=0, padx=10, pady=(5, 10), sticky="w")
+
+class AutoImporter(MyCTkTopLevel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.geometry("320x420")
+        self.resizable(False, False)
+        self.title("Auto importer")
+
+        self.grid_columnconfigure(0, weight=1)
+
+        self.inputFrame = AIInputFrame(self)
+        self.inputFrame.grid(row=0, column=0, padx=5, pady=5, sticky="we")
+
+    def changeIcon(self, app_path):
+        os_name = os.name
+        if os_name == "nt":
+            iconpath = ImageTk.PhotoImage(file=os.path.join(app_path, "icon2.png"))
+            self.wm_iconbitmap()
+            self.iconphoto(False, iconpath)
+        elif os_name == "posix":
+            iconpath = ImageTk.PhotoImage(file=os.path.join(app_path, "icon2.png"))
+            self.wm_iconbitmap()
+            self.iconphoto(False, iconpath)
+
 class SearchOptionsFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
@@ -83,10 +118,10 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.selectionLabel = customtkinter.CTkLabel(self, textvariable=self.selected)
         self.selectionLabel.grid(row=2, column=0, padx=5, pady=5, columnspan=2)
 
-        self.buttonChange = customtkinter.CTkButton(self, text="Change", command=self.changeTextureCall, state="disabled", width=50)
+        self.buttonChange = customtkinter.CTkButton(self, text="Change", command=self.changeTextureCall, state="disabled", width=100)
         self.buttonChange.grid(row=3, column=0, padx=5, pady=5, sticky="wes")
 
-        self.buttonExport = customtkinter.CTkButton(self, text="Export", state="disabled", command=self.saveAs, width=50)
+        self.buttonExport = customtkinter.CTkButton(self, text="Export", state="disabled", command=self.saveAs, width=100)
         self.buttonExport.grid(row=3, column=1, padx=(0, 5), pady=5, sticky="wes")
 
     def saveAs(self):
@@ -301,9 +336,7 @@ class App(customtkinter.CTk):
         fileMenu.add_option("Exit", command=sys.exit)
 
         toolsMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
-        toolsMenu.add_option("Dummy 1")
-        toolsMenu.add_option("Dummy 2")
-        toolsMenu.add_option("Dummy 3")
+        toolsMenu.add_option("Auto importer", command=self.openAutoImporter)
 
         helpMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Help"))
         helpMenu.add_option("About")
@@ -336,6 +369,10 @@ class App(customtkinter.CTk):
             self.outputFolder = input
             self.reloadAtlas()
             self.updateList = True
+
+    def openAutoImporter(self):
+        autoImporter = AutoImporter(self)
+        autoImporter.changeIcon(self.app_path)
 
     def updateParamsThread(self):
         while True:
