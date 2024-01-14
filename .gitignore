@@ -4,5 +4,6 @@
 /block
 /item
 /modules/__pycache__
+/tools/__pycache__
+/tools/MyCTkTopLevel/__pycache__
 /venv
-/mc3ds-tm-gui.spec
