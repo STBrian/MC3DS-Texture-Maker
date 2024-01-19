@@ -4,39 +4,20 @@ class Texture3dstException(Exception):
     def __init__(self, message):
         super().__init__(message)
 
-def setPixelRGBAfromList(data: list, x: int, y: int, width: int, height: int, red: int, green: int, blue: int, alpha: int):
+def setPixelRGBAfromList(data: list, xy: tuple, size: tuple, rgba: list):
         if type(data) != list:
             raise Texture3dstException("data expected to be a list.")
-        if type(x) != int:
-            raise Texture3dstException("x coordinates expected to be an integer.")
-        if type(y) != int:
-            raise Texture3dstException("y coordinates expected to be an integer.")
-        if type(width) != int:
-            raise Texture3dstException("width expected to be an integer.")
-        if type(height) != int:
-            raise Texture3dstException("height expected to be an integer.")
-        if x < 0 or x >= width:
-            raise Texture3dstException("x coordinates out of range.")
-        if y < 0 or y >= height:
-            raise Texture3dstException("y coordinates out of range.")
-        if type(red) != int:
-            raise Texture3dstException("red value expected to be an integer.")
-        if type(green) != int:
-            raise Texture3dstException("green value expected to be an integer.")
-        if type(blue) != int:
-            raise Texture3dstException("blue value expected to be an integer.")
-        if type(alpha) != int:
-            raise Texture3dstException("alpha value expected to be an integer.")
-        if red < 0 or red > 255:
-            raise Texture3dstException("red value must be between 0 and 255.")
-        if green < 0 or green > 255:
-            raise Texture3dstException("green value must be between 0 and 255.")
-        if blue < 0 or blue > 255:
-            raise Texture3dstException("blue value must be between 0 and 255.")
-        if alpha < 0 or alpha > 255:
-            raise Texture3dstException("alpha value must be between 0 and 255.")
+        if not (type(size) == tuple and all(isinstance(num, int) for num in size) and all(num > 0 for num in size)):
+            raise Texture3dstException("Invalid size.")
+        if not (type(xy) == tuple and all(isinstance(num, int) for num in xy) and all((xy[i] < 0 or xy[i] >= size[i]) for i in range(len(xy)))):
+            raise Texture3dstException("Invalid coordinates.")
+        if not (type(rgba) == list and len(rgba) == 4 and all(isinstance(num, int) for num in rgba) and all((num >= 0 and num <= 255) for num in rgba)):
+            raise Texture3dstException("Invalid color.")
+        x = xy[0]
+        y = xy[1]
+        width = size[0]
         listPosition = ((y * width) + x) * 4
-        data[listPosition:(listPosition + 4)] = [red, green, blue, alpha]
+        data[listPosition:(listPosition + 4)] = rgba
         return data
 
 def getPixelDataFromList(data: list, x: int, y: int, width: int, height: int):
@@ -106,7 +87,7 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
                                             g = data[z + 2]
                                             b = data[z + 1]
                                             a = data[z]
-                                            convertedData = setPixelRGBAfromList(convertedData, x, y, width, height, r, g, b, a)
+                                            convertedData = setPixelRGBAfromList(convertedData, (x, y), (width, height), [r, g, b, a])
                                             z += 4
                                         x += 1
                                     x -= 2
@@ -297,7 +278,7 @@ class Texture3dst:
             for j in range(0, self.width):
                 pixelData = self.getPixelData(x, y)
                 r, g, b, a = pixelData[0:4]
-                flippedTexture = setPixelRGBAfromList(flippedTexture, x, y_flipped, self.width, self.height, r, g, b, a)
+                flippedTexture = setPixelRGBAfromList(flippedTexture, (x, y_flipped), (self.width, self.height), [r, g, b, a])
                 x += 1
             x = 0
             y += 1
@@ -316,7 +297,7 @@ class Texture3dst:
             for j in range(0, self.width):
                 pixelData = self.getPixelData(x, y)
                 r, g, b, a = pixelData[0:4]
-                flippedTexture = setPixelRGBAfromList(flippedTexture, x_flipped, y, self.width, self.height, r, g, b, a)
+                flippedTexture = setPixelRGBAfromList(flippedTexture, (x_flipped, y), (self.width, self.height), [r, g, b, a])
                 x += 1
                 x_flipped -= 1
             y += 1

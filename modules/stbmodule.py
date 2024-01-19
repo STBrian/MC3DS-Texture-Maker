@@ -1,7 +1,7 @@
 import os
 from PIL import Image
 
-from modules.tex3dst import *
+from .tex3dst import *
 
 def getItemsFromIndexFile(filename):
     items = []
