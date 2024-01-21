@@ -1,7 +1,7 @@
 import os
 from PIL import Image
 
-from .tex3dst import *
+from . import tex3dst
 
 def getItemsFromIndexFile(filename):
     items = []
@@ -71,12 +71,12 @@ def addToItemAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
     # Carga los archivos necesarios a la memoria
     if os.path.exists(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst"):
         print("Opening modified atlas...")
-        itemAtlas = Texture3dst().open(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst")
+        itemAtlas = tex3dst.load(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst")
         # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
         itemAtlas.flipX()
     else:
         print("Creating new atlas file...")
-        itemAtlas = Texture3dst().new(512, 256, 1)
+        itemAtlas = tex3dst.new(512, 256, 1)
         print("Opening atlas from assets...")
         itemAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.items.vanilla.png").convert("RGBA")
         x = 0
@@ -134,12 +134,12 @@ def addToBlockAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
     print("Starting...")
     if os.path.exists(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst"):
         print("Opening modified atlas...")
-        blockAtlas = Texture3dst().open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst")
+        blockAtlas = tex3dst.load(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst")
         # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
         blockAtlas.flipX()
     else:
         print("Creating new texture file...")
-        blockAtlas = Texture3dst().new(512, 512, 3)
+        blockAtlas = tex3dst.new(512, 512, 3)
         print("Opening atlas from assets...")
         blockAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.terrain.vanilla.png").convert("RGBA")
         x = 0

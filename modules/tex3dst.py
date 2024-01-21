@@ -6,13 +6,13 @@ class Texture3dstException(Exception):
 
 def setPixelRGBAfromList(data: list, xy: tuple, size: tuple, rgba: list):
         if type(data) != list:
-            raise Texture3dstException("data expected to be a list.")
+            raise TypeError("data expected to be a list.")
         if not (type(size) == tuple and all(isinstance(num, int) for num in size) and all(num > 0 for num in size)):
-            raise Texture3dstException("Invalid size.")
+            raise ValueError("Invalid size.")
         if not (type(xy) == tuple and all(isinstance(num, int) for num in xy) and all((xy[i] >= 0 or xy[i] < size[i]) for i in range(len(xy)))):
-            raise Texture3dstException("Invalid coordinates.")
+            raise ValueError("Invalid coordinates.")
         if not (type(rgba) == list and len(rgba) == 4 and all(isinstance(num, int) for num in rgba) and all((num >= 0 and num <= 255) for num in rgba)):
-            raise Texture3dstException("Invalid color.")
+            raise ValueError("Invalid color.")
         x = xy[0]
         y = xy[1]
         width = size[0]
@@ -111,7 +111,7 @@ class Texture3dst:
     def __init__(self):
         return
 
-    def open(self, path: str = None):
+    def _open(self, path: str = None):
         if type(path) != str or path == None:
             raise Texture3dstException("Invalid path.")
         
@@ -176,7 +176,7 @@ class Texture3dst:
 
         return self
 
-    def new(self, width: int, height: int, maxmiplevel: int):
+    def _new(self, width: int, height: int, maxmiplevel: int):
         if type(width) != int:
             raise Texture3dstException("Width expected to be an integer.")
         if type(height) != int:
@@ -406,3 +406,11 @@ class Texture3dst:
         with open(f"{path}", "wb") as f:
             f.write(bytearray(self.output))
         return
+    
+def new(size: tuple, maxmiplevel: int = 1) -> Texture3dst:
+    tex = Texture3dst()._new(size[0], size[1], maxmiplevel)
+    return tex
+
+def load(fp: str = None) -> Texture3dst:
+    tex = Texture3dst()._open(fp)
+    return tex

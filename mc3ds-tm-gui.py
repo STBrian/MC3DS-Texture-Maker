@@ -131,7 +131,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                 if extension == ".png":
                     export.save(file)
                 elif extension == ".3dst":
-                    export3dst = Texture3dst().new(16, 16, 1)
+                    export3dst = tex3dst.new(16, 16, 1)
                     export3dst.paste(export, 0, 0)
                     export3dst.convertData()
                     export3dst.export(file.name)
@@ -389,7 +389,7 @@ class App(customtkinter.CTk):
     def reloadAtlas(self):
         self.atlas = []
         if os.path.exists(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
-            atlas = Texture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+            atlas = tex3dst.load(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
             atlas.flipX()
             self.atlas.append(2)
         else:
@@ -397,7 +397,7 @@ class App(customtkinter.CTk):
             self.atlas.append(1)
         self.atlas.append(atlas)
         if os.path.exists(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
-            atlas = Texture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
+            atlas = tex3dst.load(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
             atlas.flipX()
             self.atlas.append(2)
         else:
