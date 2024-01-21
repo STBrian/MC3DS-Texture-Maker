@@ -9,7 +9,7 @@ def setPixelRGBAfromList(data: list, xy: tuple, size: tuple, rgba: list):
             raise Texture3dstException("data expected to be a list.")
         if not (type(size) == tuple and all(isinstance(num, int) for num in size) and all(num > 0 for num in size)):
             raise Texture3dstException("Invalid size.")
-        if not (type(xy) == tuple and all(isinstance(num, int) for num in xy) and all((xy[i] < 0 or xy[i] >= size[i]) for i in range(len(xy)))):
+        if not (type(xy) == tuple and all(isinstance(num, int) for num in xy) and all((xy[i] >= 0 or xy[i] < size[i]) for i in range(len(xy)))):
             raise Texture3dstException("Invalid coordinates.")
         if not (type(rgba) == list and len(rgba) == 4 and all(isinstance(num, int) for num in rgba) and all((num >= 0 and num <= 255) for num in rgba)):
             raise Texture3dstException("Invalid color.")
@@ -111,9 +111,9 @@ class Texture3dst:
     def __init__(self):
         return
 
-    def open(self, path: str):
-        if type(path) != str:
-            raise Texture3dstException("path expected to be a string.")
+    def open(self, path: str = None):
+        if type(path) != str or path == None:
+            raise Texture3dstException("Invalid path.")
         
         with open(f"{path}", "rb") as f:
             fileData = list(f.read())
@@ -263,8 +263,8 @@ class Texture3dst:
         height = image.size[1]
         imageRgba = image.convert("RGBA")
         imgData = imageRgba.load()
-        for i in range(0, height):
-            for j in range(0, width):
+        for i in range(y, height):
+            for j in range(x, width):
                 r, g, b, a = imgData[j, i]
                 self.setPixelRGBA(j, i, r, g, b, a)
 
