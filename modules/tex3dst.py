@@ -111,7 +111,7 @@ class Texture3dst:
     def __init__(self):
         return
 
-    def _open(self, path: str = None):
+    def open(self, path: str = None):
         if type(path) != str or path == None:
             raise Texture3dstException("Invalid path.")
         
@@ -176,7 +176,7 @@ class Texture3dst:
 
         return self
 
-    def _new(self, width: int, height: int, maxmiplevel: int):
+    def new(self, width: int, height: int, maxmiplevel: int):
         if type(width) != int:
             raise Texture3dstException("Width expected to be an integer.")
         if type(height) != int:
@@ -209,7 +209,7 @@ class Texture3dst:
         self.output = []
         return self
 
-    def setPixelRGBA(self, x: int, y: int, red: int, green: int, blue: int, alpha: int):
+    def setPixelRGBA(self, x: int, y: int, red: int, green: int, blue: int, alpha: int) -> None:
         if type(x) != int:
             raise Texture3dstException("x coordinates expected to be an integer.")
         if type(y) != int:
@@ -238,7 +238,7 @@ class Texture3dst:
         self.data[listPosition:(listPosition + 4)] = [red, green, blue, alpha]
         return
 
-    def getPixelData(self, x: int, y: int):
+    def getPixelData(self, x: int, y: int) -> list:
         if type(x) != int:
             raise Texture3dstException("x coordinates expected to be an integer.")
         if type(y) != int:
@@ -251,14 +251,14 @@ class Texture3dst:
         rgba = self.data[listPosition:(listPosition + 4)]
         return rgba
     
-    def copy(self, x1: int, y1: int, x2: int, y2: int):
+    def copy(self, x1: int, y1: int, x2: int, y2: int) -> list:
         copyData = [[] for i in  range(y2 - y1)]
         for i in range(y1, y2):
             for j in range(x1, x2):
                 copyData[i - y1].append(self.getPixelData(j, i))
         return copyData
 
-    def paste(self, image: Image, x: int, y: int):
+    def paste(self, image: Image, x: int, y: int) -> None:
         width = image.size[0]
         height = image.size[1]
         imageRgba = image.convert("RGBA")
@@ -267,8 +267,9 @@ class Texture3dst:
             for j in range(x, width):
                 r, g, b, a = imgData[j, i]
                 self.setPixelRGBA(j, i, r, g, b, a)
+        return
 
-    def flipX(self):
+    def flipX(self) -> None:
         flippedTexture = [0] * self.height * self.width * 4
 
         x = 0
@@ -287,7 +288,7 @@ class Texture3dst:
         self.data = flippedTexture
         return
 
-    def flipY(self):
+    def flipY(self) -> None:
         flippedTexture = [0] * self.height * self.width * 4
 
         y = 0
@@ -305,13 +306,13 @@ class Texture3dst:
         self.data = flippedTexture
         return
 
-    def getData(self):
+    def getData(self) -> list:
         return self.data
     
-    def getOutputData(self):
+    def getOutputData(self) -> list:
         return self.output
 
-    def convertData(self):        
+    def convertData(self) -> None:        
         self.convertedData = convertFunction(self.data, self.width, self.height, 1)
 
         if self.maxmiplevel > 1:
@@ -372,7 +373,7 @@ class Texture3dst:
             
         return
     
-    def export(self, path: str):
+    def export(self, path: str) -> None:
         if type(path) != str:
             raise Texture3dstException("path expected to be a string.")
 
@@ -407,10 +408,3 @@ class Texture3dst:
             f.write(bytearray(self.output))
         return
     
-def new(size: tuple, maxmiplevel: int = 1) -> Texture3dst:
-    tex = Texture3dst()._new(size[0], size[1], maxmiplevel)
-    return tex
-
-def load(fp: str = None) -> Texture3dst:
-    tex = Texture3dst()._open(fp)
-    return tex
