@@ -139,6 +139,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
     def changeTextureCall(self):
         changeTexture = partial(self.changeTextureFunc, self.selected.get())
+        self.buttonChange.configure(state="disabled")
         threading.Thread(target=changeTexture).start()
 
     def changeTextureFunc(self, value):
@@ -184,6 +185,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                         addElementToFile(blocks[matchwith], os.path.join(outputFolder, "blocks.txt"))
                 root.reloadAtlas()
                 mainFrame.listElementCall(value)
+        self.buttonChange.configure(state="normal")
 
 class MainFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
