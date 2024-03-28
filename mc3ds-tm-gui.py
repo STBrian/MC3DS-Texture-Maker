@@ -1,11 +1,6 @@
-import os
-import sys
-import difflib
-import customtkinter
-import CTkMenuBar
-import threading
-import time
-import numpy
+import os, sys
+import difflib, threading, time
+import customtkinter, CTkMenuBar
 from PIL import Image
 from PIL import ImageTk
 from functools import partial
