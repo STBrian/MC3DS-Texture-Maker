@@ -30,6 +30,9 @@ def setPixelRGBAfromList(data: list, pos: tuple, pixel_data: tuple | list) -> li
             else:
                 raise Texture3dstException("Pixel_data must be only integers.")
 
+        if len(pixel_data) != len(data[pos[1]][pos[0]]):
+            raise ValueError("Pixel_data lenght does not match with original pixel")
+
         data[pos[1]][pos[0]] = list(pixel_data)
         return data
 
@@ -58,11 +61,12 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
         if not (conversiontype >= 1 and conversiontype <= 2):
             raise Texture3dstException("Conversion type must be 1 or 2.")
         
+        channels = len(data[0][0])
+
         convertedData = [[] for _ in range(height)]
         for i in range(height):
             for j in range(width):
-                convertedData[i].append([])
-                convertedData[i][j] = [0] * 4
+                convertedData[i].append([0] * channels)
 
         x = 0
         y = 0
@@ -81,15 +85,13 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
                                         # Tipo 2 es para de una textura 3dst crear una imagen
                                         if conversiontype == 1:
                                             pixelData = getPixelDataFromList(data, (x, y))
-                                            if pixelData[3] == 0:
-                                                for q in range(0, 4):
-                                                    # [0] * 4 crea una lista: [0, 0, 0, 0]
-                                                    convertedData[y2][x2] = [0] * 4
+                                            if channels == 4:
+                                                if pixelData[-1] == 0:
+                                                    setPixelRGBAfromList(convertedData, (x2, y2), [0] * channels)
+                                                else:
+                                                    setPixelRGBAfromList(convertedData, (x2, y2), pixelData[::-1])
                                             else:
-                                                # Como es de tipo 1 se tendrán que guardar los valores rgba invertidos
-                                                # [::-1] crea una lista invertida y la retorna
-                                                pixelData = pixelData[::-1]
-                                                convertedData[y2][x2] = pixelData
+                                                setPixelRGBAfromList(convertedData, (x2, y2), pixelData[::-1])
                                         else:
                                             # Como es de tipo 2 los valores rgba están en posiciones invertidas
                                             # data[y2][x2][::-1] obtiene los valores a, b, g, r del pixel y los invierte
@@ -118,6 +120,9 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
         return convertedData
 
 class Texture3dst:
+    formats = ("rgba8", "rgb8", "", "", "", "", "", "", "", "l")
+    supported_formats = ("rgba8", "rgb8")
+
     def __init__(self):
         return
 
@@ -132,14 +137,19 @@ class Texture3dst:
         if extract_chunk(fileData, 0) != bytes.fromhex("33445354"):
             raise Texture3dstException("The texture does not contain the type mark.")
         
-        # Modo de textura
+        # Modo de textura y formato
+        ## l = escala de grises
         mode = bytes_to_uint(extract_chunk(fileData, 1), "little")
-        if mode != 3:
-            raise Texture3dstException("Texture mode not supported.")
-        
-        # Verifica que no haya bytes desconocidos
-        if bytes_to_uint(extract_chunk(fileData, 2), "little") != 0:
-            raise Texture3dstException(f"Unknown data in element 2 of the file. Possible unsupported texture.")
+        format = bytes_to_uint(extract_chunk(fileData, 2), "little")
+        if mode == 3:
+            if format < 0 or format > len(self.supported_formats) - 1:
+                raise Texture3dstException(f"Texture format unsupported: {format}.")
+            else:
+                format = self.formats[format]
+                if not (format in self.supported_formats):
+                    raise Texture3dstException(f"Texture format unsupported: {format}.")
+        else:
+            raise Texture3dstException(f"Unsupported mode: {mode}.")
         
         # Obtiene las dimensiones de la textura
         width = bytes_to_uint(extract_chunk(fileData, 3), "little")
@@ -170,7 +180,12 @@ class Texture3dst:
         if not ((width / (2 ** (miplevel - 1)) >= 8) and (height / (2 ** (miplevel - 1)) >= 8)):
             raise Texture3dstException("MipLevel not supported.")
 
+        if format == "rgba8":
+            self.channels = 4
+        elif format == "rgb8":
+            self.channels = 3
         self.mode = mode
+        self.format = format
         self.width = width
         self.height = height
         self.miplevel = miplevel
@@ -182,15 +197,14 @@ class Texture3dst:
         shorted_data = [[] for _ in range(height)]
         for i in range(height):
             for j in range(width):
-                shorted_data[i].append([])
-                shorted_data[i][j] = data[((i * width) + j) * 4:(((i * width) + j) * 4) + 4]
+                shorted_data[i].append(data[((i * width) + j) * self.channels:(((i * width) + j) * self.channels) + self.channels])
 
         # Se utiliza el segundo método de conversion para cargar la textura
         self.data = convertFunction(shorted_data, width, height, 2)
 
         return self
 
-    def new(self, width: int, height: int, miplevel: int = 1):
+    def new(self, width: int, height: int, miplevel: int = 1, format: str = "rgba8"):
         if type(width) != int:
             raise Texture3dstException("Width expected to be an integer.")
         if type(height) != int:
@@ -199,12 +213,8 @@ class Texture3dst:
             raise Texture3dstException("MaxMipLevel expected to be an integer.")
         if width <= 0:
             raise Texture3dstException("Width must be greater than 0.")
-        if width > 61440:
-            raise Texture3dstException("Width cannot be greater than 61440.")
         if height <= 0:
             raise Texture3dstException("Height must be greater than 0.")
-        if height > 61440:
-            raise Texture3dstException("Height cannot be greater than 61440.")
         if width % 8 != 0:
             width = ((width // 8) * 8) + 8
         if height % 8 != 0:
@@ -213,6 +223,14 @@ class Texture3dst:
             raise Texture3dstException("MipLevel must be greater than 0.")
         if not ((width / (2 ** (miplevel - 1)) >= 8) and (height / (2 ** (miplevel - 1)) >= 8)):
             raise Texture3dstException("MipLevel value greater than supported.")
+        if not (format in self.supported_formats):
+            raise Texture3dstException(f"Unsupported format '{format}'. Use: {self.supported_formats}")
+        
+        if format == "rgba8":
+            self.channels = 4
+        elif format == "rgb8":
+            self.channels = 3
+        self.format = format
         self.width = width
         self.height = height
         self.miplevel = miplevel
@@ -220,8 +238,7 @@ class Texture3dst:
         data = [[] for _ in range(height)]
         for i in range(height):
             for j in range(width):
-                data[i].append([])
-                data[i][j] = [0] * 4
+                data[i].append([0] * self.channels)
         self.data = data
         self.convertedData = []
         self.mipoutput = []
@@ -242,6 +259,8 @@ class Texture3dst:
             pixel_data = tuple(pixel_data)
         if type(pixel_data) != tuple:
             raise Texture3dstException("pixel_data expected to be a tuple or list.")
+        if len(pixel_data) != self.channels:
+            raise Texture3dstException("pixel_data lenght does not match with texture channels")
         for num in pixel_data:
             if isinstance(num, int):
                 if num < 0 or num > 255:
@@ -268,10 +287,7 @@ class Texture3dst:
         copyData = [[] for _ in  range(y2 - y1)]
         for i in range(y1, y2):
             for j in range(x1, x2):
-                if len(self.data[i][j]) < 4:
-                    copyData[i - y1].append(self.data[i][j])
-                else:
-                    copyData[i - y1].append(self.data[i][j])
+                copyData[i - y1].append(self.data[i][j])
         buffer = numpy.asarray(copyData, dtype=numpy.uint8)
         return Image.fromarray(buffer)
 
@@ -282,14 +298,14 @@ class Texture3dst:
         return self
 
     def paste(self, image: Image.Image, x: int, y: int) -> None:
+        formats = ["RGBA", "RGB"]
         width = image.size[0]
         height = image.size[1]
-        imageRgba = image.convert("RGBA")
+        imageRgba = image.convert(formats[self.formats.index(self.format)])
         imgData = imageRgba.load()
         for i in range(y, height):
             for j in range(x, width):
-                r, g, b, a = imgData[j, i]
-                self.setPixelRGBA(j, i, (r, g, b, a))
+                self.setPixelRGBA(j, i, list(imgData[j, i])[::])
         # Avoid export without convert data after a change
         self.convertedData = []
         self.mipoutput = []
@@ -365,8 +381,8 @@ class Texture3dst:
         self.output = bytearray(uint_to_bytes(bytes_to_uint(bytes.fromhex("33445354"), "little"), "little"))
         ## Modo de textura
         self.output.extend(uint_to_bytes(self.mode, "little"))
-        ## No sé aún pero mientras tanto debería ser 0 xd
-        self.output.extend(uint_to_bytes(0, "little"))
+        ## No sé aún pero mientras tanto xd (posiblemente es el formato)
+        self.output.extend(uint_to_bytes(self.formats.index(self.format), "little"))
 
         ## Se repite dos veces para las dimensiones y el checksum
         for i in range(0, 2):
