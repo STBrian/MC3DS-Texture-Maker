@@ -1,4 +1,4 @@
-import numpy, math
+import numpy
 from PIL import Image
 
 from .utils import *
