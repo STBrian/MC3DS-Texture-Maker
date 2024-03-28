@@ -124,9 +124,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     export = Image.new("RGBA", (16, 16))
                     export.paste(region, (0, 0))
                 else:
-                    region = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
-                    buffer = numpy.asarray(region, dtype=numpy.uint8)
-                    export = Image.fromarray(buffer)
+                    export = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
 
                 if extension == ".png":
                     export.save(file)
@@ -246,9 +244,7 @@ class MainFrame(customtkinter.CTkFrame):
                 portview = Image.new("RGBA", (16, 16))
                 portview.paste(region, (0, 0))
             else:
-                region = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
-                buffer = numpy.asarray(region, dtype=numpy.uint8)
-                portview = Image.fromarray(buffer)
+                portview = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
             portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
             self.infoDispFrame.portview.configure(dark_image=portviewRes)
 

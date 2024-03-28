@@ -35,7 +35,7 @@ spruce_boat
 birch_boat
 jungle_boat
 acacia_boat
-dar_oak_boat
+dark_oak_boat
 bone
 enchanted_book
 book
@@ -347,7 +347,7 @@ skeleton_horse_egg
 zombie_horse_egg
 shulker_egg
 rainbow_egg
-elder_guardian
+elder_guardian_egg
 egg_template
 x_egg
 vindicator_egg

@@ -41,21 +41,8 @@ def addToItemAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
         # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
         itemAtlas.flipX()
     else:
-        print("Creating new atlas file...")
-        itemAtlas = Texture3dst().new(512, 256, 1)
-        print("Opening atlas from assets...")
-        itemAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.items.vanilla.png").convert("RGBA")
-        x = 0
-        y = 0
-        for i in range(0, itemAtlasSource.size[1]):
-            for j in range(0, itemAtlasSource.size[0]):
-                r, g, b, a = itemAtlasSource.getpixel((x, y))
-                itemAtlas.setPixelRGBA(x, y, r, g, b, a)
-                x += 1
-            x = 0
-            y += 1
-
-        itemAtlasSource.close()
+        print("Creating new atlas file from original...")
+        itemAtlas = Texture3dst().fromImage(Image.open(f"{sourceFolder}/atlas/atlas.items.vanilla.png"))
 
     print("Opening new texture...")
     textureImg = Image.open(textureImgPath).convert("RGBA")
@@ -68,15 +55,12 @@ def addToItemAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
     print("Replacing new texture...")
     x = 0
     y = 0
-    for i in range(0, 16):
-        for i in range(0, 16):
+    for y in range(0, 16):
+        for x in range(0, 16):
             r, g, b, a = textureImg.getpixel((x, y))
-            itemAtlas.setPixelRGBA(x_atlas, y_atlas, r, g, b, a)
-            x += 1
+            itemAtlas.setPixelRGBA(x_atlas, y_atlas, (r, g, b, a))
             x_atlas += 1
-        x = 0
         x_atlas -= 16
-        y += 1
         y_atlas += 1
 
     # Crea el directorio de salida si no existe
@@ -92,6 +76,7 @@ def addToItemAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
     # Guarda el atlas modificado
     print("Saving changes...")
     itemAtlas.export(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst")
+    print("Success")
 
     return True
 
@@ -104,21 +89,8 @@ def addToBlockAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
         # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
         blockAtlas.flipX()
     else:
-        print("Creating new texture file...")
-        blockAtlas = Texture3dst().new(512, 512, 3)
-        print("Opening atlas from assets...")
-        blockAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.terrain.vanilla.png").convert("RGBA")
-        x = 0
-        y = 0
-        for i in range(0, blockAtlasSource.size[1]):
-            for j in range(0, blockAtlasSource.size[0]):
-                r, g, b, a = blockAtlasSource.getpixel((x, y))
-                blockAtlas.setPixelRGBA(x, y, r, g, b, a)
-                x += 1
-            x = 0
-            y += 1
-
-        blockAtlasSource.close()
+        print("Creating new texture file from original...")
+        blockAtlas = Texture3dst().fromImage(Image.open(f"{sourceFolder}/atlas/atlas.terrain.vanilla.png"))
 
     print("Opening new texture...")
     textureImg = Image.open(textureImgPath).convert("RGBA")
@@ -148,7 +120,7 @@ def addToBlockAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
             if y >= 0 and y <= 15:
                 y2 = y
             r, g, b, a = textureImg.getpixel((x2, y2))
-            blockAtlas.setPixelRGBA(x_atlas, y_atlas, r, g, b, a)
+            blockAtlas.setPixelRGBA(x_atlas, y_atlas, (r, g, b, a))
             x += 1
             x_atlas += 1
         x = -2
@@ -169,5 +141,6 @@ def addToBlockAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
     # Guarda el atlas modificado
     print("Saving changes...")
     blockAtlas.export(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst")
+    print("Success")
 
     return True
