@@ -479,8 +479,8 @@ andesite
 polished_andesite
 double_stone_slab_side
 stonecutter_bottom
-stonecutter_side
 stonecutter_other_side
+stonecutter_side
 stonecutter_top
 structure_block
 structure_block_data
@@ -505,8 +505,8 @@ trip_wire
 trip_wire_source
 vine
 vine_carried
-waterlily_carried
 waterlily
+waterlily_carried
 web
 wheat_stage_0
 wheat_stage_1
@@ -534,6 +534,6 @@ green_wool
 red_wool
 black_wool
 dandelion
-yellow_glazed_terracota
+yellow_glazed_terracotta
 damaged_anvil_stage_0
 water_placeholder

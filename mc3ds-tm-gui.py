@@ -6,7 +6,7 @@ from PIL import ImageTk
 from functools import partial
 from pathlib import Path
 
-import tools
+from AutoImporter import *
 from modules import *
 
 class SearchOptionsFrame(customtkinter.CTkFrame):
@@ -65,16 +65,17 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
         # Variables
-        self.selected = customtkinter.StringVar(value="")
+        self.selected = customtkinter.StringVar(value="No element selected")
         self.portview = customtkinter.CTkImage(dark_image=Image.new("RGBA", (16, 16)), size=(128, 128))
         self.changeTexture = False
 
         # Widgets
-        self.noSelectedText = customtkinter.CTkLabel(self, text="No element selected")
-        self.noSelectedText.grid(row=0, column=0, padx=5, pady=5, columnspan=2)
 
-        self.portviewFrame = customtkinter.CTkLabel(self, image=self.portview, text="", compound="top")
-        self.portviewFrame.grid(row=1, column=0, padx=5, pady=5, columnspan=2)
+        self.portviewFrameCanvas = customtkinter.CTkCanvas(self, width=128, height=128)
+        self.portviewFrameCanvas.grid(row=1, column=0, padx=5, pady=5, columnspan=2)
+
+        self.portviewFrame = customtkinter.CTkLabel(self.portviewFrameCanvas, image=self.portview, text="", compound="top", bg_color="black")
+        self.portviewFrame.grid(row=1, column=0, padx=2, pady=2)
 
         self.selectionLabel = customtkinter.CTkLabel(self, textvariable=self.selected)
         self.selectionLabel.grid(row=2, column=0, padx=5, pady=5, columnspan=2)
@@ -204,7 +205,6 @@ class MainFrame(customtkinter.CTkFrame):
     def listElementFun(self, value):
         if value != "":
             self.updateElement = False
-            self.infoDispFrame.noSelectedText.grid_remove()
             if self.infoDispFrame.buttonChange.cget("state") == "disabled":
                 self.infoDispFrame.buttonChange.configure(state="normal")
             if self.infoDispFrame.buttonExport.cget("state") == "disabled":
@@ -400,7 +400,7 @@ class App(customtkinter.CTk):
         return
 
     def openAutoImporter(self):
-        autoImporter = tools.AutoImporter(self)
+        autoImporter = AutoImporter(self)
 
 def closeApp(val=None):
     sys.exit()
