@@ -339,8 +339,8 @@ pumpkin_stem_connected
 pumpkin_top
 purple_glazed_terracotta
 purpur_block
-purpur_pilar_top
-purpur_pilar_side
+purpur_pillar_top
+purpur_pillar_side
 quartz_block_bottom
 quartz_block_side
 quartz_block_chiseled

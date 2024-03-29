@@ -1,6 +1,6 @@
 {
-    "items": [],
-    "blocks": [
+    "Items": [],
+    "Blocks": [
         {
             "name": "anvil",
             "value": "anvil_base"
@@ -814,7 +814,7 @@
             "value": "prismarine_dark"
         },
         {
-            "name": "purpur_pilar_side",
+            "name": "purpur_pillar_side",
             "value": "purpur_pillar"
         },
         {

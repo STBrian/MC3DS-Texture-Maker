@@ -204,7 +204,6 @@ class MainFrame(customtkinter.CTkFrame):
 
     def listElementFun(self, value):
         if value != "":
-            self.updateElement = False
             if self.infoDispFrame.buttonChange.cget("state") == "disabled":
                 self.infoDispFrame.buttonChange.configure(state="normal")
             if self.infoDispFrame.buttonExport.cget("state") == "disabled":
