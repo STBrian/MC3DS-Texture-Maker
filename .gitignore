@@ -4,6 +4,5 @@
 /block
 /item
 /modules/__pycache__
-/tools/__pycache__
-/tools/MyCTkTopLevel/__pycache__
 /venv
+/__pycache__
