@@ -162,6 +162,8 @@ class StartFrame(customtkinter.CTkFrame):
                             path = "items.txt"
                         elif atlasType == "Blocks":
                             path = "blocks.txt"
+                        if not os.path.exists(outputDir):
+                            os.makedirs(outputDir)
                         addElementToFile(index[matchwith], os.path.join(outputDir, path))
 
         # Save new atlas
