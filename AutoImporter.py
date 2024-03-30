@@ -30,13 +30,13 @@ class OptionsFrame(customtkinter.CTkFrame):
         self.cb = customtkinter.CTkComboBox(self, values=["Items", "Blocks"], variable=self.type, state="readonly")
         self.cb.grid(row=2, column=0, padx=10, pady=(5, 10), sticky="w")
 
-        self.label2 = customtkinter.CTkLabel(self, text="Rule file:")
+        self.label2 = customtkinter.CTkLabel(self, text="Rules file:")
         self.label2.grid(row=1, column=1, padx=10, pady=0, sticky="w")
 
         app_path = master.app_path
         rules = getFilesWithExtensionInDir(os.path.join(app_path, "assets/rules/"), "json")
 
-        self.rule = customtkinter.StringVar(value="default")
+        self.rule = customtkinter.StringVar(value="default3ds")
 
         self.cb2 = customtkinter.CTkComboBox(self, values=rules, variable=self.rule, state="readonly")
         self.cb2.grid(row=2, column=1, padx=10, pady=(5, 10), sticky="w")
@@ -85,7 +85,7 @@ class StartFrame(customtkinter.CTkFrame):
         atlasType = root.optionsFrame.type.get()
         ruleFile = root.optionsFrame.rule.get()
         inputDir = self.dirPath
-        outputDir = root.output_dir
+        outputDir = mainApp.outputFolder
         appPath = root.app_path
         sourceFolder = "assets"
         self.button.configure(state="disabled")
@@ -111,6 +111,18 @@ class StartFrame(customtkinter.CTkFrame):
                 if element["name"] in modifiedIndex:
                     modifiedIndex[modifiedIndex.index(element["name"])] = element["value"]
 
+        # Load the atlas to modify
+        if atlasType == "Items":
+            if os.path.exists(os.path.join(outputDir, "atlas/atlas.items.meta_79954554_0.3dst")):
+                atlas = atlasTexture3dst().open(os.path.join(outputDir, "atlas/atlas.items.meta_79954554_0.3dst"), "Items")
+            else:
+                atlas = atlasTexture3dst().open(os.path.join(appPath, sourceFolder, "atlas/atlas.items.vanilla.png"), "Items")
+        elif atlasType == "Blocks":
+            if os.path.exists(os.path.join(outputDir, "atlas/atlas.terrain.meta_79954554_0.3dst")):
+                atlas = atlasTexture3dst().open(os.path.join(outputDir, "atlas/atlas.terrain.meta_79954554_0.3dst"), "Blocks")
+            else:
+                atlas = atlasTexture3dst().open(os.path.join(appPath, sourceFolder, "atlas/atlas.terrain.vanilla.png"), "Blocks")
+
         for file in glob.iglob(os.path.join(inputDir, "**/*.png"), recursive=True):
             filepath = Path(file)
             value = filepath.stem
@@ -125,14 +137,14 @@ class StartFrame(customtkinter.CTkFrame):
                     position = calculateGrid(matchwith, 25, 22, 20)
 
                 if isImage16x16(file):
+                    # Show new texture in preview frame
                     portviewImage = Image.open(file)
                     portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
                     root.previewFrame.portview.configure(dark_image=portviewRes)
 
-                    if atlasType == "Items":
-                        addToItemAtlas(position, file, os.path.join(appPath, sourceFolder), outputDir)
-                    elif atlasType == "Blocks":
-                        addToBlockAtlas(position, file, os.path.join(appPath, sourceFolder), outputDir)
+                    # Replace texture
+                    print("Opening new texture and replacing...")
+                    atlas.addElement(position, Image.open(file))
 
                     # Get index of changed items
                     added = []
@@ -151,6 +163,12 @@ class StartFrame(customtkinter.CTkFrame):
                         elif atlasType == "Blocks":
                             path = "blocks.txt"
                         addElementToFile(index[matchwith], os.path.join(outputDir, path))
+
+        # Save new atlas
+        if atlasType == "Items":
+            atlas.save(os.path.join(outputDir, "atlas/atlas.items.meta_79954554_0.3dst"))
+        elif atlasType == "Blocks":
+            atlas.save(os.path.join(outputDir, "atlas/atlas.terrain.meta_79954554_0.3dst"))
 
         # Finish reloading sources in main app
         mainApp.reloadAtlas()

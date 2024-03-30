@@ -1,5 +1,6 @@
 import numpy
 from PIL import Image
+from pathlib import Path
 
 from .utils import *
 
@@ -126,11 +127,13 @@ class Texture3dst:
     def __init__(self):
         return
 
-    def open(self, path: str = None):
-        if type(path) != str or path == None:
-            raise Texture3dstException("Invalid path.")
+    def open(self, path: str | Path):
+        if type(path) == str:
+            path = Path(path)
+        if not isinstance(path, Path):
+            raise Texture3dstException("Expected str or Path type for path.")
         
-        with open(f"{path}", "rb") as f:
+        with open(path, "rb") as f:
             fileData = f.read()
         
         # Empieza el analisis de la cabecera-Marca de agua
@@ -372,9 +375,11 @@ class Texture3dst:
             mipTmpData = []
         return
     
-    def export(self, path: str) -> None:
-        if type(path) != str:
-            raise TypeError("path expected to be a string.")
+    def export(self, path: str | Path) -> None:
+        if type(path) == str:
+            path = Path(path)
+        if not isinstance(path, Path):
+            raise TypeError("Expected str or Path type for path.")
 
         # Se crea la cabecera
         ## Marca de formato
@@ -406,7 +411,7 @@ class Texture3dst:
                             self.output.append(channel)
 
         # Se escriben los bytes en un archivo
-        with open(f"{path}", "wb") as f:
+        with open(path, "wb") as f:
             f.write(self.output)
         return
     

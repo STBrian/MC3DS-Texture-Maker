@@ -294,7 +294,7 @@ class App(customtkinter.CTk):
         fileMenu.add_option("Exit", command=sys.exit)
 
         toolsMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
-        toolsMenu.add_option("Auto importer", command=self.openAutoImporter)
+        toolsMenu.add_option("Auto Importer", command=self.openAutoImporter)
 
         helpMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Help"))
         helpMenu.add_option("About")
@@ -364,7 +364,7 @@ class App(customtkinter.CTk):
                         added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
 
                 if (not searchData[0] == ""):
-                    elements = difflib.get_close_matches(searchData[0], elements, cutoff=0.4)
+                    elements = difflib.get_close_matches(searchData[0], elements)
                 
                 if searchData[1] == "off":
                     elements = deleteMatches(elements, added)

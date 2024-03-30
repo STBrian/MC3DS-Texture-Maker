@@ -18,22 +18,6 @@
             "value": "anvil_top_damaged_2"
         },
         {
-            "name": "beetroot_stage_0",
-            "value": "beetroots_stage_0"
-        },
-        {
-            "name": "beetroot_stage_1",
-            "value": "beetroots_stage_1"
-        },
-        {
-            "name": "beetroot_stage_2",
-            "value": "beetroots_stage_2"
-        },
-        {
-            "name": "beetroot_stage_3",
-            "value": "beetroots_stage_3"
-        },
-        {
             "name": "bricks_block",
             "value": "brick"
         },

@@ -1,6 +1,101 @@
 import os
+from pathlib import Path
 
 from .tex3dst import *
+
+class atlasTexture3dst():
+    def __init__(self):
+        pass
+
+    def open(self, path: str | Path, atlas_type: str):
+        if type(path) == str:
+            path = Path(path)
+        if not isinstance(path, Path):
+            raise TypeError("Expected str or Path type for path.")
+        if not atlas_type in ["Items", "Blocks"]:
+            raise ValueError("Expected 'Items' or 'Blocks' type for atlas_type.")
+
+        print("Opening atlas...")
+        atlas = None
+        if path.suffix == ".png":
+            atlas = Texture3dst().fromImage(Image.open(path))
+            if atlas_type == "Blocks":
+                atlas.miplevel = 3
+        elif path.suffix == ".3dst":
+            atlas = Texture3dst().open(path)
+            atlas.flipX()
+
+        self.atlas = atlas
+        self.atlas_type = atlas_type
+
+        return self
+
+    def addElement(self, position: tuple | list, new_texture: Image.Image):
+        new_texture = new_texture.convert("RGBA")
+
+        # Define las variables de posición
+        x_atlas = position[0]
+        y_atlas = position[1]
+
+        if self.atlas_type == "Items":
+            # Reemplazar la textura original por la nueva
+            print("Replacing texture...")
+            x = 0
+            y = 0
+            for y in range(0, 16):
+                for x in range(0, 16):
+                    r, g, b, a = new_texture.getpixel((x, y))
+                    self.atlas.setPixelRGBA(x_atlas, y_atlas, (r, g, b, a))
+                    x_atlas += 1
+                x_atlas -= 16
+                y_atlas += 1
+        elif self.atlas_type == "Blocks":
+            # Reemplazar la textura original por la nueva
+            print("Replacing texture...")
+            x = -2
+            y = -2
+            x2 = 0
+            y2 = 0
+            for i in range(0, 20):
+                for i in range(0, 20):
+                    if x < 0:
+                        x2 = 0
+                    if x > 15:
+                        x2 = 15
+                    if y < 0:
+                        y2 = 0
+                    if y > 15:
+                        y2 = 15
+                    if x >= 0 and x <= 15:
+                        x2 = x
+                    if y >= 0 and y <= 15:
+                        y2 = y
+                    r, g, b, a = new_texture.getpixel((x2, y2))
+                    self.atlas.setPixelRGBA(x_atlas, y_atlas, (r, g, b, a))
+                    x += 1
+                    x_atlas += 1
+                x = -2
+                x_atlas -= 20
+                y += 1
+                y_atlas += 1
+
+    def save(self, path: str | Path):
+        if type(path) == str:
+            path = Path(path)
+        if not isinstance(path, Path):
+            raise TypeError("Expected str or Path type for path.")
+        
+        if not os.path.exists(path.parent):
+            os.makedirs(path.parent)
+
+        print("Inverting x-axis atlas...")
+        self.atlas.flipX()
+        print("Converting data...")
+        self.atlas.convertData()
+
+        print("Saving atlas...")
+        self.atlas.export(path)
+        print("Success")
 
 def getItemsFromIndexFile(filename):
     items = []
@@ -91,6 +186,7 @@ def addToBlockAtlas(pixelPosition, textureImgPath, sourceFolder, output_folder):
     else:
         print("Creating new texture file from original...")
         blockAtlas = Texture3dst().fromImage(Image.open(f"{sourceFolder}/atlas/atlas.terrain.vanilla.png"))
+        blockAtlas.miplevel = 3
 
     print("Opening new texture...")
     textureImg = Image.open(textureImgPath).convert("RGBA")

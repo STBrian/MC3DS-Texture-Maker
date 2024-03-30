@@ -1,9 +1,230 @@
 {
-    "Items": [],
+    "Items": [
+        {
+            "name": "raw_chicken",
+            "value": "chicken"
+        },
+        {
+            "name": "clay",
+            "value": "clay_ball"
+        },
+        {
+            "name": "redstone_comparator",
+            "value": "comparator"
+        },
+        {
+            "name": "lapislazuli",
+            "value": "lapis_lazuli"
+        },
+        {
+            "name": "boots_empty_inventory_slot",
+            "value": "empty_armor_slot_boots"
+        },
+        {
+            "name": "chestplate_empty_inventory_slot",
+            "value": "empty_armor_slot_chestplate"
+        },
+        {
+            "name": "helmet_empty_inventory_slot",
+            "value": "empty_armor_slot_helmet"
+        },
+        {
+            "name": "leggings_empty_inventory_slot",
+            "value": "empty_armor_slot_leggings"
+        },
+        {
+            "name": "offhand_empty_inventory_slot",
+            "value": "empty_armor_slot_shield"
+        },
+        {
+            "name": "pot",
+            "value": "flower_pot"
+        },
+        {
+            "name": "raw_mutton",
+            "value": "mutton"
+        },
+        {
+            "name": "raw_porkchop",
+            "value": "porkchop"
+        },
+        {
+            "name": "bottle",
+            "value": "glass_bottle"
+        },
+        {
+            "name": "raw_pufferfish",
+            "value": "pufferfish"
+        },
+        {
+            "name": "raw_rabbit",
+            "value": "rabbit"
+        },
+        {
+            "name": "disc_11",
+            "value": "music_disc_11"
+        },
+        {
+            "name": "disc_13",
+            "value": "music_disc_13"
+        },
+        {
+            "name": "disc_blocks",
+            "value": "music_disc_blocks"
+        },
+        {
+            "name": "disc_cat",
+            "value": "music_disc_cat"
+        },
+        {
+            "name": "disc_chirp",
+            "value": "music_disc_chirp"
+        },
+        {
+            "name": "disc_far",
+            "value": "music_disc_far"
+        },
+        {
+            "name": "disc_mall",
+            "value": "music_disc_mall"
+        },
+        {
+            "name": "disc_mellohi",
+            "value": "music_disc_mellohi"
+        },
+        {
+            "name": "disc_stal",
+            "value": "music_disc_stal"
+        },
+        {
+            "name": "disc_strad",
+            "value": "music_disc_strad"
+        },
+        {
+            "name": "disc_wait",
+            "value": "music_disc_wait"
+        },
+        {
+            "name": "disc_ward",
+            "value": "music_disc_ward"
+        },
+        {
+            "name": "redstone_repeater",
+            "value": "repeater"
+        },
+        {
+            "name": "raw_salmon",
+            "value": "salmon"
+        },
+        {
+            "name": "sign",
+            "value": "oak_sign"
+        },
+        {
+            "name": "snow_ball",
+            "value": "snowball"
+        }
+    ],
     "Blocks": [
         {
             "name": "acacia_log_side",
             "value": "acacia_log"
+        },
+        {
+            "name": "damaged_anvil_1",
+            "value": "chipped_anvil_top"
+        },
+        {
+            "name": "damaged_anvil_2",
+            "value": "damaged_anvil_top"
+        },
+        {
+            "name": "bricks_block",
+            "value": "bricks"
+        },
+        {
+            "name": "carrots_stage_0",
+            "value": "carrots_stage0"
+        },
+        {
+            "name": "carrots_stage_1",
+            "value": "carrots_stage1"
+        },
+        {
+            "name": "carrots_stage_2",
+            "value": "carrots_stage2"
+        },
+        {
+            "name": "carrots_stage_3",
+            "value": "carrots_stage3"
+        },
+        {
+            "name": "cobblestone_mossy",
+            "value": "mossy_cobblestone"
+        },
+        {
+            "name": "beetroots_stage_0",
+            "value": "beetroots_stage0"
+        },
+        {
+            "name": "beetroots_stage_1",
+            "value": "beetroots_stage1"
+        },
+        {
+            "name": "beetroots_stage_2",
+            "value": "beetroots_stage2"
+        },
+        {
+            "name": "beetroots_stage_3",
+            "value": "beetroots_stage3"
+        },
+        {
+            "name": "cocoa_stage_0",
+            "value": "cocoa_stage0"
+        },
+        {
+            "name": "cocoa_stage_1",
+            "value": "cocoa_stage1"
+        },
+        {
+            "name": "cocoa_stage_2",
+            "value": "cocoa_stage2"
+        },
+        {
+            "name": "redstone_torch_on",
+            "value": "redstone_torch"
+        },
+        {
+            "name": "comparator_off",
+            "value": "comparator"
+        },
+        {
+            "name": "deadbush",
+            "value": "dead_bush"
+        },
+        {
+            "name": "podzol_dirt_side",
+            "value": "podzol_side"
+        },
+        {
+            "name": "podzol_dirt_top",
+            "value": "podzol_top"
+        },
+        {
+            "name": "potatoes_stage_0",
+            "value": "potatoes_stage0"
+        },
+        {
+            "name": "potatoes_stage_1",
+            "value": "potatoes_stage1"
+        },
+        {
+            "name": "potatoes_stage_2",
+            "value": "potatoes_stage2"
+        },
+        {
+            "name": "potatoes_stage_3",
+            "value": "potatoes_stage3"
         }
     ]
 }

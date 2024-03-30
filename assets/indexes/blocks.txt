@@ -9,10 +9,10 @@ obsidian
 glass
 oak_planks
 bedrock
-beetroot_stage_0
-beetroot_stage_1
-beetroot_stage_2
-beetroot_stage_3
+beetroots_stage_0
+beetroots_stage_1
+beetroots_stage_2
+beetroots_stage_3
 black_glazed_terracotta
 blue_glazed_terracotta
 bone_block_side
