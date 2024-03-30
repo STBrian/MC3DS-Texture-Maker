@@ -1,4 +1,4 @@
-import customtkinter, glob, threading, json, time
+import customtkinter, glob, threading, json
 from PIL import ImageTk, Image
 from pathlib import Path
 
