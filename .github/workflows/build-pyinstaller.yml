@@ -14,9 +14,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python 3.12
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: "3.12"
     - name: Install dependencies
@@ -26,7 +26,7 @@ jobs:
     - name: Build script
       run: |
         ./build.bat
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: mc3ds-tm-windows-x64
         path: dist/
@@ -35,9 +35,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python 3.12
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: "3.12"
     - name: Install dependencies
@@ -50,7 +50,7 @@ jobs:
       run: |
         dos2unix ./build.sh
         bash ./build.sh
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: mc3ds-tm-linux-x64
         path: dist/
