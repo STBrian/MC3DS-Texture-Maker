@@ -5,7 +5,7 @@ from PIL import Image
 from PIL import ImageTk
 from functools import partial
 from pathlib import Path
-
+from tkinter import messagebox
 from AutoImporter import *
 from modules import *
 
@@ -297,7 +297,7 @@ class App(customtkinter.CTk):
         toolsMenu.add_option("Auto Importer", command=self.openAutoImporter)
 
         helpMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Help"))
-        helpMenu.add_option("About")
+        helpMenu.add_option("About", command=self.about_popup)
 
         # --------------------------------------------
 
@@ -327,6 +327,9 @@ class App(customtkinter.CTk):
             self.outputFolder = input
             self.reloadAtlas()
             self.updateList = True
+    def about_popup(self):
+        about_text = "MC3DS Texture Maker\nVersion 2.X\n\nAuthor: STBrian\nContact: example_email@gmail.com"
+        messagebox.showinfo("About", about_text)
 
     def updateParamsThread(self):
         while True:
