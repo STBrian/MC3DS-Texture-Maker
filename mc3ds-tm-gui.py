@@ -38,7 +38,7 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
         self.entryTextFrame.grid(row=3, column=0, padx=5, pady=5, sticky="wen")
         self.entryTextFrame.grid_columnconfigure(1, weight=1)
 
-        self.showMenu = customtkinter.CTkComboBox(self.entryTextFrame, values=["Items", "Blocks"], variable=self.actualOpt)
+        self.showMenu = customtkinter.CTkComboBox(self.entryTextFrame, values=["Items", "Blocks"], variable=self.actualOpt, state="readonly")
         self.showMenu.grid(row=0, column=0, padx=5, pady=0, sticky="w")
 
         self.entryText = customtkinter.CTkEntry(self.entryTextFrame, textvariable=self.searchText, placeholder_text="Search")
