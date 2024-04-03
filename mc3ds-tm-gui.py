@@ -1,5 +1,6 @@
 import os, sys
 import difflib, threading, time
+import configparser
 import customtkinter, CTkMenuBar
 from PIL import Image
 from PIL import ImageTk
@@ -262,12 +263,26 @@ class App(customtkinter.CTk):
             self.running = "exe"
             self.app_path = sys._MEIPASS
             self.runningDir = os.path.dirname(sys.executable)
-            self.outputFolder = os.path.join(self.runningDir, "MC3DS")
         elif __file__:
             self.running = "src"
             self.app_path = os.path.dirname(__file__)
             self.runningDir = os.path.dirname(__file__)
-            self.outputFolder = os.path.join(self.runningDir, "MC3DS")
+        
+        # Ini file
+        if os.path.exists(os.path.join(self.runningDir, "mc3ds-tm.ini")):
+            self.config = configparser.ConfigParser()
+            self.config.read(os.path.join(self.runningDir, "mc3ds-tm.ini"))
+        else:
+            self.config = configparser.ConfigParser()
+            self.config["Preferences"] = {"theme": "dark"}
+            self.config["Path"] = {"lastdir": os.path.join(self.runningDir, "MC3DS")}
+        self.outputFolder = self.config["Path"]["lastdir"]
+        self.theme = self.config["Preferences"]["theme"]
+        if not self.theme in ["dark", "light"]:
+            self.theme = "dark"
+            self.config["Preferences"]["theme"] = "dark"
+        customtkinter.set_appearance_mode(self.theme)
+        self.saveChangesForIniFile()
 
         self.title("MC3DS Texture Maker")
         os_name = os.name
@@ -289,7 +304,7 @@ class App(customtkinter.CTk):
 
         fileMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("File"))
         fileMenu.add_option("Open folder", command=self.openFolder)
-        fileMenu.add_option("Preferences")
+        fileMenu.add_option("Toggle theme", command=self.changeTheme)
         fileMenu.add_separator()
         fileMenu.add_option("Exit", command=sys.exit)
 
@@ -308,6 +323,11 @@ class App(customtkinter.CTk):
         # --------------------------------------------
 
         # Initial loading
+        if self.theme == "dark":
+            self.mainFrame.elementsFrame.text_color = "white"
+        else:
+            self.mainFrame.elementsFrame.text_color = "black"
+
         self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/items.txt"))
         self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/blocks.txt"))
         self.reloadAtlas()
@@ -321,12 +341,33 @@ class App(customtkinter.CTk):
         listUpdateThread.daemon = True
         listUpdateThread.start()
 
+    def saveChangesForIniFile(self):
+        with open(os.path.join(self.runningDir, "mc3ds-tm.ini"), "w") as configfile:
+            self.config.write(configfile)
+
     def openFolder(self):
         input = customtkinter.filedialog.askdirectory()
         if self.outputFolder != input and input != '':
             self.outputFolder = input
+            self.config["Path"]["lastdir"] = self.outputFolder
+            self.saveChangesForIniFile()
             self.reloadAtlas()
             self.updateList = True
+
+    def changeTheme(self):
+        if self.theme == "dark":
+            customtkinter.set_appearance_mode("light")
+            self.mainFrame.elementsFrame.text_color = "black"
+            self.updateList = True
+            self.theme = "light"
+        else:
+            customtkinter.set_appearance_mode("dark")
+            self.mainFrame.elementsFrame.text_color = "white"
+            self.updateList = True
+            self.theme = "dark"
+        self.config["Preferences"]["theme"] = self.theme
+        self.saveChangesForIniFile()
+
     def about_popup(self):
         about_text = "MC3DS Texture Maker\nVersion 2.X\n\nAuthor: STBrian\nContact: example_email@gmail.com"
         messagebox.showinfo("About", about_text)
@@ -408,7 +449,6 @@ def closeApp(val=None):
     sys.exit()
 
 customtkinter.set_default_color_theme("blue")
-customtkinter.set_appearance_mode("dark")
 
 app = App()
 
