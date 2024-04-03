@@ -7,13 +7,15 @@ Additionally, the atlas containing the game blocks has several bitmap versions w
 # Requirements
 The executable does not require nothing since all it's packaged inside, but for running from source you need to install some things
 ### Windows
-- Python 3.11
-- pillow 9.5.0
+- Python 3.12
+- pillow 10.3.0
 - numpy 1.26.3
 - python3-tkinter
 - customtkinter 5.2.1
 - packaging 23.2
 - CTkMenuBar 0.3
+- CTkListBox 1.2
+- pyinstaller 6.3.0
 # How to use
 The README file refers to the latest stable version v1.0-release.
 

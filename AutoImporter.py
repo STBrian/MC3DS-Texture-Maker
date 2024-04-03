@@ -87,7 +87,6 @@ class StartFrame(customtkinter.CTkFrame):
         inputDir = self.dirPath
         outputDir = mainApp.outputFolder
         appPath = root.app_path
-        sourceFolder = "assets"
         self.button.configure(state="disabled")
         self.button.configure(text="Please wait...")
         print(atlasType)
@@ -95,12 +94,18 @@ class StartFrame(customtkinter.CTkFrame):
         print(outputDir)
         print(appPath)
 
-        # Load index
+        items = root.items.getItems()
+        blocks = root.blocks.getItems()
+        addedItems = root.addedItems
+        addedBlocks = root.addedBlocks
+
+        # Get indexes
         if atlasType == "Items":
-            path = "items"
+            index = items
+            added = addedItems
         elif atlasType == "Blocks":
-            path = "blocks"
-        index = getItemsFromIndexFile(os.path.join(appPath, f"assets/indexes/{path}.txt"))
+            index = blocks
+            added = addedBlocks
 
         # Load rules
         modifiedIndex = index[::]
@@ -111,17 +116,11 @@ class StartFrame(customtkinter.CTkFrame):
                 if element["name"] in modifiedIndex:
                     modifiedIndex[modifiedIndex.index(element["name"])] = element["value"]
 
-        # Load the atlas to modify
+        # Get the atlas to modify
         if atlasType == "Items":
-            if os.path.exists(os.path.join(outputDir, "atlas/atlas.items.meta_79954554_0.3dst")):
-                atlas = atlasTexture3dst().open(os.path.join(outputDir, "atlas/atlas.items.meta_79954554_0.3dst"), "Items")
-            else:
-                atlas = atlasTexture3dst().open(os.path.join(appPath, sourceFolder, "atlas/atlas.items.vanilla.png"), "Items")
+            atlas = root.itemsAtlas
         elif atlasType == "Blocks":
-            if os.path.exists(os.path.join(outputDir, "atlas/atlas.terrain.meta_79954554_0.3dst")):
-                atlas = atlasTexture3dst().open(os.path.join(outputDir, "atlas/atlas.terrain.meta_79954554_0.3dst"), "Blocks")
-            else:
-                atlas = atlasTexture3dst().open(os.path.join(appPath, sourceFolder, "atlas/atlas.terrain.vanilla.png"), "Blocks")
+            atlas = root.blocksAtlas
 
         for file in glob.iglob(os.path.join(inputDir, "**/*.png"), recursive=True):
             filepath = Path(file)
@@ -146,35 +145,18 @@ class StartFrame(customtkinter.CTkFrame):
                     print("Opening new texture and replacing...")
                     atlas.addElement(position, Image.open(file))
 
-                    # Get index of changed items
-                    added = []
-                    if atlasType == "Items":
-                        if os.path.exists(os.path.join(outputDir, "items.txt")):
-                            added = getItemsFromIndexFile(os.path.join(outputDir, "items.txt"))
-                    elif atlasType == "Blocks":
-                        if os.path.exists(os.path.join(outputDir, "blocks.txt")):
-                            added = getItemsFromIndexFile(os.path.join(outputDir, "blocks.txt"))
-
                     # Check for duplicated
-                    duplicated = checkForMatch(index[matchwith], added)
+                    duplicated = checkForMatch(index[matchwith], added.getItems())
                     if duplicated == -1:
                         if atlasType == "Items":
                             path = "items.txt"
                         elif atlasType == "Blocks":
                             path = "blocks.txt"
-                        if not os.path.exists(outputDir):
-                            os.makedirs(outputDir)
-                        addElementToFile(index[matchwith], os.path.join(outputDir, path))
+                        added.addItem(index[matchwith])
 
-        # Save new atlas
-        if atlasType == "Items":
-            atlas.save(os.path.join(outputDir, "atlas/atlas.items.meta_79954554_0.3dst"))
-        elif atlasType == "Blocks":
-            atlas.save(os.path.join(outputDir, "atlas/atlas.terrain.meta_79954554_0.3dst"))
-
-        # Finish reloading sources in main app
-        mainApp.reloadAtlas()
+        # Finish reloading lists in main app
         mainApp.updateList = True
+        mainApp.saved = False
         mainApp.mainFrame.listElementCall(mainApp.mainFrame.infoDispFrame.selected.get())
 
         portviewImage = Image.new("RGBA", (16, 16))
@@ -213,6 +195,12 @@ class AutoImporter(MyCTkTopLevel):
         self.grid_rowconfigure(1, weight=1)
 
         self.root = master
+        self.itemsAtlas = master.itemsAtlas
+        self.blocksAtlas = master.blocksAtlas
+        self.items = master.items
+        self.blocks = master.blocks
+        self.addedItems = master.addedItems
+        self.addedBlocks = master.addedBlocks
 
         self.app_path = master.app_path
         os_name = os.name

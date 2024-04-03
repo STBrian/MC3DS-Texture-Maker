@@ -92,37 +92,28 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         if file:
             extension = Path(file.name).suffix
             value = self.selected.get()
-            root = self.master.master
+            mainApp = self.master.master
             if value != "":
                 selected = value
-                actualOpt = root.searchData[3]
+                actualOpt = mainApp.searchData[3]
 
                 # Calculate positions
                 if actualOpt == "Items":
-                    matchwith = checkForMatch(selected, root.items)
+                    matchwith = checkForMatch(selected, mainApp.items.getItems())
                     position = calculateGrid(matchwith, 32, 13, 16)
                 elif actualOpt == "Blocks":
-                    matchwith = checkForMatch(selected, root.blocks)
+                    matchwith = checkForMatch(selected, mainApp.blocks.getItems())
                     position = calculateGrid(matchwith, 25, 22, 20)
                     position = (position[0] + 2, position[1] + 2)
 
-                # Load atlas
+                # Get atlas
                 if actualOpt == "Items":
-                    atlas = root.atlas[1]
-                    idx = 0
+                    atlas = mainApp.itemsAtlas
                 elif actualOpt == "Blocks":
-                    atlas = root.atlas[3]
-                    idx = 2
+                    atlas = mainApp.blocksAtlas
 
                 # Copy region and export
-                if root.atlas[idx] == 1:
-                    box = (position[0], position[1], position[0] + 16, position[1] + 16)
-                    region = atlas.crop(box)
-                    export = Image.new("RGBA", (16, 16))
-                    export.paste(region, (0, 0))
-                else:
-                    export = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
-
+                export = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)          
                 if extension == ".png":
                     export.save(file)
                 elif extension == ".3dst":
@@ -138,24 +129,22 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         threading.Thread(target=changeTexture).start()
 
     def changeTextureFunc(self, value):
-        root = self.master.master
+        mainApp = self.master.master
         mainFrame = self.master
 
-        actualOpt = root.searchData[3]
-        outputFolder = root.outputFolder
-        items = root.items
-        blocks = root.blocks
-        app_path = root.app_path
-        sourceFolder = root.sourceFolder
+        actualOpt = mainApp.searchData[3]
+        items = mainApp.items.getItems()
+        blocks = mainApp.blocks.getItems()
+        itemsAtlas = mainApp.itemsAtlas
+        blocksAtlas = mainApp.blocksAtlas
+        addedItems = mainApp.addedItems
+        addedBlocks = mainApp.addedBlocks
 
         # Load indexes
-        added = []
         if actualOpt == "Items":
-            if os.path.exists(os.path.join(outputFolder, "items.txt")):
-                added = getItemsFromIndexFile(os.path.join(outputFolder, "items.txt"))
+            added = addedItems
         elif actualOpt == "Blocks":
-            if os.path.exists(os.path.join(outputFolder, "blocks.txt")):
-                added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
+            added = addedBlocks
 
         # Calculate positions
         if actualOpt == "Items":
@@ -169,17 +158,17 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         if filePath != '':
             if isImage16x16(filePath):
                 if actualOpt == "Items":
-                    addToItemAtlas(position, filePath, os.path.join(app_path, sourceFolder), outputFolder)
-                    duplicated = checkForMatch(items[matchwith], added)
+                    itemsAtlas.addElement(position, Image.open(filePath))
+                    duplicated = checkForMatch(items[matchwith], added.getItems())
                     if duplicated == -1:
-                        addElementToFile(items[matchwith], os.path.join(outputFolder, "items.txt"))
+                        added.addItem(items[matchwith])
                 elif actualOpt == "Blocks":
-                    addToBlockAtlas(position, filePath, os.path.join(app_path, sourceFolder), outputFolder)
-                    duplicated = checkForMatch(blocks[matchwith], added)
+                    blocksAtlas.addElement(position, Image.open(filePath))
+                    duplicated = checkForMatch(blocks[matchwith], added.getItems())
                     if duplicated == -1:
-                        addElementToFile(blocks[matchwith], os.path.join(outputFolder, "blocks.txt"))
-                root.reloadAtlas()
+                        added.addItem(blocks[matchwith])
                 mainFrame.listElementCall(value)
+                mainApp.saved = False
         self.buttonChange.configure(state="normal")
 
 class MainFrame(customtkinter.CTkFrame):
@@ -213,33 +202,25 @@ class MainFrame(customtkinter.CTkFrame):
 
             selected = value
             actualOpt = self.master.searchData[3]
-            master = self.master
+            mainApp = self.master
 
             # Calculate positions
             if actualOpt == "Items":
-                matchwith = checkForMatch(selected, master.items)
+                matchwith = checkForMatch(selected, mainApp.items.getItems())
                 position = calculateGrid(matchwith, 32, 13, 16)
             elif actualOpt == "Blocks":
-                matchwith = checkForMatch(selected, master.blocks)
+                matchwith = checkForMatch(selected, mainApp.blocks.getItems())
                 position = calculateGrid(matchwith, 25, 22, 20)
                 position = (position[0] + 2, position[1] + 2)
 
             # Load atlas
             if actualOpt == "Items":
-                atlas = master.atlas[1]
-                idx = 0
+                atlas = mainApp.itemsAtlas
             elif actualOpt == "Blocks":
-                atlas = master.atlas[3]
-                idx = 2
+                atlas = mainApp.blocksAtlas
 
             # Copy region and update display
-            if master.atlas[idx] == 1:
-                box = (position[0], position[1], position[0] + 16, position[1] + 16)
-                region = atlas.crop(box)
-                portview = Image.new("RGBA", (16, 16))
-                portview.paste(region, (0, 0))
-            else:
-                portview = atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
+            portview = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
             portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
             self.infoDispFrame.portview.configure(dark_image=portviewRes)
 
@@ -255,6 +236,7 @@ class App(customtkinter.CTk):
         self.selected = ""
         self.elementsList = []
         self.updateList = True
+        self.saved = True
         self.atlas = []
 
         # --------------------------------------------
@@ -306,7 +288,9 @@ class App(customtkinter.CTk):
         fileMenu.add_option("Open folder", command=self.openFolder)
         fileMenu.add_option("Toggle theme", command=self.changeTheme)
         fileMenu.add_separator()
-        fileMenu.add_option("Exit", command=sys.exit)
+        fileMenu.add_option("Save", command=self.saveChanges)
+        fileMenu.add_separator()
+        fileMenu.add_option("Exit", command=self.closeApp)
 
         toolsMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
         toolsMenu.add_option("Auto Importer", command=self.openAutoImporter)
@@ -328,9 +312,12 @@ class App(customtkinter.CTk):
         else:
             self.mainFrame.elementsFrame.text_color = "black"
 
-        self.items = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/items.txt"))
-        self.blocks = getItemsFromIndexFile(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/blocks.txt"))
-        self.reloadAtlas()
+        # Load indexes of blocks and items from source
+        self.items = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/items.txt"))
+        self.blocks = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/blocks.txt"))
+
+        # Load resources
+        self.loadResources()
 
         # Start daemon threads
         threadParams = threading.Thread(target=self.updateParamsThread)
@@ -346,13 +333,15 @@ class App(customtkinter.CTk):
             self.config.write(configfile)
 
     def openFolder(self):
-        input = customtkinter.filedialog.askdirectory()
-        if self.outputFolder != input and input != '':
-            self.outputFolder = input
-            self.config["Path"]["lastdir"] = self.outputFolder
-            self.saveChangesForIniFile()
-            self.reloadAtlas()
-            self.updateList = True
+        if self.askForChanges():
+            input = customtkinter.filedialog.askdirectory()
+            if self.outputFolder != input and input != '':
+                self.outputFolder = input
+                self.config["Path"]["lastdir"] = self.outputFolder
+                self.saveChangesForIniFile()
+                self.loadResources()
+                self.saved = True
+                self.updateList = True
 
     def changeTheme(self):
         if self.theme == "dark":
@@ -369,7 +358,7 @@ class App(customtkinter.CTk):
         self.saveChangesForIniFile()
 
     def about_popup(self):
-        about_text = "MC3DS Texture Maker\nVersion 2.X\n\nAuthor: STBrian\nContact: example_email@gmail.com"
+        about_text = "MC3DS Texture Maker\nVersion 2.0\n\nAuthor: STBrian\nContact: brichap100@gmail.com"
         messagebox.showinfo("About", about_text)
 
     def updateParamsThread(self):
@@ -386,35 +375,33 @@ class App(customtkinter.CTk):
         while True:
             if self.updateList == True:
                 self.updateList = False
-                root = self
                 mainFrame = self.mainFrame
                 searchData = self.searchData
                 actualOpt = searchData[3]
-                items = root.items
-                blocks = root.blocks
-                outputFolder = root.outputFolder
+                items = self.items
+                blocks = self.blocks
+                addedItems = self.addedItems
+                addedBlocks = self.addedBlocks
 
                 mainFrame.elementsFrame.delete("all")
 
-                elements = []
-                added = []
                 if actualOpt == "Items":
                     elements = items
-                    if os.path.exists(os.path.join(outputFolder, "items.txt")):
-                        added = getItemsFromIndexFile(os.path.join(outputFolder, "items.txt"))
+                    added = addedItems
                 elif actualOpt == "Blocks":
                     elements = blocks
-                    if os.path.exists(os.path.join(outputFolder, "blocks.txt")):
-                        added = getItemsFromIndexFile(os.path.join(outputFolder, "blocks.txt"))
+                    added = addedBlocks
+
+                elements = elements.getItems()
 
                 if (not searchData[0] == ""):
-                    elements = difflib.get_close_matches(searchData[0], elements)
+                    elements = difflib.get_close_matches(searchData[0], elements, n = len(elements), cutoff=0.4)
                 
                 if searchData[1] == "off":
-                    elements = deleteMatches(elements, added)
+                    elements = deleteMatches(elements, added.getItems())
 
                 if searchData[2] == "off":
-                    elements = checkForMatches(elements, added)
+                    elements = checkForMatches(elements, added.getItems())
 
                 for i in range(0, len(elements)):
                     mainFrame.elementsFrame.insert(i, elements[i])
@@ -422,37 +409,74 @@ class App(customtkinter.CTk):
                         break
             time.sleep(0.5)
 
-    def reloadAtlas(self):
-        self.atlas = []
+    def loadResources(self):
+        # Load atlas either from source folder or output if exists
         if os.path.exists(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
-            atlas = Texture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
-            atlas.flipX()
-            self.atlas.append(2)
+            self.itemsAtlas = atlasTexture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"), "Items")
         else:
-            atlas = Image.open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.items.vanilla.png"))
-            self.atlas.append(1)
-        self.atlas.append(atlas)
+            self.itemsAtlas = atlasTexture3dst().open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.items.vanilla.png"), "Items")
         if os.path.exists(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
-            atlas = Texture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
-            atlas.flipX()
-            self.atlas.append(2)
+            self.blocksAtlas = atlasTexture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"), "Blocks")
         else:
-            atlas = Image.open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.terrain.vanilla.png"))
-            self.atlas.append(1)
-        self.atlas.append(atlas)
+            self.blocksAtlas = atlasTexture3dst().open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.terrain.vanilla.png"), "Blocks")
+
+        # Load index of added blocks and items if exists
+        if os.path.exists(os.path.normpath(f"{self.outputFolder}/items.txt")):
+            self.addedItems = IndexFile().open(os.path.normpath(f"{self.outputFolder}/items.txt"))
+        else:
+            self.addedItems = IndexFile().new()
+        if os.path.exists(os.path.normpath(f"{self.outputFolder}/blocks.txt")):
+            self.addedBlocks = IndexFile().open(os.path.normpath(f"{self.outputFolder}/blocks.txt"))
+        else:
+            self.addedBlocks = IndexFile().new()
         return
+    
+    def saveChanges(self):
+        out = os.path.join(self.outputFolder, "atlas")
+        if not os.path.exists(out):
+            os.makedirs(out)
+        self.itemsAtlas.save(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+        self.blocksAtlas.save(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
+        self.addedItems.save(os.path.normpath(f"{self.outputFolder}/items.txt"))
+        self.addedBlocks.save(os.path.normpath(f"{self.outputFolder}/blocks.txt"))
+        self.saved = True
 
     def openAutoImporter(self):
         autoImporter = AutoImporter(self)
 
-def closeApp(val=None):
-    sys.exit()
+    def closeApp(self, val=None):
+        if self.saved:
+            sys.exit()
+        else:
+            print("Not saved")
+            op = messagebox.askyesnocancel(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before exit?")
+            if op == True:
+                self.saveChanges()
+                sys.exit()
+            elif op == False:
+                sys.exit()
+            else:
+                pass
+
+    def askForChanges(self):
+        if self.saved:
+            return True
+        else:
+            print("Not saved")
+            op = messagebox.askyesnocancel(title="Unsaved changes", message="There are unsaved changes. Would you like to save them?")
+            if op == True:
+                self.saveChanges()
+                return True
+            elif op == False:
+                return True
+            else:
+                return False
 
 customtkinter.set_default_color_theme("blue")
 
 app = App()
 
-app.bind('<Alt-F4>', closeApp)
-app.protocol("WM_DELETE_WINDOW", closeApp)
+app.bind('<Alt-F4>', app.closeApp)
+app.protocol("WM_DELETE_WINDOW", app.closeApp)
 
 app.mainloop()
