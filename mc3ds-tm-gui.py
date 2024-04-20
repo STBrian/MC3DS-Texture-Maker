@@ -348,13 +348,16 @@ class App(customtkinter.CTk):
         if os.path.exists(f"{self.app_path}\\MC3DS\\atlas"):
             pass
         else:
+            print(f"No Atlas Avaliable...")
             return IndexError
 
         for i in range(2):
             if i == 0:
                 image_path = f"{self.app_path}\\MC3DS\\atlas\\atlas.items.meta_79954554_0.3dst"
+                print("Extracting colors from Items Atlas...")
             elif i == 1:
                 image_path = f"{self.app_path}\\MC3DS\\atlas\\atlas.terrain.meta_79954554_0.3dst"
+                print("Extracting colors from Blocks Atlas...")
 
             tmp0 = image_path.replace('.3dst','')
             output_path = f"colors_{os.path.basename(tmp0)}.txt"
@@ -382,6 +385,9 @@ class App(customtkinter.CTk):
             with open(output_path, "a") as output_file:
                 for hex_value in rgb_hex_values:
                     output_file.write(hex_value + "\n")
+                    time.sleep(0.000001)
+                    
+            print("Success")
 
     def changeTheme(self):
         if self.theme == "dark":
