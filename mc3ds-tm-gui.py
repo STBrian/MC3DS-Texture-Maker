@@ -294,6 +294,7 @@ class App(customtkinter.CTk):
 
         toolsMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
         toolsMenu.add_option("Auto Importer", command=self.openAutoImporter)
+        toolsMenu.add_option("Atlas Color Extractor", command=self.extract_colors)
 
         helpMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Help"))
         helpMenu.add_option("About", command=self.about_popup)
@@ -343,6 +344,45 @@ class App(customtkinter.CTk):
                 self.saved = True
                 self.updateList = True
 
+    def extract_colors(self):
+        if os.path.exists(f"{self.app_path}\\MC3DS\\atlas"):
+            pass
+        else:
+            return IndexError
+
+        for i in range(2):
+            if i == 0:
+                image_path = f"{self.app_path}\\MC3DS\\atlas\\atlas.items.meta_79954554_0.3dst"
+            elif i == 1:
+                image_path = f"{self.app_path}\\MC3DS\\atlas\\atlas.terrain.meta_79954554_0.3dst"
+
+            tmp0 = image_path.replace('.3dst','')
+            output_path = f"colors_{os.path.basename(tmp0)}.txt"
+            existing_colors = set()
+    
+            try:
+                with open(output_path, "r") as existing_file:
+                    existing_colors = {line.strip() for line in existing_file}
+            except FileNotFoundError:
+                pass
+    
+            with open(image_path, "rb") as image_file:
+                image_file.seek(0x20)
+                abgr_data = image_file.read()
+        
+                rgb_hex_values = []
+                for i in range(0, len(abgr_data), 4):
+                    _, b, g, r = abgr_data[i:i+4]
+                    rgb_hex = "#{:02X}{:02X}{:02X}".format(r, g, b)
+            
+                    if rgb_hex not in existing_colors:
+                        existing_colors.add(rgb_hex)
+                        rgb_hex_values.append(rgb_hex)
+        
+            with open(output_path, "a") as output_file:
+                for hex_value in rgb_hex_values:
+                    output_file.write(hex_value + "\n")
+
     def changeTheme(self):
         if self.theme == "dark":
             customtkinter.set_appearance_mode("light")
@@ -366,10 +406,10 @@ class App(customtkinter.CTk):
             if self.searchData != self.mainFrame.searchOptionsFrame.searchDataLoc:
                 self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:4]
                 self.updateList = True
-
             if f"{self.searchData[3]}:" != self.mainFrame.elementsFrame.cget("label_text"):
                 self.mainFrame.elementsFrame.configure(label_text=f"{self.searchData[3]}:")
-            time.sleep(0.5)
+            time.sleep(0.0015)
+
 
     def updateListThread(self):
         while True:
@@ -382,7 +422,6 @@ class App(customtkinter.CTk):
                 blocks = self.blocks
                 addedItems = self.addedItems
                 addedBlocks = self.addedBlocks
-
                 mainFrame.elementsFrame.delete("all")
 
                 if actualOpt == "Items":
@@ -395,8 +434,8 @@ class App(customtkinter.CTk):
                 elements = elements.getItems()
 
                 if (not searchData[0] == ""):
-                    elements = difflib.get_close_matches(searchData[0], elements, n = len(elements), cutoff=0.4)
-                
+                    elements = difflib.get_close_matches(searchData[0], elements, n=len(elements), cutoff=0.4)
+
                 if searchData[1] == "off":
                     elements = deleteMatches(elements, added.getItems())
 
@@ -407,7 +446,8 @@ class App(customtkinter.CTk):
                     mainFrame.elementsFrame.insert(i, elements[i])
                     if self.updateList == True:
                         break
-            time.sleep(0.5)
+            time.sleep(0.0015)
+
 
     def loadResources(self):
         # Load atlas either from source folder or output if exists
