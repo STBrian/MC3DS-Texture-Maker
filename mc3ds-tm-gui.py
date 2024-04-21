@@ -481,6 +481,7 @@ class App(customtkinter.CTk):
 
 customtkinter.set_default_color_theme("blue")
 
+print("Loading app...")
 app = App()
 
 app.bind('<Alt-F4>', app.closeApp)
