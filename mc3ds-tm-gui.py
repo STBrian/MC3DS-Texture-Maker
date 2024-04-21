@@ -383,7 +383,14 @@ class App(customtkinter.CTk):
                 addedItems = self.addedItems
                 addedBlocks = self.addedBlocks
 
-                mainFrame.elementsFrame.delete("all")
+                # mainFrame.elementsFrame.delete("all")
+                end = len(mainFrame.elementsFrame.buttons)
+                for i in range(end):
+                    end -= 1
+                    mainFrame.elementsFrame.buttons[end].grid_remove()
+                    mainFrame.elementsFrame.buttons[end].destroy()
+                mainFrame.elementsFrame.buttons = {}
+                mainFrame.elementsFrame.end_num = 0
 
                 if actualOpt == "Items":
                     elements = items
