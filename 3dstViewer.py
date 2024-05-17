@@ -32,18 +32,16 @@ class App(customtkinter.CTk):
         portviewFrame = customtkinter.CTkLabel(self, image=portviewImg, text="", compound="top", bg_color="black")
         portviewFrame.grid(row=0, column=0, padx=0, pady=0)
 
-'''if len(sys.argv) < 2:
+if len(sys.argv) < 2:
     messagebox.showerror(title="Error", message="No file provided")
     sys.exit()
 
 parser = argparse.ArgumentParser(description='A 3dst texture file viewer')
 parser.add_argument('path', type=str, help="The path of the file")
-args = parser.parse_args()'''
+args = parser.parse_args()
 
-#if os.path.exists(args.path):
-if os.path.exists("./alex.3dst"):
-    #path = Path(args.path)
-    path = Path("./alex.3dst")
+if os.path.exists(args.path):
+    path = Path(args.path)
     try:
         texture = Texture3dst().open(path)
     except Exception:
