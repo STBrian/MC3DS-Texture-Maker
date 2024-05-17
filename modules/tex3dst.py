@@ -50,7 +50,7 @@ def getPixelDataFromList(data: list, pos: tuple) -> list:
             raise ValueError("Position must have 2 values.")
         return data[pos[1]][pos[0]]
 
-def convertFunction(data: list, width: int, height: int, conversiontype: int):
+def convertFunction(data: list, width: int, height: int, conversiontype: int, format: str = None):
         if type(data) != list:
             raise Texture3dstException("Data expected to be a list.")
         if type(width) != int:
@@ -61,6 +61,30 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
             raise Texture3dstException("Conversion type must be and integer.")
         if not (conversiontype >= 1 and conversiontype <= 2):
             raise Texture3dstException("Conversion type must be 1 or 2.")
+        
+        if format == "rgba5551":
+            tmpData = []
+            for i in range(len(data)):
+                tmpData.append([])
+                for j in range(len(data[i])):
+                    tmpData[-1].append([])
+                    byte1 = data[i][j][0]
+                    byte2 = data[i][j][1]
+
+                    combined = (byte2 << 8) | byte1
+
+                    a = int((combined >> 0) & 0b1)
+                    b = int((combined >> 1) & 0b11111)
+                    g = int((combined >> 6) & 0b11111)
+                    r = int((combined >> 11) & 0b11111)
+
+                    a = a * 255
+                    b = int((b/31)*255)
+                    g = int((g/31)*255)
+                    r = int((r/31)*255)
+
+                    tmpData[-1][-1].extend([a, b, g, r])
+            data = tmpData
         
         channels = len(data[0][0])
 
@@ -86,13 +110,7 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
                                         # Tipo 2 es para de una textura 3dst crear una imagen
                                         if conversiontype == 1:
                                             pixelData = getPixelDataFromList(data, (x, y))
-                                            if channels == 4:
-                                                if pixelData[-1] == 0:
-                                                    setPixelRGBAfromList(convertedData, (x2, y2), [0] * channels)
-                                                else:
-                                                    setPixelRGBAfromList(convertedData, (x2, y2), pixelData[::-1])
-                                            else:
-                                                setPixelRGBAfromList(convertedData, (x2, y2), pixelData[::-1])
+                                            setPixelRGBAfromList(convertedData, (x2, y2), pixelData[::-1])
                                         else:
                                             # Como es de tipo 2 los valores rgba están en posiciones invertidas
                                             # data[y2][x2][::-1] obtiene los valores a, b, g, r del pixel y los invierte
@@ -121,8 +139,8 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
         return convertedData
 
 class Texture3dst:
-    formats = ("rgba8", "rgb8", "", "", "", "", "", "", "", "l")
-    supported_formats = ("rgba8", "rgb8")
+    formats = ("rgba8", "rgb8", "rgba5551", "", "", "", "", "", "", "la4")
+    supported_formats = ("rgba8", "rgb8", "rgba5551")
 
     def __init__(self):
         return
@@ -187,6 +205,8 @@ class Texture3dst:
             self.channels = 4
         elif format == "rgb8":
             self.channels = 3
+        elif format == "rgba5551":
+            self.channels = 2
         self.mode = mode
         self.format = format
         self.width = width
@@ -201,9 +221,12 @@ class Texture3dst:
         for i in range(height):
             for j in range(width):
                 shorted_data[i].append(data[((i * width) + j) * self.channels:(((i * width) + j) * self.channels) + self.channels])
+        # Se ajustan los canales
+        if format == "rgba5551":
+            self.channels = 4
 
         # Se utiliza el segundo método de conversion para cargar la textura
-        self.data = convertFunction(shorted_data, width, height, 2)
+        self.data = convertFunction(shorted_data, width, height, 2, format)
 
         return self
 
