@@ -49,6 +49,7 @@ if os.path.exists(args.path):
         sys.exit()
     texture.flipX()
     preview = texture.copy(0, 0, texture.width, texture.height)
+    preview = preview.convert("RGBA")
 
     customtkinter.set_appearance_mode("dark")
     app = App(path.name, preview)
