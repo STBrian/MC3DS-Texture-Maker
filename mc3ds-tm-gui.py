@@ -7,7 +7,7 @@ from PIL import ImageTk
 from functools import partial
 from pathlib import Path
 from tkinter import messagebox
-from AutoImporter import *
+from AutoImport import *
 from modules import *
 
 class SearchOptionsFrame(customtkinter.CTkFrame):
@@ -293,7 +293,7 @@ class App(customtkinter.CTk):
         fileMenu.add_option("Exit", command=self.closeApp)
 
         toolsMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
-        toolsMenu.add_option("Auto Importer", command=self.openAutoImporter)
+        toolsMenu.add_option("Auto Import", command=self.openAutoImport)
 
         helpMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Help"))
         helpMenu.add_option("About", command=self.about_popup)
@@ -448,8 +448,8 @@ class App(customtkinter.CTk):
         self.addedBlocks.save(os.path.normpath(f"{self.outputFolder}/blocks.txt"))
         self.saved = True
 
-    def openAutoImporter(self):
-        autoImporter = AutoImporter(self)
+    def openAutoImport(self):
+        autoImport = AutoImport(self)
 
     def closeApp(self, val=None):
         if self.saved:
