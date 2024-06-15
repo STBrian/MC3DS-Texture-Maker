@@ -131,6 +131,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
     def changeTextureFunc(self, value):
         mainApp = self.master.master
         mainFrame = self.master
+        outputDir = mainApp.outputFolder
 
         actualOpt = mainApp.searchData[3]
         items = mainApp.items.getItems()
@@ -158,13 +159,34 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         if filePath != '':
             if isImage16x16(filePath):
                 if actualOpt == "Items":
-                    itemsAtlas.addElement(position, Image.open(filePath))
+                    textureToReplace = Image.open(filePath)
+                    itemsAtlas.addElement(position, textureToReplace)
                     duplicated = checkForMatch(items[matchwith], added.getItems())
+
+                    if not os.path.exists(f"{outputDir}/textures/items"):
+                        os.makedirs(f"{outputDir}/textures/items")
+
+                    newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
+                    newTexture.paste(textureToReplace, 0, 0)
+                    newTexture.flipX()
+                    newTexture.convertData()
+                    newTexture.export(f"{outputDir}/textures/items/{items[matchwith]}.3dst")
+
                     if duplicated == -1:
                         added.addItem(items[matchwith])
                 elif actualOpt == "Blocks":
                     blocksAtlas.addElement(position, Image.open(filePath))
                     duplicated = checkForMatch(blocks[matchwith], added.getItems())
+
+                    if not os.path.exists(f"{outputDir}/textures/blocks"):
+                        os.makedirs(f"{outputDir}/textures/blocks")
+
+                    newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
+                    newTexture.paste(textureToReplace, 0, 0)
+                    newTexture.flipX()
+                    newTexture.convertData()
+
+                    newTexture.export(f"{outputDir}/textures/blocks/{blocks[matchwith]}.3dst")
                     if duplicated == -1:
                         added.addItem(blocks[matchwith])
                 mainFrame.listElementCall(value)

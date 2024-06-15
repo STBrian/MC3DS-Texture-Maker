@@ -1,4 +1,4 @@
-import customtkinter, glob, threading, json
+import customtkinter, glob, threading, json, os
 from PIL import ImageTk, Image
 from pathlib import Path
 
@@ -143,7 +143,26 @@ class StartFrame(customtkinter.CTkFrame):
 
                     # Replace texture
                     print("Opening new texture and replacing...")
-                    atlas.addElement(position, Image.open(file))
+                    textureToReplace = Image.open(file)
+                    atlas.addElement(position, textureToReplace)
+                    if not os.path.exists(f"{outputDir}/textures"):
+                        os.makedirs(f"{outputDir}/textures")
+                    if atlasType == "Items":
+                        if not os.path.exists(f"{outputDir}/textures/items"):
+                            os.makedirs(f"{outputDir}/textures/items")
+                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
+                        newTexture.paste(textureToReplace, 0, 0)
+                        newTexture.flipX()
+                        newTexture.convertData()
+                        newTexture.export(f"{outputDir}/textures/items/{index[matchwith]}.3dst")
+                    elif atlasType == "Blocks":
+                        if not os.path.exists(f"{outputDir}/textures/blocks"):
+                            os.makedirs(f"{outputDir}/textures/blocks")
+                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
+                        newTexture.paste(textureToReplace, 0, 0)
+                        newTexture.flipX()
+                        newTexture.convertData()
+                        newTexture.export(f"{outputDir}/textures/blocks/{index[matchwith]}.3dst")
 
                     # Check for duplicated
                     duplicated = checkForMatch(index[matchwith], added.getItems())
