@@ -30,13 +30,13 @@ class OptionsFrame(customtkinter.CTkFrame):
         self.cb = customtkinter.CTkComboBox(self, values=["Items", "Blocks"], variable=self.type, state="readonly")
         self.cb.grid(row=2, column=0, padx=10, pady=(5, 10), sticky="w")
 
-        self.label2 = customtkinter.CTkLabel(self, text="Rules file:")
+        self.label2 = customtkinter.CTkLabel(self, text="Version:")
         self.label2.grid(row=1, column=1, padx=10, pady=0, sticky="w")
 
         app_path = master.app_path
         rules = getFilesWithExtensionInDir(os.path.join(app_path, "assets/rules/"), "json")
 
-        self.rule = customtkinter.StringVar(value="default3ds")
+        self.rule = customtkinter.StringVar(value="nn3ds 1.9.19")
 
         self.cb2 = customtkinter.CTkComboBox(self, values=rules, variable=self.rule, state="readonly")
         self.cb2.grid(row=2, column=1, padx=10, pady=(5, 10), sticky="w")
@@ -189,7 +189,7 @@ class AutoImport(MyCTkTopLevel):
         super().__init__(master, *args, **kwargs)
         self.geometry("400x240")
         self.resizable(False, False)
-        self.title("Auto Importer")
+        self.title("Auto Import")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)

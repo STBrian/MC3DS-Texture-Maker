@@ -1,586 +1,491 @@
-import os
-import sys
-import difflib
-import glob
+import os, sys
+import difflib, threading, time
+import configparser
+import customtkinter, CTkMenuBar
 from PIL import Image
-from tkinter import Tk
-from tkinter import filedialog
-
+from PIL import ImageTk
+from functools import partial
+from pathlib import Path
+from tkinter import messagebox
+from AutoImport import *
 from modules import *
 
-def clear():
-    os_type = os.name
-    if os_type == "posix":
-        os.system("clear")
-    elif os_type == "nt":
-        os.system("cls")
-    else:
-        print("Unsupported OS")
+class SearchOptionsFrame(customtkinter.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        # Variables
+        self.searchText = customtkinter.StringVar(value="")
+        self.lastSearchText = ""
+        self.showModifiedVar = customtkinter.StringVar(value="off")
+        self.lastModifiedVar = "off"
+        self.showUnmodifiedVar = customtkinter.StringVar(value="on")
+        self.lastUnmodifiedVar = "on"
+        self.actualOpt = customtkinter.StringVar(value="Items")
+        self.lastOpt = "Items"
+        self.searchDataLoc = ["", "off", "on", "Items"]
 
-def printList(list1: list):
-    for i in range(0, len(list1)):
-        print(f"{i + 1}: {list1[i]}")
+        self.grid_columnconfigure(0, weight=1)
 
-def checkForMatch(value, list1: list):
-    position = -1
-    for i in range(0, len(list1)):
-        if value == list1[i]:
-            position = i
+        self.searchOptionsLabel = customtkinter.CTkLabel(self, text="Search options:")
+        self.searchOptionsLabel.grid(row=0, column=0, padx=5, sticky="wn")
 
-    return position
+        self.showUnmodifiedSwitch = customtkinter.CTkSwitch(self, text="Show unmodified elements", onvalue="on", offvalue="off", variable=self.showUnmodifiedVar)
+        self.showUnmodifiedSwitch.grid(row=1, column=0, padx=5, pady=0, sticky="wn")
 
-def checkForMatches(list1: list, list2: list):
-    matches = []
-    for i in range(0, len(list1)):
-        if list1[i] in list2:
-            matches.append(list1[i])
+        self.showModifiedSwitch = customtkinter.CTkSwitch(self, text="Show modified elements", onvalue="on", offvalue="off", variable=self.showModifiedVar)
+        self.showModifiedSwitch.grid(row=2, column=0, padx=5, pady=5, sticky="wn")
 
-    return matches
+        self.entryTextFrame = customtkinter.CTkFrame(self)
+        self.entryTextFrame.grid(row=3, column=0, padx=5, pady=5, sticky="wen")
+        self.entryTextFrame.grid_columnconfigure(1, weight=1)
 
-def deleteMatches(list1: list, list2: list):
-    matches = []
-    for i in range(0, len(list1)):
-        if not (list1[i] in list2):
-            matches.append(list1[i])
+        self.showMenu = customtkinter.CTkComboBox(self.entryTextFrame, values=["Items", "Blocks"], variable=self.actualOpt, state="readonly")
+        self.showMenu.grid(row=0, column=0, padx=5, pady=0, sticky="w")
 
-    return matches
+        self.entryText = customtkinter.CTkEntry(self.entryTextFrame, textvariable=self.searchText, placeholder_text="Search")
+        self.entryText.grid(row=0, column=1, padx=0, pady=5, sticky="wen")
 
-def calculateGrid(value: int, grid_width: int, grid_height: int, cube_lenght: int):
-    x_grid = value - ((value // grid_width) * grid_width)
-    y_grid = value // grid_width
-    if y_grid > grid_height:
-        return -1
-    x = x_grid * cube_lenght
-    y = y_grid * cube_lenght
+        self.button = customtkinter.CTkButton(self.entryTextFrame, text="Search", width=80, command=self.saveSearch)
+        self.button.grid(row=0, column=2, padx=5, pady=5, sticky="wn")
+        
+    def saveSearch(self):
+        if self.lastSearchText != self.searchText.get() or self.lastModifiedVar != self.showModifiedVar.get() or self.lastUnmodifiedVar != self.showUnmodifiedVar.get() or self.lastOpt != self.actualOpt.get():
+            self.lastSearchText = self.searchText.get()
+            self.lastModifiedVar = self.showModifiedVar.get()
+            self.lastUnmodifiedVar = self.showUnmodifiedVar.get()
+            self.lastOpt = self.actualOpt.get()
+            self.searchDataLoc[0] = self.lastSearchText
+            self.searchDataLoc[1] = self.lastModifiedVar
+            self.searchDataLoc[2] = self.lastUnmodifiedVar
+            self.searchDataLoc[3] = self.lastOpt
 
-    return (x, y)
+class InfoDisplayFrame(customtkinter.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.grid_columnconfigure((0, 1), weight=1)
+        self.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
-def addElementToFile(value, filePath: str):
-    if os.path.exists(filePath):
-        with open(filePath, "a") as f:
-            f.write(f"{value}\n")
+        # Variables
+        self.selected = customtkinter.StringVar(value="No element selected")
+        self.portview = customtkinter.CTkImage(dark_image=Image.new("RGBA", (16, 16)), size=(128, 128))
+        self.changeTexture = False
+
+        # Widgets
+
+        self.portviewFrameCanvas = customtkinter.CTkCanvas(self, width=128, height=128)
+        self.portviewFrameCanvas.grid(row=1, column=0, padx=5, pady=5, columnspan=2)
+
+        self.portviewFrame = customtkinter.CTkLabel(self.portviewFrameCanvas, image=self.portview, text="", compound="top", bg_color="black")
+        self.portviewFrame.grid(row=1, column=0, padx=2, pady=2)
+
+        self.selectionLabel = customtkinter.CTkLabel(self, textvariable=self.selected)
+        self.selectionLabel.grid(row=2, column=0, padx=5, pady=5, columnspan=2)
+
+        self.buttonChange = customtkinter.CTkButton(self, text="Change", command=self.changeTextureCall, state="disabled", width=100)
+        self.buttonChange.grid(row=3, column=0, padx=5, pady=5, sticky="wes")
+
+        self.buttonExport = customtkinter.CTkButton(self, text="Export", state="disabled", command=self.saveAs, width=100)
+        self.buttonExport.grid(row=3, column=1, padx=(0, 5), pady=5, sticky="wes")
+
+    def saveAs(self):
+        file = customtkinter.filedialog.asksaveasfile(mode="wb", defaultextension=".png", filetypes=(("PNG File", ".png"), ("3DST File", ".3dst")))
+        if file:
+            extension = Path(file.name).suffix
+            value = self.selected.get()
+            mainApp = self.master.master
+            if value != "":
+                selected = value
+                actualOpt = mainApp.searchData[3]
+
+                # Calculate positions
+                if actualOpt == "Items":
+                    matchwith = checkForMatch(selected, mainApp.items.getItems())
+                    position = calculateGrid(matchwith, 32, 13, 16)
+                elif actualOpt == "Blocks":
+                    matchwith = checkForMatch(selected, mainApp.blocks.getItems())
+                    position = calculateGrid(matchwith, 25, 22, 20)
+                    position = (position[0] + 2, position[1] + 2)
+
+                # Get atlas
+                if actualOpt == "Items":
+                    atlas = mainApp.itemsAtlas
+                elif actualOpt == "Blocks":
+                    atlas = mainApp.blocksAtlas
+
+                # Copy region and export
+                export = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)          
+                if extension == ".png":
+                    export.save(file)
+                elif extension == ".3dst":
+                    export3dst = Texture3dst().new(16, 16, 1)
+                    export3dst.paste(export, 0, 0)
+                    export3dst.convertData()
+                    export3dst.export(file.name)
+        file.close()
+
+    def changeTextureCall(self):
+        changeTexture = partial(self.changeTextureFunc, self.selected.get())
+        self.buttonChange.configure(state="disabled")
+        threading.Thread(target=changeTexture).start()
+
+    def changeTextureFunc(self, value):
+        mainApp = self.master.master
+        mainFrame = self.master
+
+        actualOpt = mainApp.searchData[3]
+        items = mainApp.items.getItems()
+        blocks = mainApp.blocks.getItems()
+        itemsAtlas = mainApp.itemsAtlas
+        blocksAtlas = mainApp.blocksAtlas
+        addedItems = mainApp.addedItems
+        addedBlocks = mainApp.addedBlocks
+
+        # Load indexes
+        if actualOpt == "Items":
+            added = addedItems
+        elif actualOpt == "Blocks":
+            added = addedBlocks
+
+        # Calculate positions
+        if actualOpt == "Items":
+            matchwith = checkForMatch(value, items)
+            position = calculateGrid(matchwith, 32, 13, 16)
+        elif actualOpt == "Blocks":
+            matchwith = checkForMatch(value, blocks)
+            position = calculateGrid(matchwith, 25, 22, 20)
+
+        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".png .jpg")])
+        if filePath != '':
+            if isImage16x16(filePath):
+                if actualOpt == "Items":
+                    itemsAtlas.addElement(position, Image.open(filePath))
+                    duplicated = checkForMatch(items[matchwith], added.getItems())
+                    if duplicated == -1:
+                        added.addItem(items[matchwith])
+                elif actualOpt == "Blocks":
+                    blocksAtlas.addElement(position, Image.open(filePath))
+                    duplicated = checkForMatch(blocks[matchwith], added.getItems())
+                    if duplicated == -1:
+                        added.addItem(blocks[matchwith])
+                mainFrame.listElementCall(value)
+                mainApp.saved = False
+        self.buttonChange.configure(state="normal")
+
+class MainFrame(customtkinter.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+
+        self.grid_columnconfigure(0, weight=5)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        self.searchOptionsFrame = SearchOptionsFrame(self)
+        self.searchOptionsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="wen", columnspan=2)
+
+        self.elementsFrame = MyCTkListbox(self, command=self.listElementCall)
+        self.elementsFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
+
+        self.infoDispFrame = InfoDisplayFrame(self)
+        self.infoDispFrame.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
+
+    def listElementCall(self, value):
+        listElement = partial(self.listElementFun, value)
+        threading.Thread(target=listElement).start()
+
+    def listElementFun(self, value):
+        if self.infoDispFrame.buttonChange.cget("state") == "disabled":
+            self.infoDispFrame.buttonChange.configure(state="normal")
+        if self.infoDispFrame.buttonExport.cget("state") == "disabled":
+            self.infoDispFrame.buttonExport.configure(state="normal")
+        self.infoDispFrame.selected.set(value)
+
+        selected = value
+        actualOpt = self.master.searchData[3]
+        mainApp = self.master
+
+        # Calculate positions
+        if actualOpt == "Items":
+            matchwith = checkForMatch(selected, mainApp.items.getItems())
+            position = calculateGrid(matchwith, 32, 13, 16)
+        elif actualOpt == "Blocks":
+            matchwith = checkForMatch(selected, mainApp.blocks.getItems())
+            position = calculateGrid(matchwith, 25, 22, 20)
+            position = (position[0] + 2, position[1] + 2)
+
+        # Load atlas
+        if actualOpt == "Items":
+            atlas = mainApp.itemsAtlas
+        elif actualOpt == "Blocks":
+            atlas = mainApp.blocksAtlas
+
+        # Copy region and update display
+        if matchwith != -1:
+            print(selected)
+            portview = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
+            portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
+            self.infoDispFrame.portview.configure(dark_image=portviewRes)
+
+class App(customtkinter.CTk):
+    def __init__(self):
+        super().__init__()
+
+        # --------------------------------------------
+
+        # Variables declaration
+        self.searchData = ["", "off", "on", "Items"]
+        self.sourceFolder = "assets"
+        self.selected = ""
+        self.elementsList = []
+        self.updateList = True
+        self.saved = True
+        self.atlas = []
+
+        # --------------------------------------------
+
+        if getattr(sys, 'frozen', False):
+            self.running = "exe"
+            self.app_path = sys._MEIPASS
+            self.runningDir = os.path.dirname(sys.executable)
+        elif __file__:
+            self.running = "src"
+            self.app_path = os.path.dirname(__file__)
+            self.runningDir = os.path.dirname(__file__)
+        
+        # Ini file
+        if os.path.exists(os.path.join(self.runningDir, "mc3ds-tm.ini")):
+            self.config = configparser.ConfigParser()
+            self.config.read(os.path.join(self.runningDir, "mc3ds-tm.ini"))
+        else:
+            self.config = configparser.ConfigParser()
+            self.config["Preferences"] = {"theme": "dark"}
+            self.config["Path"] = {"lastdir": os.path.join(self.runningDir, "MC3DS")}
+        self.outputFolder = self.config["Path"]["lastdir"]
+        self.theme = self.config["Preferences"]["theme"]
+        if not self.theme in ["dark", "light"]:
+            self.theme = "dark"
+            self.config["Preferences"]["theme"] = "dark"
+        customtkinter.set_appearance_mode(self.theme)
+        self.saveChangesForIniFile()
+
+        self.title("MC3DS Texture Maker")
+        os_name = os.name
+        if os_name == "nt":
+            self.iconbitmap(default=os.path.join(self.app_path, "icon.ico"))
+        elif os_name == "posix":
+            iconpath = ImageTk.PhotoImage(file=os.path.join(self.app_path, "icon.png"))
+            self.wm_iconbitmap()
+            self.iconphoto(False, iconpath)
+
+        self.geometry("580x420")
+        self.minsize(580, 420)
+        self.resizable(True, True)
+
+        # --------------------------------------------
+
+        # Menu bar
+        menu_bar = CTkMenuBar.CTkMenuBar(master=self, height=15)
+
+        fileMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("File"))
+        fileMenu.add_option("Open folder", command=self.openFolder)
+        fileMenu.add_option("Toggle theme", command=self.changeTheme)
+        fileMenu.add_separator()
+        fileMenu.add_option("Save", command=self.saveChanges)
+        fileMenu.add_separator()
+        fileMenu.add_option("Exit", command=self.closeApp)
+
+        toolsMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
+        toolsMenu.add_option("Auto Import", command=self.openAutoImport)
+
+        helpMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Help"))
+        helpMenu.add_option("About", command=self.about_popup)
+
+        # --------------------------------------------
+
+        # Main frame
+        self.mainFrame = MainFrame(self, fg_color="transparent")
+        self.mainFrame.pack(side='left', expand=True, fill='both')
+
+        # --------------------------------------------
+
+        # Initial loading
+        if self.theme == "dark":
+            self.mainFrame.elementsFrame.text_color = "white"
+        else:
+            self.mainFrame.elementsFrame.text_color = "black"
+
+        # Load indexes of blocks and items from source
+        self.items = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newItemsIndex.txt"))
+        self.blocks = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newBlocksIndex.txt"))
+
+        # Load resources
+        self.loadResources()
+
+        # Start daemon threads
+        threadParams = threading.Thread(target=self.updateParamsThread)
+        threadParams.daemon = True
+        threadParams.start()
+
+        listUpdateThread = threading.Thread(target=self.updateListThread)
+        listUpdateThread.daemon = True
+        listUpdateThread.start()
+
+    def saveChangesForIniFile(self):
+        with open(os.path.join(self.runningDir, "mc3ds-tm.ini"), "w") as configfile:
+            self.config.write(configfile)
+
+    def openFolder(self):
+        if self.askForChanges():
+            input = customtkinter.filedialog.askdirectory()
+            if self.outputFolder != input and input != '':
+                self.outputFolder = input
+                self.config["Path"]["lastdir"] = self.outputFolder
+                self.saveChangesForIniFile()
+                self.loadResources()
+                self.saved = True
+                self.updateList = True
+
+    def changeTheme(self):
+        if self.theme == "dark":
+            customtkinter.set_appearance_mode("light")
+            self.mainFrame.elementsFrame.text_color = "black"
+            self.updateList = True
+            self.theme = "light"
+        else:
+            customtkinter.set_appearance_mode("dark")
+            self.mainFrame.elementsFrame.text_color = "white"
+            self.updateList = True
+            self.theme = "dark"
+        self.config["Preferences"]["theme"] = self.theme
+        self.saveChangesForIniFile()
+
+    def about_popup(self):
+        about_text = "MC3DS Texture Maker\nVersion 2.0\n\nAuthor: STBrian\nE-mail: brichap100@gmail.com"
+        messagebox.showinfo("About", about_text)
+
+    def updateParamsThread(self):
+        while True:
+            if self.searchData != self.mainFrame.searchOptionsFrame.searchDataLoc:
+                self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:4]
+                self.updateList = True
+
+            if f"{self.searchData[3]}:" != self.mainFrame.elementsFrame.cget("label_text"):
+                self.mainFrame.elementsFrame.configure(label_text=f"{self.searchData[3]}:")
+            time.sleep(0.5)
+
+    def updateListThread(self):
+        while True:
+            if self.updateList == True:
+                self.updateList = False
+                mainFrame = self.mainFrame
+                searchData = self.searchData
+                actualOpt = searchData[3]
+                items = self.items
+                blocks = self.blocks
+                addedItems = self.addedItems
+                addedBlocks = self.addedBlocks
+
+                # mainFrame.elementsFrame.delete("all")
+                end = len(mainFrame.elementsFrame.buttons)
+                for i in range(end):
+                    end -= 1
+                    mainFrame.elementsFrame.buttons[end].grid_remove()
+                    mainFrame.elementsFrame.buttons[end].destroy()
+                mainFrame.elementsFrame.buttons = {}
+                mainFrame.elementsFrame.end_num = 0
+
+                if actualOpt == "Items":
+                    elements = items
+                    added = addedItems
+                elif actualOpt == "Blocks":
+                    elements = blocks
+                    added = addedBlocks
+
+                elements = elements.getItems()
+
+                if (not searchData[0] == ""):
+                    elements = difflib.get_close_matches(searchData[0], elements, n = len(elements), cutoff=0.4)
+                
+                if searchData[1] == "off":
+                    elements = deleteMatches(elements, added.getItems())
+
+                if searchData[2] == "off":
+                    elements = checkForMatches(elements, added.getItems())
+
+                for i in range(0, len(elements)):
+                    mainFrame.elementsFrame.insert(i, elements[i])
+                    if self.updateList == True:
+                        break
+            time.sleep(0.5)
+
+    def loadResources(self):
+        # Load atlas either from source folder or output if exists
+        if os.path.exists(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
+            self.itemsAtlas = atlasTexture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"), "Items")
+        else:
+            self.itemsAtlas = atlasTexture3dst().open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.items.vanilla.png"), "Items")
+        if os.path.exists(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
+            self.blocksAtlas = atlasTexture3dst().open(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"), "Blocks")
+        else:
+            self.blocksAtlas = atlasTexture3dst().open(os.path.join((self.app_path), f"{self.sourceFolder}/atlas/atlas.terrain.vanilla.png"), "Blocks")
+
+        # Load index of added blocks and items if exists
+        if os.path.exists(os.path.normpath(f"{self.outputFolder}/items.txt")):
+            self.addedItems = IndexFile().open(os.path.normpath(f"{self.outputFolder}/items.txt"))
+        else:
+            self.addedItems = IndexFile().new()
+        if os.path.exists(os.path.normpath(f"{self.outputFolder}/blocks.txt")):
+            self.addedBlocks = IndexFile().open(os.path.normpath(f"{self.outputFolder}/blocks.txt"))
+        else:
+            self.addedBlocks = IndexFile().new()
         return
-    else:
-        file = open(filePath, "w")
-        file.write(f"{value}\n")
-
-def createOutputDirectory(directoryName):
-    if not os.path.exists(directoryName):
-        os.makedirs(directoryName)
-
-def getItemsFromIndexFile(filename):
-    items = []
-    with open(filename, "r") as f:
-        content = f.read()
-        items = content.split("\n")
     
-    return items
+    def saveChanges(self):
+        out = os.path.join(self.outputFolder, "atlas")
+        if not os.path.exists(out):
+            os.makedirs(out)
+        self.itemsAtlas.save(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+        self.blocksAtlas.save(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
+        self.addedItems.save(os.path.normpath(f"{self.outputFolder}/items.txt"))
+        self.addedBlocks.save(os.path.normpath(f"{self.outputFolder}/blocks.txt"))
+        self.saved = True
 
-def printMenu():
-    print("Choose an option:")
-    print("\t1: Change an item texture")
-    print("\t2: Change a block texture")
-    if running == "src":
-        print("\t3: Options")
-        print("\t4: Change texture pack icon")
-    print("\t0: Exit")
+    def openAutoImport(self):
+        autoImport = AutoImport(self)
 
-def isImage16x16(texture_path):
-    img = Image.open(texture_path)
-    if img.size[0] == 16 and img.size[1] == 16:
-        img.close()
-        return True
-    else:
-        img.close()
-        return False
+    def closeApp(self, val=None):
+        if self.saved:
+            sys.exit()
+        else:
+            print("Not saved")
+            op = messagebox.askyesnocancel(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before exit?")
+            if op == True:
+                self.saveChanges()
+                sys.exit()
+            elif op == False:
+                sys.exit()
+            else:
+                pass
 
-def addToItemAtlas(pixelPosition, textureImgPath, output_folder):
-    # Carga los archivos necesarios a la memoria
-    if os.path.exists(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst"):
-        print("Opening modified atlas...")
-        itemAtlas = Texture3dst().open(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst")
-        # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
-        itemAtlas.flipX()
-    else:
-        print("Creating new atlas file...")
-        itemAtlas = Texture3dst().new(512, 256, 1)
-        print("Opening atlas from assets...")
-        itemAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.items.vanilla.png").convert("RGBA")
-        x = 0
-        y = 0
-        for i in range(0, itemAtlasSource.size[1]):
-            for j in range(0, itemAtlasSource.size[0]):
-                r, g, b, a = itemAtlasSource.getpixel((x, y))
-                itemAtlas.setPixelRGBA(x, y, r, g, b, a)
-                x += 1
-            x = 0
-            y += 1
+    def askForChanges(self):
+        if self.saved:
+            return True
+        else:
+            print("Not saved")
+            op = messagebox.askyesnocancel(title="Unsaved changes", message="There are unsaved changes. Would you like to save them?")
+            if op == True:
+                self.saveChanges()
+                return True
+            elif op == False:
+                return True
+            else:
+                return False
 
-        itemAtlasSource.close()
+customtkinter.set_default_color_theme("blue")
 
-    print("Opening new texture...")
-    textureImg = Image.open(textureImgPath).convert("RGBA")
-        
-    # Define las variables de posición
-    x_atlas = pixelPosition[0]
-    y_atlas = pixelPosition[1]
+print("Loading app...")
+app = App()
 
-    # Reemplazar la textura original por la nueva
-    print("Replacing new texture...")
-    x = 0
-    y = 0
-    for i in range(0, 16):
-        for i in range(0, 16):
-            r, g, b, a = textureImg.getpixel((x, y))
-            itemAtlas.setPixelRGBA(x_atlas, y_atlas, r, g, b, a)
-            x += 1
-            x_atlas += 1
-        x = 0
-        x_atlas -= 16
-        y += 1
-        y_atlas += 1
+app.bind('<Alt-F4>', app.closeApp)
+app.protocol("WM_DELETE_WINDOW", app.closeApp)
 
-    # Crea el directorio de salida si no existe
-    if not os.path.exists(f"{output_folder}/atlas"):
-        createOutputDirectory(f"{output_folder}/atlas")
-
-    # Invierte el atlas en el eje x y convierte los datos del atlas antes de exportarlos
-    print("Inverting x-axis atlas...")
-    itemAtlas.flipX()
-    print("Converting data...")
-    itemAtlas.convertData()
-
-    # Guarda el atlas modificado
-    print("Saving changes...")
-    itemAtlas.export(f"{output_folder}/atlas/atlas.items.meta_79954554_0.3dst")
-
-    return True
-    
-def addToBlockAtlas(pixelPosition, textureImgPath, output_folder):
-    # Carga los archivos necesarios a la memoria
-    print("Starting...")
-    if os.path.exists(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst"):
-        print("Opening modified atlas...")
-        blockAtlas = Texture3dst().open(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst")
-        # El archivo previamente debe estar de cabeza entonces hay que voltearlo para usarlo normal
-        blockAtlas.flipX()
-    else:
-        print("Creating new texture file...")
-        blockAtlas = Texture3dst().new(512, 512, 3)
-        print("Opening atlas from assets...")
-        blockAtlasSource = Image.open(f"{sourceFolder}/atlas/atlas.terrain.vanilla.png").convert("RGBA")
-        x = 0
-        y = 0
-        for i in range(0, blockAtlasSource.size[1]):
-            for j in range(0, blockAtlasSource.size[0]):
-                r, g, b, a = blockAtlasSource.getpixel((x, y))
-                blockAtlas.setPixelRGBA(x, y, r, g, b, a)
-                x += 1
-            x = 0
-            y += 1
-
-        blockAtlasSource.close()
-
-    print("Opening new texture...")
-    textureImg = Image.open(textureImgPath).convert("RGBA")
-        
-    # Define las variables de posición
-    x_atlas = pixelPosition[0]
-    y_atlas = pixelPosition[1]
-
-    # Reemplazar la textura original por la nueva
-    print("Replacing texture...")
-    x = -2
-    y = -2
-    x2 = 0
-    y2 = 0
-    for i in range(0, 20):
-        for i in range(0, 20):
-            if x < 0:
-                x2 = 0
-            if x > 15:
-                x2 = 15
-            if y < 0:
-                y2 = 0
-            if y > 15:
-                y2 = 15
-            if x >= 0 and x <= 15:
-                x2 = x
-            if y >= 0 and y <= 15:
-                y2 = y
-            r, g, b, a = textureImg.getpixel((x2, y2))
-            blockAtlas.setPixelRGBA(x_atlas, y_atlas, r, g, b, a)
-            x += 1
-            x_atlas += 1
-        x = -2
-        x_atlas -= 20
-        y += 1
-        y_atlas += 1
-
-    # Crea el directorio de salida si no existe
-    if not os.path.exists(f"{output_folder}/atlas"):
-        createOutputDirectory(f"{output_folder}/atlas")
-
-    # Invierte el atlas en el eje x y convierte los datos del atlas antes de exportarlos
-    print("Inverting x-axis atlas...")
-    blockAtlas.flipX()
-    print("Converting data...")
-    blockAtlas.convertData()
-
-    # Guarda el atlas modificado
-    print("Saving changes...")
-    blockAtlas.export(f"{output_folder}/atlas/atlas.terrain.meta_79954554_0.3dst")
-
-    return True
-
-if __name__ == "__main__":
-    TkInstance = Tk()
-    TkInstance.withdraw()
-    
-    items = []
-    blocks = []
-
-    sourceFolder = "assets"
-    if getattr(sys, 'frozen', False):
-        running = "exe"
-        os.chdir(sys._MEIPASS)
-        app_path = sys._MEIPASS
-        outputFolder = os.path.join(os.path.dirname(sys.executable), input("Enter the output folder: "))
-    elif __file__:
-        running = "src"
-        app_path = os.path.dirname(__file__)
-        outputFolder = "MC3DS"
-    rulesFile = "None"
-
-    if os.name == "nt":
-        TkInstance.iconbitmap(default=os.path.join(app_path, "icon.ico"))
-
-    clear()
-    close = False
-
-    # Main loop
-    while close != True:
-        printMenu()
-        
-        option = input("Enter an option: ")
-
-        match option:
-            case "1":
-                escapemenu2 = False
-                while escapemenu2 == False:
-                    # Cambiar la textura de un item
-                    clear()
-                    print("Choose an option:")
-                    print("\t1: Search unmodified item by text")
-                    print("\t2: Search modified item by text")
-                    print("\t3: Show unmodified items")
-                    print("\t4: Show modified items")
-                    print("\t0: Back")
-                    option2 = input("Enter an option: ")
-
-                    if option2.isdigit():
-                        option2 = int(option2)
-                        if option2 >= 1 and option2 <= 4:
-                            escapemenu3 = False
-                            update = True
-                            items = getItemsFromIndexFile(f"{sourceFolder}/indexes/items.txt")
-
-                            while escapemenu3 == False:
-                                if update == True:
-                                    clear()
-                                    addedItems = []
-                                    match option2:
-                                        case 1:
-                                            search = input("Enter the search text: ")
-                                            matches = difflib.get_close_matches(search, items, n=len(items), cutoff=0.5)
-                                            if os.path.exists(f"{outputFolder}/items.txt"):
-                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/items.txt")
-                                                itemsList = deleteMatches(matches, addedItems)
-                                            else:
-                                                itemsList = matches
-                                        case 2:
-                                            search = input("Enter the search text: ")
-                                            matches = difflib.get_close_matches(search, items, n=len(items), cutoff=0.5)
-                                            if os.path.exists(f"{outputFolder}/items.txt"):
-                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/items.txt")
-                                                itemsList = checkForMatches(matches, addedItems)
-                                            else:
-                                                itemsList = []
-                                        case 3:
-                                            if os.path.exists(f"{outputFolder}/items.txt"):
-                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/items.txt")
-                                                itemsList = deleteMatches(items, addedItems)
-                                            else:
-                                                itemsList = items
-
-                                        case 4:
-                                            if os.path.exists(f"{outputFolder}/items.txt"):
-                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/items.txt")
-                                                itemsList = checkForMatches(items, addedItems)
-                                            else:
-                                                itemsList = []
-                                    
-                                    printList(itemsList)
-                                    print("0: Back")
-                                    update = False
-                                
-                                id = input("Enter an ID: ")
-                                if id.isdigit():
-                                    id = int(id)
-                                    if id == 0:
-                                        escapemenu3 = True
-                                    else:
-                                        if not (id < 0 or id > len(itemsList)):
-                                            id -= 1
-                                            matchwith = checkForMatch(itemsList[id], items)
-                                            if matchwith != False:
-                                                position = calculateGrid(matchwith, 32, 13, 16)
-                                                if position != False:
-                                                    print(f"Selection: {items[matchwith]}")
-                                                    filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                                                    if filePath != '':
-                                                        if isImage16x16(filePath):
-                                                            addToItemAtlas(position, filePath, outputFolder)
-                                                            duplicated = checkForMatch(items[matchwith], addedItems)
-                                                            if duplicated == -1:
-                                                                addElementToFile(items[matchwith], f"{outputFolder}/items.txt")
-                                                            print("Finished")
-                                                            update = True
-                                                        else:
-                                                            print("Texture must be 16x16")
-                                                    else:
-                                                        print("No file selected")
-                                                else:
-                                                    print("Error calculating the grid position")
-                                            else:
-                                                print("Unexpected error")
-                                        else:
-                                            print("Invalid ID (Out of range)")
-                                else:
-                                    print("Invalid ID (Not a digit)")
-                        else:
-                            if option2 == 0:
-                                escapemenu2 = True
-                                clear()
-                            else:
-                                print("Invalid option (Out of range)")
-                    else:
-                        print("Invalid option (Not a digit)")
-
-            case "2":
-                escapemenu2 = False
-
-                while escapemenu2 == False:
-                    # Cambiar la textura de un bloque
-                    clear()
-                    print("Choose an option:")
-                    print("\t1: Search unmodified block by text")
-                    print("\t2: Search modified block by text")
-                    print("\t3: Show unmodified blocks")
-                    print("\t4: Show modified blocks")
-                    print("\t0: Back")
-                    option2 = input("Enter an option: ")
-
-                    if option2.isdigit():
-                        option2 = int(option2)
-                        if option2 >= 1 and option2 <= 4:
-                            escapemenu3 = False
-                            update = True
-                            items = getItemsFromIndexFile(f"{sourceFolder}/indexes/blocks.txt")
-
-                            while escapemenu3 == False:
-                                if update == True:
-                                    clear()
-                                    addedItems = []
-                                    match option2:
-                                        case 1:
-                                            search = input("Enter the search text: ")
-                                            matches = difflib.get_close_matches(search, items, n=len(items), cutoff=0.5)
-                                            if os.path.exists(f"{outputFolder}/blocks.txt"):
-                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/blocks.txt")
-                                                itemsList = deleteMatches(matches, addedItems)
-                                            else:
-                                                itemsList = matches
-                                        case 2:
-                                            search = input("Enter the search text: ")
-                                            matches = difflib.get_close_matches(search, items, n=len(items), cutoff=0.5)
-                                            if os.path.exists(f"{outputFolder}/blocks.txt"):
-                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/blocks.txt")
-                                                itemsList = checkForMatches(matches, addedItems)
-                                            else:
-                                                itemsList = []
-                                        case 3:
-                                            if os.path.exists(f"{outputFolder}/blocks.txt"):
-                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/blocks.txt")
-                                                itemsList = deleteMatches(items, addedItems)
-                                            else:
-                                                itemsList = items
-                                        case 4:
-                                            if os.path.exists(f"{outputFolder}/blocks.txt"):
-                                                addedItems = getItemsFromIndexFile(f"{outputFolder}/blocks.txt")
-                                                itemsList = checkForMatches(items, addedItems)
-                                            else:
-                                                itemsList = []
-                                    
-                                    printList(itemsList)
-                                    print("0: Back")
-                                    update = False
-                                
-                                id = input("Enter an ID: ")
-                                if id.isdigit():
-                                    id = int(id)
-                                    if id == 0:
-                                        escapemenu3 = True
-                                    else:
-                                        if not (id < 0 or id > len(itemsList)):
-                                            id -= 1
-                                            matchwith = checkForMatch(itemsList[id], items)
-                                            if matchwith != False:
-                                                position = calculateGrid(matchwith, 25, 22, 20)
-                                                if position != False:
-                                                    print(f"Selection: {items[matchwith]}")
-                                                    filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                                                    if filePath != '':
-                                                        if isImage16x16(filePath):
-                                                            addToBlockAtlas(position, filePath, outputFolder)
-                                                            duplicated = checkForMatch(items[matchwith], addedItems)
-                                                            if duplicated == -1:
-                                                                addElementToFile(items[matchwith], f"{outputFolder}/blocks.txt")
-                                                            print("Finished")
-                                                            update = True
-                                                        else:
-                                                            print("Texture must be 16x16")
-                                                    else:
-                                                        print("No file selected")
-                                                else:
-                                                    print("Error calculating the grid position")
-                                            else:
-                                                print("Unexpected error")
-                                        else:
-                                            print("Invalid ID (Out of range)")
-                                else:
-                                    print("Invalid ID (Not a digit)")
-                        else:
-                            if option2 == 0:
-                                escapemenu2 = True
-                                clear()
-                            else:
-                                print("Invalid option (Out of range)")
-                    else:
-                        print("Invalid option (Not a digit)")
-            
-            case "3":
-                if running == "src":
-                    # Options
-                    escapemenu2 = False
-                    clear()
-                    while escapemenu2 == False:
-                        print("Options:")
-                        print("\t1: Change rules file")
-                        print("\t0: Back")
-
-                        option2 = input("Enter an option: ")
-                        match option2:
-                            case "1":
-                                clear()
-                                print("This will change the names that the program uses for searching blocks and items, and their name on the displayed list.")
-                                print("If you want to use a custom one, make a folder named 'rules' and place the rules file inside. The folder must be inside the output folder.")
-                                localElements = glob.glob(f"{sourceFolder}"+r"\rules\*.txt")
-                                extElements = glob.glob(f"{outputFolder}"+r"\rules\*.txt")
-
-                                totalElements = localElements
-                                for i in range(0, len(extElements)):
-                                    totalElements.append(extElements[i])
-
-                                printList(totalElements)
-                                print(f"{len(totalElements) + 1}: None")
-                                print("0: Back")
-
-                                escapemenu3 = False
-                                while escapemenu3 == False:
-                                    option3 = input("Enter an option: ")
-                                    if option3.isdigit():
-                                        option3 = int(option3)
-                                        if option3 >= 0 and option3 <= len(totalElements) + 1:
-                                            if option3 == len(totalElements) + 1:
-                                                rulesFile = "None"
-                                            elif option3 == 0:
-                                                print("Back")
-                                            else:
-                                                rulesFile = totalElements[option3 - 1]
-                                            escapemenu3 = True
-                                        else:
-                                            print("Invalid option")
-                                    else:
-                                        print("Invalid option")
-                                clear()
-
-                            case "0":
-                                clear()
-                                escapemenu2 = True
-                            
-                            case _:
-                                clear()
-                                print("Invalid option")
-                    clear()
-                else:
-                    clear()
-                    print("Invalid option")
-
-            case "4":
-                # Unused option
-                if running == "src":
-                    clear()
-                    # Cambiar icono del paquete
-                    print("Choose an image: ")
-                    filePath = filedialog.askopenfilename(filetypes = [("Image files", ".png .jpg")])
-                    if filePath != '':
-                        texture = Image.open(filePath).convert("RGBA")
-                        if texture.size[0] == texture.size[1]:
-                            resizedwidth = 64
-                            width = texture.size[0]
-                            height = texture.size[1]
-                            wpercent = (resizedwidth/float(width))
-                            hsize = int((float(height)*float(wpercent)))
-                            texture = texture.resize((resizedwidth, hsize), Image.Resampling.LANCZOS)
-
-                            icon_texture = Texture3dst().new(64, 64, 1)
-
-                            x = 0
-                            y = 0
-                            for i in range(0, 64):
-                                for j in range(0, 64):
-                                    r, g, b, a = texture.getpixel((x, y))
-                                    icon_texture.setPixelRGBA(x, y, r, g, b, a)
-                                    x += 1
-                                x = 0
-                                y += 1
-
-                            texture.close()
-
-                            icon_texture.flipX()
-                            icon_texture.convertData()
-
-                            if not os.path.exists(f"{outputFolder}"):
-                                createOutputDirectory(f"{outputFolder}")
-                            
-                            print("Saving icon...")
-                            icon_texture.export(f"{outputFolder}/icon_pack.3dst")
-                            print("Success!")
-
-                        else:
-                            print("Image texture must be 1:1")
-                    else:
-                        print("No file selected")
-                else:
-                    clear()
-                    print("Invalid option")
-
-            case "0":
-                clear()
-                print("Exit")
-                close = True
-
-            case _:
-                clear()
-                print("Invalid option")
+app.mainloop()

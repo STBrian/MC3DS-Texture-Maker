@@ -8,3 +8,5 @@
 /venv
 /__pycache__
 /mc3ds-tm.ini
+/uvs_test
+/rules_test
