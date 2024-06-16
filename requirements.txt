@@ -5,4 +5,5 @@ packaging==23.2
 CTkMenuBar==0.3
 CTkListBox==1.2
 pyinstaller==6.3.0
+requests==2.32.3
 psutil==5.9.8
