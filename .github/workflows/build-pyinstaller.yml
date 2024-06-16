@@ -31,10 +31,13 @@ jobs:
     - name: Build script
       run: |
         ./build.bat
+    - name: Compress artifact
+      run: |
+        7z a mc3ds-tm-windows-x64.7z dist/*
     - uses: actions/upload-artifact@v4
       with:
         name: mc3ds-tm-windows-x64
-        path: dist/
+        path: mc3ds-tm-windows-x64.7z
   
   build-linux:
     runs-on: ubuntu-latest
@@ -60,7 +63,10 @@ jobs:
       run: |
         dos2unix ./build.sh
         bash ./build.sh
+    - name: Compress artifact
+      run: |
+        7z a mc3ds-tm-linux-x64.7z dist/*
     - uses: actions/upload-artifact@v4
       with:
         name: mc3ds-tm-linux-x64
-        path: dist/
+        path: mc3ds-tm-linux-x64.7z
