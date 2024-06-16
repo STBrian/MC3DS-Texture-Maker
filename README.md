@@ -16,6 +16,7 @@ The executable does not require nothing since all it's packaged inside, but for 
 - CTkMenuBar 0.3
 - CTkListBox 1.2
 - pyinstaller 6.3.0
+- psutil 5.9.8
 # How to use
 The README file refers to the latest stable version v1.0-release.
 
