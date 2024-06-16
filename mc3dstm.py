@@ -4,7 +4,6 @@ import configparser
 import customtkinter, CTkMenuBar
 from PIL import Image
 from PIL import ImageTk
-import platform
 from functools import partial
 from pathlib import Path
 from tkinter import messagebox
@@ -481,7 +480,7 @@ class App(customtkinter.CTk):
             sys.exit()
         else:
             print("Not saved")
-            op = messagebox.askyesnocancel(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before exit?")
+            op = messagebox.askyesno(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before exit?")
             if op == True:
                 self.saveChanges()
                 sys.exit()
@@ -491,6 +490,15 @@ class App(customtkinter.CTk):
                 pass
     
     def updateApp(self):
+        if self.saved:
+            pass
+        else:
+            saveQ = messagebox.askyesno(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before Updating?")
+            if saveQ == True:
+                self.saveChanges()
+            else:
+                pass
+
         if '.exe' in os.path.basename(__file__) and os.path.exists('.\\updater.exe'):
             os.system(f'start .\\updater.exe')
         else:
