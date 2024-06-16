@@ -317,6 +317,7 @@ class App(customtkinter.CTk):
 
         toolsMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
         toolsMenu.add_option("Auto Import", command=self.openAutoImport)
+        toolsMenu.add_option("Update Application", command=self.updateApp)
 
         helpMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Help"))
         helpMenu.add_option("About", command=self.about_popup)
@@ -479,7 +480,7 @@ class App(customtkinter.CTk):
             sys.exit()
         else:
             print("Not saved")
-            op = messagebox.askyesnocancel(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before exit?")
+            op = messagebox.askyesno(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before exit?")
             if op == True:
                 self.saveChanges()
                 sys.exit()
@@ -487,6 +488,22 @@ class App(customtkinter.CTk):
                 sys.exit()
             else:
                 pass
+    
+    def updateApp(self):
+        if self.saved:
+            pass
+        else:
+            saveQ = messagebox.askyesno(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before Updating?")
+            if saveQ == True:
+                self.saveChanges()
+            else:
+                pass
+
+        if '.exe' in os.path.basename(__file__) and os.path.exists('.\\updater.exe'):
+            os.system(f'start .\\updater.exe')
+        else:
+            error = messagebox.showerror("Error", "The Updater Executable isn't in the Current Install Directory.\nCannot Update, Download the latest Release manually.")
+        
 
     def askForChanges(self):
         if self.saved:
