@@ -17,6 +17,7 @@ The executable does not require nothing since all it's packaged inside, but for 
 - CTkListBox 1.2
 - pyinstaller 6.3.0
 - psutil 5.9.8
+- requests 2.32.3
 # How to use
 The README file refers to the latest stable version v1.0-release.
 
