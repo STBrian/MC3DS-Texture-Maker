@@ -155,7 +155,14 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             matchwith = checkForMatch(value, blocks)
             position = calculateGrid(matchwith, 25, 22, 20)
 
-        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".png .jpg")])
+        exts = Image.registered_extensions()
+        supported_extensions = {ex for ex, f in exts.items() if f in Image.OPEN}
+        exts_str = ""
+        for idx, element in enumerate(supported_extensions):
+            exts_str += element
+            if idx < len(supported_extensions)-1:
+                exts_str += " "
+        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("Extended image files", exts_str)])
         if filePath != '':
             if isImage16x16(filePath):
                 if actualOpt == "Items":
