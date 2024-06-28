@@ -258,6 +258,8 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
+        self.version = "2.0-beta2(dev)"
+
         # --------------------------------------------
 
         # Variables declaration
@@ -388,7 +390,7 @@ class App(customtkinter.CTk):
         self.saveChangesForIniFile()
 
     def about_popup(self):
-        about_text = "MC3DS Texture Maker\nVersion 2.0\n\nAuthor: STBrian\nE-mail: brichap100@gmail.com"
+        about_text = f"MC3DS Texture Maker\nVersion {self.version}\n\nMade by: STBrian\nGitHub: https://github.com/STBrian"
         messagebox.showinfo("About", about_text)
 
     def updateParamsThread(self):
