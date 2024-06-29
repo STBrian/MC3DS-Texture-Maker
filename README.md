@@ -16,8 +16,7 @@ The README file refers to the latest beta version v2.0-beta2 since version v1.0-
 
 Please use the following video as support:
 
-[<img src="https://img.youtube.com/vi/aXB5lkiK7o4/hqdefault.jpg" width="600" height="300"
-/>](https://www.youtube.com/embed/aXB5lkiK7o4)
+[![Watch the video](https://img.youtube.com/vi/aXB5lkiK7o4/hqdefault.jpg)](https://www.youtube.com/embed/aXB5lkiK7o4)
 
 ## Output files
 When finished, the program will store the custom atlas in the folder you previously selected (or default MC3DS). Inside the folder there will be an atlas folder where the atlas are stored.
