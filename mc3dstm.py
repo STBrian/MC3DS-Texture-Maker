@@ -182,6 +182,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     if duplicated == -1:
                         added.addItem(items[matchwith])
                 elif actualOpt == "Blocks":
+                    textureToReplace = Image.open(filePath)
                     blocksAtlas.addElement(position, Image.open(filePath))
                     duplicated = checkForMatch(blocks[matchwith], added.getItems())
 
@@ -258,7 +259,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.version = "2.0-beta2(dev)"
+        self.version = "2.0-beta2"
 
         # --------------------------------------------
 

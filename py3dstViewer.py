@@ -10,7 +10,7 @@ class App(customtkinter.CTk):
     def __init__(self, imgPath: Path):
         super().__init__()
 
-        self.version = "0.4(dev)"
+        self.version = "0.4"
 
         self.title("3dstViewer")
         self.geometry(f"256x{256+30}")
