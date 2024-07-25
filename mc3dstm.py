@@ -259,7 +259,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.version = "2.0-release"
+        self.version = "2.1-dev"
 
         # --------------------------------------------
 
