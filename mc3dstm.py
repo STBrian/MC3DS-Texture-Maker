@@ -155,7 +155,14 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             matchwith = checkForMatch(value, blocks)
             position = calculateGrid(matchwith, 25, 22, 20)
 
-        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".png .jpg")])
+        exts = Image.registered_extensions()
+        supported_extensions = {ex for ex, f in exts.items() if f in Image.OPEN}
+        exts_str = ""
+        for idx, element in enumerate(supported_extensions):
+            exts_str += element
+            if idx < len(supported_extensions)-1:
+                exts_str += " "
+        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("Extended image files", exts_str)])
         if filePath != '':
             if isImage16x16(filePath):
                 if actualOpt == "Items":
@@ -175,6 +182,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     if duplicated == -1:
                         added.addItem(items[matchwith])
                 elif actualOpt == "Blocks":
+                    textureToReplace = Image.open(filePath)
                     blocksAtlas.addElement(position, Image.open(filePath))
                     duplicated = checkForMatch(blocks[matchwith], added.getItems())
 
@@ -250,6 +258,8 @@ class MainFrame(customtkinter.CTkFrame):
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
+
+        self.version = "2.0-beta3(dev)"
 
         # --------------------------------------------
 
@@ -382,7 +392,7 @@ class App(customtkinter.CTk):
         self.saveChangesForIniFile()
 
     def about_popup(self):
-        about_text = "MC3DS Texture Maker\nVersion 2.0\n\nAuthor: STBrian\nE-mail: brichap100@gmail.com"
+        about_text = f"MC3DS Texture Maker\nVersion {self.version}\n\nMade by: STBrian\nGitHub: https://github.com/STBrian"
         messagebox.showinfo("About", about_text)
 
     def updateParamsThread(self):

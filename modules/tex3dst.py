@@ -174,48 +174,19 @@ def convertFunction(data: list, width: int, height: int, conversiontype: int):
             for j in range(width):
                 convertedData[i].append([0] * channels)
 
-        x = 0
-        y = 0
-        x2 = 0
-        y2 = 0
         # Bucle que itera siguiendo el patron de guardado visto en estas texturas
-        for i in range(0, height // 8):
-            for j in range(0, width // 8):
-                for k in range(0, 2):
-                    for l in range(0, 2):
-                        for m in range(0, 2):
-                            for n in range(0, 2):
-                                for o in range(0, 2):
-                                    for p in range(0, 2):
-                                        # Tipo 1 es para generar de una imagen su textura en 3dst
-                                        # Tipo 2 es para de una textura 3dst crear una imagen
-                                        if conversiontype == 1:
-                                            pixelData = getPixelDataFromList(data, (x, y))
-                                            setPixelRGBAfromList(convertedData, (x2, y2), pixelData[::-1])
-                                        else:
-                                            # Como es de tipo 2 los valores rgba están en posiciones invertidas
-                                            # data[y2][x2][::-1] obtiene los valores a, b, g, r del pixel y los invierte
-                                            # convertedData = setPixelRGBAfromList(convertedData, (x, y), data[y2][x2][::-1])
-                                            setPixelRGBAfromList(convertedData, (x, y), data[y2][x2][::-1])
-                                        x2 += 1
-                                        if x2 >= width:
-                                            y2 += 1
-                                            x2 = 0
-                                        x += 1
-                                    x -= 2
-                                    y += 1
-                                x += 2
-                                y -= 2
-                            x -= 4
-                            y += 2
-                        x += 4
-                        y -= 4
-                    x -= 8
-                    y += 4
-                x += 8
-                y -= 8
-            x = 0
-            y += 8
+        for x in range(width):
+            for y in range(height):
+                dstPos = ((((y >> 3) * (width >> 3) + (x >> 3)) << 6) + ((x & 1) | ((y & 1) << 1) | ((x & 2) << 1) | ((y & 2) << 2) | ((x & 4) << 2) | ((y & 4) << 3)))
+                y2 = (dstPos//width)
+                x2 = dstPos - (y2*width)
+                if conversiontype == 1:
+                    # For convert from linear raw pixel data to 3dst texture data
+                    pixelData = getPixelDataFromList(data, (x, y))
+                    setPixelRGBAfromList(convertedData, (x2, y2), pixelData[::-1])
+                elif conversiontype == 2:
+                    # This does the opposite
+                    setPixelRGBAfromList(convertedData, (x, y), data[y2][x2][::-1])
 
         return convertedData
 
