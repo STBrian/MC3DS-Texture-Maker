@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
+from PIL import Image
 
-from .tex3dst import *
+from .py3dst import Texture3dst
 
 class atlasTexture3dst():
     def __init__(self):

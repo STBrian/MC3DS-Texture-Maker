@@ -4,7 +4,7 @@ import CTkMenuBar
 from tkinter import messagebox
 from PIL import Image
 from pathlib import Path
-from modules.tex3dst import *
+from modules.py3dst import Texture3dst
 
 class App(customtkinter.CTk):
     def __init__(self, imgPath: Path):
