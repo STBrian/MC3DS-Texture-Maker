@@ -9,7 +9,9 @@ from pathlib import Path
 from tkinter import messagebox
 from AutoImport import *
 from modules import *
-from modules.py3dst import *
+from modules.py3dst import Texture3dst
+
+VERSION = "2.1-dev"
 
 class SearchOptionsFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -260,7 +262,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.version = "2.1-dev"
+        self.version = VERSION
 
         # --------------------------------------------
 

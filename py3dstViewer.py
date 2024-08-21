@@ -6,11 +6,13 @@ from PIL import Image
 from pathlib import Path
 from modules.py3dst import Texture3dst
 
+VERSION = "0.5-dev"
+
 class App(customtkinter.CTk):
     def __init__(self, imgPath: Path):
         super().__init__()
 
-        self.version = "0.5-dev"
+        self.version = VERSION
 
         self.title("3dstViewer")
         self.geometry(f"256x{256+30}")
