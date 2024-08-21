@@ -9,7 +9,7 @@ from pathlib import Path
 from tkinter import messagebox
 from AutoImport import *
 from modules import *
-from modules.py3dst import Texture3dst
+from modules.py3dst import *
 
 class SearchOptionsFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
