@@ -475,14 +475,15 @@ class App(customtkinter.CTk):
         return
     
     def saveChanges(self):
-        out = os.path.join(self.outputFolder, "atlas")
-        if not os.path.exists(out):
-            os.makedirs(out)
-        self.itemsAtlas.save(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
-        self.blocksAtlas.save(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
-        self.addedItems.save(os.path.normpath(f"{self.outputFolder}/items.txt"))
-        self.addedBlocks.save(os.path.normpath(f"{self.outputFolder}/blocks.txt"))
-        self.saved = True
+        if not self.saved:
+            out = os.path.join(self.outputFolder, "atlas")
+            if not os.path.exists(out):
+                os.makedirs(out)
+            self.itemsAtlas.save(os.path.normpath(f"{self.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+            self.blocksAtlas.save(os.path.normpath(f"{self.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
+            self.addedItems.save(os.path.normpath(f"{self.outputFolder}/items.txt"))
+            self.addedBlocks.save(os.path.normpath(f"{self.outputFolder}/blocks.txt"))
+            self.saved = True
 
     def openAutoImport(self):
         autoImport = AutoImport(self)
