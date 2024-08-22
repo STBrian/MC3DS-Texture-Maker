@@ -97,6 +97,8 @@ class atlasTexture3dst():
         print("Saving atlas...")
         self.atlas.export(path)
         print("Success")
+        # Revert changes
+        self.atlas.flipX()
 
 class IndexFile():
     def __init__(self):
