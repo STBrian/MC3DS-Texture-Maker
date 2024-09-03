@@ -70,7 +70,6 @@ class App(customtkinter.CTk):
                 path = Path(filePath)
                 try:
                     texture = Texture3dst().open(path)
-                    texture.flipX()
                     preview = texture.copy(0, 0, texture.width, texture.height)
                     preview = preview.convert("RGBA")
 
