@@ -2,7 +2,8 @@
 
 release_type=$1
 
-if [ "$release_type" == "--debug" ]; then
+if [ "$release_type" == "--debug" ]
+then
     if [ -d ./build ]
     then
     rm -r ./build
@@ -17,6 +18,7 @@ if [ "$release_type" == "--debug" ]; then
     python3.12 -m PyInstaller --noconfirm --clean build.spec
     rm release_type.txt
 elif [ "$release_type" == "--release" ]
+then
     if [ -d ./build ]
     then
     rm -r ./build
