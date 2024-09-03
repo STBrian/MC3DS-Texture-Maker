@@ -30,9 +30,13 @@ jobs:
     - name: Build script
       run: |
         ./build.bat --release
+    - name: Get commit hash
+      id: vars
+      run: |
+        echo "##[set-output name=short_sha;]$(git rev-parse --short ${{ github.sha }})"
     - uses: actions/upload-artifact@v4
       with:
-        name: mc3ds-tm-windows-x64-urelease-${{ github.sha }}
+        name: mc3ds-tm-windows-x64-urelease-${{ steps.vars.outputs.short_sha }}
         path: dist/MC3DS-Texture-Maker/
 
   build-windows-debug:
@@ -55,9 +59,13 @@ jobs:
     - name: Build script
       run: |
         ./build.bat --debug
+    - name: Get commit hash
+      id: vars
+      run: |
+        echo "##[set-output name=short_sha;]$(git rev-parse --short ${{ github.sha }})"
     - uses: actions/upload-artifact@v4
       with:
-        name: mc3ds-tm-windows-x64-debug-${{ github.sha }}
+        name: mc3ds-tm-windows-x64-debug-${{ steps.vars.outputs.short_sha }}
         path: dist/MC3DS-Texture-Maker/
   
   build-linux-release:
@@ -84,9 +92,13 @@ jobs:
         dos2unix ./build.sh
         chmod +x ./build.sh
         ./build.sh --release
+    - name: Get commit hash
+      id: vars
+      run: |
+        echo "##[set-output name=short_sha;]$(git rev-parse --short ${{ github.sha }})"
     - uses: actions/upload-artifact@v4
       with:
-        name: mc3ds-tm-linux-x64-urelease-${{ github.sha }}
+        name: mc3ds-tm-linux-x64-urelease-${{ steps.vars.outputs.short_sha }}
         path: dist/MC3DS-Texture-Maker
 
   build-linux-debug:
@@ -113,7 +125,11 @@ jobs:
         dos2unix ./build.sh
         chmod +x ./build.sh
         ./build.sh --debug
+    - name: Get commit hash
+      id: vars
+      run: |
+        echo "##[set-output name=short_sha;]$(git rev-parse --short ${{ github.sha }})"
     - uses: actions/upload-artifact@v4
       with:
-        name: mc3ds-tm-linux-x64-debug-${{ github.sha }}
+        name: mc3ds-tm-linux-x64-debug-${{ steps.vars.outputs.short_sha }}
         path: dist/MC3DS-Texture-Maker
