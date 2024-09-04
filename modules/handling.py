@@ -78,6 +78,7 @@ class atlasTexture3dst():
                 x_atlas -= 20
                 y += 1
                 y_atlas += 1
+        print("Texture replaced")
 
     def save(self, path: str | Path):
         if type(path) == str:
