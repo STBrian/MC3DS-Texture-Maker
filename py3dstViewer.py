@@ -6,10 +6,10 @@ from PIL import Image
 from pathlib import Path
 from modules.py3dst import Texture3dst
 
-VERSION = "0.5-dev"
+VERSION = "0.5.1-dev"
 
 class App(customtkinter.CTk):
-    def __init__(self, imgPath: Path):
+    def __init__(self, imgPath: Path|None):
         super().__init__()
 
         self.version = VERSION
