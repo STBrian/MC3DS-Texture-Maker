@@ -24,7 +24,6 @@ class atlasTexture3dst():
                 atlas.miplevel = 3
         elif path.suffix == ".3dst":
             atlas = Texture3dst().open(path)
-            atlas.flipX()
 
         self.atlas = atlas
         self.atlas_type = atlas_type
@@ -89,16 +88,9 @@ class atlasTexture3dst():
         if not os.path.exists(path.parent):
             os.makedirs(path.parent)
 
-        print("Inverting x-axis atlas...")
-        self.atlas.flipX()
-        print("Converting data...")
-        self.atlas.convertData()
-
         print("Saving atlas...")
         self.atlas.export(path)
         print("Success")
-        # Revert changes
-        self.atlas.flipX()
 
 class IndexFile():
     def __init__(self):

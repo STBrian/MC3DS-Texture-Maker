@@ -178,8 +178,6 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
                     newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
                     newTexture.paste(textureToReplace, 0, 0)
-                    newTexture.flipX()
-                    newTexture.convertData()
                     newTexture.export(f"{outputDir}/textures/items/{items[matchwith]}.3dst")
 
                     if duplicated == -1:
@@ -194,9 +192,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
                     newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
                     newTexture.paste(textureToReplace, 0, 0)
-                    newTexture.flipX()
-                    newTexture.convertData()
-
+                    
                     newTexture.export(f"{outputDir}/textures/blocks/{blocks[matchwith]}.3dst")
                     if duplicated == -1:
                         added.addItem(blocks[matchwith])
