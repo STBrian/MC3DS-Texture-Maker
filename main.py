@@ -204,10 +204,13 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     newTexture.export(f"{outputDir}/textures/blocks/{blocks[matchwith]}.3dst")
                     if duplicated == -1:
                         added.addItem(blocks[matchwith])
-                #mainFrame.listElementCall(value)
+                
+                # Updates manually portview
                 portviewRes = textureToReplace.resize((256, 256), Image.Resampling.NEAREST)
                 mainFrame.infoDispFrame.portview.configure(dark_image=portviewRes)
+
                 mainApp.saved = False
+                mainApp.updateTreeIcons()
         self.buttonChange.configure(state="normal")
 
 class MainFrame(customtkinter.CTkFrame):
