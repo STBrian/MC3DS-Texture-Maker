@@ -205,9 +205,8 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     if duplicated == -1:
                         added.addItem(blocks[matchwith])
                 
-                # Updates manually portview
-                portviewRes = textureToReplace.resize((256, 256), Image.Resampling.NEAREST)
-                mainFrame.infoDispFrame.portview.configure(dark_image=portviewRes)
+                # Updates portview
+                mainFrame.listElementFun(value, self.lastActualOption)
 
                 mainApp.saved = False
                 mainApp.updateTreeIcons()
@@ -235,33 +234,39 @@ class MainFrame(customtkinter.CTkFrame):
         elementsFrame2.grid(row=0, column=0, sticky="wens")
 
         self.elementsTreeView = ttk.Treeview(elementsFrame2, show="tree", selectmode="browse")
-        self.elementsTreeView.bind('<<TreeviewSelect>>', self.listElementCall)
+        self.elementsTreeView.bind('<<TreeviewSelect>>', self.listElementCallback)
         self.elementsTreeView.grid(row=0, column=0, padx=5, pady=5, sticky="wens")
         self.elementsTreeView.icons = []
 
         self.infoDispFrame = InfoDisplayFrame(self)
         self.infoDispFrame.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
 
-    def listElementCall(self, event):
+    def listElementCallback(self, *event):
         threading.Thread(target=self.listElementFun).start()
 
-    def listElementFun(self):
-        treeviewSelection = self.elementsTreeView.selection()
-        if not treeviewSelection:
-            return
-        
+    def listElementFun(self, value = None, cat_opt = None):
+        if value == None:
+            treeviewSelection = self.elementsTreeView.selection()
+            if not treeviewSelection:
+                return
+            
+            item = self.elementsTreeView.item(treeviewSelection)
+            values = item['values']
+            name = values[1]
+            self.infoDispFrame.selected.set(name)
+        else:
+            name = value
+
         if self.infoDispFrame.buttonChange.cget("state") == "disabled":
             self.infoDispFrame.buttonChange.configure(state="normal")
         if self.infoDispFrame.buttonExport.cget("state") == "disabled":
             self.infoDispFrame.buttonExport.configure(state="normal")
-        
-        item = self.elementsTreeView.item(treeviewSelection)
-        values = item['values']
-        name = values[1]
-        self.infoDispFrame.selected.set(name)
 
         selected = name
-        actualOpt = self.master.searchData[3]
+        if cat_opt == None:
+            actualOpt = self.master.searchData[3]
+        else:
+            actualOpt = cat_opt
         mainApp = self.master
         self.infoDispFrame.lastActualOption = actualOpt
 

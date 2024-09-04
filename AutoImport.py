@@ -172,7 +172,7 @@ class StartFrame(customtkinter.CTkFrame):
         # Finish reloading lists in main app
         mainApp.updateList = True
         mainApp.saved = False
-        mainApp.mainFrame.listElementCall(mainApp.mainFrame.infoDispFrame.selected.get())
+        mainApp.mainFrame.listElementFun(mainApp.mainFrame.infoDispFrame.selected.get(), mainApp.mainFrame.infoDispFrame.lastActualOption)
 
         portviewImage = Image.new("RGBA", (16, 16))
         portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
