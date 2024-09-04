@@ -235,8 +235,11 @@ class MainFrame(customtkinter.CTkFrame):
 
         self.elementsTreeView = ttk.Treeview(elementsFrame2, show="tree", selectmode="browse")
         self.elementsTreeView.bind('<<TreeviewSelect>>', self.listElementCallback)
-        self.elementsTreeView.grid(row=0, column=0, padx=5, pady=5, sticky="wens")
+        self.elementsTreeView.grid(row=0, column=0, padx=(5, 0), pady=5, sticky="wens")
         self.elementsTreeView.icons = []
+        self.scrollbar = customtkinter.CTkScrollbar(elementsFrame2, command=self.elementsTreeView.yview)
+        self.elementsTreeView.configure(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.grid(row=0, column=1, padx=0, pady=0, sticky="ns")
 
         self.infoDispFrame = InfoDisplayFrame(self)
         self.infoDispFrame.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
