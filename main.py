@@ -1,7 +1,10 @@
+from __future__ import annotations
 import os, sys
 import difflib, threading, time
 import configparser
 import customtkinter, CTkMenuBar
+import tkinter
+from tkinter import ttk
 from PIL import Image
 from PIL import ImageTk
 from functools import partial
@@ -12,6 +15,10 @@ from modules import *
 from modules.py3dst import Texture3dst
 
 VERSION = "2.1-dev"
+
+def clearTreeview(tree: ttk.Treeview):
+    for item in tree.get_children():
+        tree.delete(item)
 
 class SearchOptionsFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -122,7 +129,6 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                 elif extension == ".3dst":
                     export3dst = Texture3dst().new(16, 16, 1)
                     export3dst.paste(export, 0, 0)
-                    export3dst.convertData()
                     export3dst.export(file.name)
         file.close()
 
@@ -165,7 +171,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             exts_str += element
             if idx < len(supported_extensions)-1:
                 exts_str += " "
-        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("Extended image files", exts_str)])
+        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("All supported image files", exts_str)])
         if filePath != '':
             if isImage16x16(filePath):
                 if actualOpt == "Items":
@@ -201,7 +207,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.buttonChange.configure(state="normal")
 
 class MainFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: App, **kwargs):
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=5)
@@ -211,24 +217,43 @@ class MainFrame(customtkinter.CTkFrame):
         self.searchOptionsFrame = SearchOptionsFrame(self)
         self.searchOptionsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="wen", columnspan=2)
 
-        self.elementsFrame = MyCTkListbox(self, command=self.listElementCall)
-        self.elementsFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
+        elementsFrame = customtkinter.CTkFrame(self)
+        elementsFrame.grid_columnconfigure(0, weight=1)
+        elementsFrame.grid_rowconfigure(0, weight=1)
+        elementsFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
+
+        elementsFrame2 = customtkinter.CTkFrame(elementsFrame)
+        elementsFrame2.grid_columnconfigure(0, weight=1)
+        elementsFrame2.grid_rowconfigure(0, weight=1)
+        elementsFrame2.grid(row=0, column=0, sticky="wens")
+
+        self.elementsTreeView = ttk.Treeview(elementsFrame2, show="tree", selectmode="browse")
+        self.elementsTreeView.bind('<<TreeviewSelect>>', self.listElementCall)
+        self.elementsTreeView.grid(row=0, column=0, padx=5, pady=5, sticky="wens")
+        self.elementsTreeView.icons = []
 
         self.infoDispFrame = InfoDisplayFrame(self)
         self.infoDispFrame.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
 
-    def listElementCall(self, value):
-        listElement = partial(self.listElementFun, value)
-        threading.Thread(target=listElement).start()
+    def listElementCall(self, event):
+        threading.Thread(target=self.listElementFun).start()
 
-    def listElementFun(self, value):
+    def listElementFun(self):
+        treeviewSelection = self.elementsTreeView.selection()
+        if not treeviewSelection:
+            return
+        
         if self.infoDispFrame.buttonChange.cget("state") == "disabled":
             self.infoDispFrame.buttonChange.configure(state="normal")
         if self.infoDispFrame.buttonExport.cget("state") == "disabled":
             self.infoDispFrame.buttonExport.configure(state="normal")
-        self.infoDispFrame.selected.set(value)
+        
+        item = self.elementsTreeView.item(treeviewSelection)
+        values = item['values']
+        name = values[1]
+        self.infoDispFrame.selected.set(name)
 
-        selected = value
+        selected = name
         actualOpt = self.master.searchData[3]
         mainApp = self.master
 
@@ -338,12 +363,6 @@ class App(customtkinter.CTk):
 
         # --------------------------------------------
 
-        # Initial loading
-        if self.theme == "dark":
-            self.mainFrame.elementsFrame.text_color = "white"
-        else:
-            self.mainFrame.elementsFrame.text_color = "black"
-
         # Load indexes of blocks and items from source
         self.items = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newItemsIndex.txt"))
         self.blocks = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newBlocksIndex.txt"))
@@ -378,13 +397,9 @@ class App(customtkinter.CTk):
     def changeTheme(self):
         if self.theme == "dark":
             customtkinter.set_appearance_mode("light")
-            self.mainFrame.elementsFrame.text_color = "black"
-            self.updateList = True
             self.theme = "light"
         else:
             customtkinter.set_appearance_mode("dark")
-            self.mainFrame.elementsFrame.text_color = "white"
-            self.updateList = True
             self.theme = "dark"
         self.config["Preferences"]["theme"] = self.theme
         self.saveChangesForIniFile()
@@ -398,9 +413,6 @@ class App(customtkinter.CTk):
             if self.searchData != self.mainFrame.searchOptionsFrame.searchDataLoc:
                 self.searchData = self.mainFrame.searchOptionsFrame.searchDataLoc[0:4]
                 self.updateList = True
-
-            if f"{self.searchData[3]}:" != self.mainFrame.elementsFrame.cget("label_text"):
-                self.mainFrame.elementsFrame.configure(label_text=f"{self.searchData[3]}:")
             time.sleep(0.5)
 
     def updateListThread(self):
@@ -415,14 +427,7 @@ class App(customtkinter.CTk):
                 addedItems = self.addedItems
                 addedBlocks = self.addedBlocks
 
-                # mainFrame.elementsFrame.delete("all")
-                end = len(mainFrame.elementsFrame.buttons)
-                for i in range(end):
-                    end -= 1
-                    mainFrame.elementsFrame.buttons[end].grid_remove()
-                    mainFrame.elementsFrame.buttons[end].destroy()
-                mainFrame.elementsFrame.buttons = {}
-                mainFrame.elementsFrame.end_num = 0
+                clearTreeview(mainFrame.elementsTreeView)
 
                 if actualOpt == "Items":
                     elements = items
@@ -442,8 +447,24 @@ class App(customtkinter.CTk):
                 if searchData[2] == "off":
                     elements = checkForMatches(elements, added.getItems())
 
+                mainFrame.elementsTreeView.icons = []
                 for i in range(0, len(elements)):
-                    mainFrame.elementsFrame.insert(i, elements[i])
+                    # Loads preview icon
+                    if actualOpt == "Items":
+                        atlas = self.itemsAtlas
+                        matchwith = checkForMatch(elements[i], self.items.getItems())
+                        position = calculateGrid(matchwith, 32, 13, 16)
+                    elif actualOpt == "Blocks":
+                        atlas = self.blocksAtlas
+                        matchwith = checkForMatch(elements[i], self.blocks.getItems())
+                        position = calculateGrid(matchwith, 25, 22, 20)
+                        position = (position[0] + 2, position[1] + 2)
+
+                    textureExtract = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
+                    iconTk = ImageTk.PhotoImage(textureExtract)
+                    mainFrame.elementsTreeView.icons.append(iconTk)
+
+                    mainFrame.elementsTreeView.insert("", "end", text="  " + elements[i], values=(i, elements[i]), image=iconTk)
                     if self.updateList == True:
                         break
             time.sleep(0.5)
@@ -511,12 +532,26 @@ class App(customtkinter.CTk):
                 return True
             else:
                 return False
+            
+    def updateTreeviewTheme(self, *theme):
+        bg_color = self._apply_appearance_mode(customtkinter.ThemeManager.theme["CTkFrame"]["fg_color"])
+        text_color = self._apply_appearance_mode(customtkinter.ThemeManager.theme["CTkLabel"]["text_color"])
+        selected_color = self._apply_appearance_mode(customtkinter.ThemeManager.theme["CTkButton"]["fg_color"])
+
+        treestyle = ttk.Style()
+        treestyle.theme_use('default')
+        treestyle.configure("Treeview", background=bg_color, foreground=text_color, fieldbackground=bg_color, borderwidth=0, font=(None, 10), rowheight=36)
+        treestyle.map('Treeview', background=[('selected', selected_color)], foreground=[('selected', text_color)])
 
 if __name__ == "__main__":
     customtkinter.set_default_color_theme("blue")
-
+    
     print("Loading app...")
     app = App()
+
+    customtkinter.AppearanceModeTracker.add(app.updateTreeviewTheme)
+    app.updateTreeviewTheme()
+    app.bind("<<TreeviewSelect>>", lambda event: app.focus_set())
 
     app.bind('<Alt-F4>', app.closeApp)
     app.protocol("WM_DELETE_WINDOW", app.closeApp)
