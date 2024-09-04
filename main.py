@@ -14,7 +14,7 @@ from AutoImport import *
 from modules import *
 from modules.py3dst import Texture3dst
 
-VERSION = "2.1-dev"
+VERSION = "2.2-dev"
 
 def clearTreeview(tree: ttk.Treeview):
     for item in tree.get_children():
@@ -97,6 +97,8 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.buttonExport = customtkinter.CTkButton(self, text="Export", state="disabled", command=self.saveAs, width=100)
         self.buttonExport.grid(row=3, column=1, padx=(0, 5), pady=5, sticky="wes")
 
+        self.lastActualOption = None
+
     def saveAs(self):
         file = customtkinter.filedialog.asksaveasfile(mode="wb", defaultextension=".png", filetypes=(("PNG File", ".png"), ("3DST File", ".3dst")))
         if file:
@@ -142,7 +144,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         mainFrame = self.master
         outputDir = mainApp.outputFolder
 
-        actualOpt = mainApp.searchData[3]
+        atlasType = self.lastActualOption
         items = mainApp.items.getItems()
         blocks = mainApp.blocks.getItems()
         itemsAtlas = mainApp.itemsAtlas
@@ -151,16 +153,16 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         addedBlocks = mainApp.addedBlocks
 
         # Load indexes
-        if actualOpt == "Items":
+        if atlasType == "Items":
             added = addedItems
-        elif actualOpt == "Blocks":
+        elif atlasType == "Blocks":
             added = addedBlocks
 
         # Calculate positions
-        if actualOpt == "Items":
+        if atlasType == "Items":
             matchwith = checkForMatch(value, items)
             position = calculateGrid(matchwith, 32, 13, 16)
-        elif actualOpt == "Blocks":
+        elif atlasType == "Blocks":
             matchwith = checkForMatch(value, blocks)
             position = calculateGrid(matchwith, 25, 22, 20)
 
@@ -174,7 +176,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("All supported image files", exts_str)])
         if filePath != '':
             if isImage16x16(filePath):
-                if actualOpt == "Items":
+                if atlasType == "Items":
                     textureToReplace = Image.open(filePath)
                     itemsAtlas.addElement(position, textureToReplace)
                     duplicated = checkForMatch(items[matchwith], added.getItems())
@@ -188,7 +190,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
                     if duplicated == -1:
                         added.addItem(items[matchwith])
-                elif actualOpt == "Blocks":
+                elif atlasType == "Blocks":
                     textureToReplace = Image.open(filePath)
                     blocksAtlas.addElement(position, Image.open(filePath))
                     duplicated = checkForMatch(blocks[matchwith], added.getItems())
@@ -256,6 +258,7 @@ class MainFrame(customtkinter.CTkFrame):
         selected = name
         actualOpt = self.master.searchData[3]
         mainApp = self.master
+        self.infoDispFrame.lastActualOption = actualOpt
 
         # Calculate positions
         if actualOpt == "Items":
@@ -449,25 +452,38 @@ class App(customtkinter.CTk):
 
                 mainFrame.elementsTreeView.icons = []
                 for i in range(0, len(elements)):
-                    # Loads preview icon
-                    if actualOpt == "Items":
-                        atlas = self.itemsAtlas
-                        matchwith = checkForMatch(elements[i], self.items.getItems())
-                        position = calculateGrid(matchwith, 32, 13, 16)
-                    elif actualOpt == "Blocks":
-                        atlas = self.blocksAtlas
-                        matchwith = checkForMatch(elements[i], self.blocks.getItems())
-                        position = calculateGrid(matchwith, 25, 22, 20)
-                        position = (position[0] + 2, position[1] + 2)
-
-                    textureExtract = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
-                    iconTk = ImageTk.PhotoImage(textureExtract)
-                    mainFrame.elementsTreeView.icons.append(iconTk)
-
-                    mainFrame.elementsTreeView.insert("", "end", text="  " + elements[i], values=(i, elements[i]), image=iconTk)
+                    mainFrame.elementsTreeView.insert("", "end", text="  " + elements[i], values=(i, elements[i]))
                     if self.updateList == True:
                         break
+                self.updateTreeIcons()
             time.sleep(0.5)
+
+    def updateTreeIcons(self):
+        mainFrame = self.mainFrame
+        searchData = self.searchData
+        actualOpt = searchData[3]
+
+        tree = mainFrame.elementsTreeView
+        tree.icons.clear()
+        children = mainFrame.elementsTreeView.get_children("")
+        for child in children:
+            item = tree.item(child)
+            values = item["values"]
+
+            if actualOpt == "Items":
+                atlas = self.itemsAtlas
+                matchwith = checkForMatch(values[1], self.items.getItems())
+                position = calculateGrid(matchwith, 32, 13, 16)
+            elif actualOpt == "Blocks":
+                atlas = self.blocksAtlas
+                matchwith = checkForMatch(values[1], self.blocks.getItems())
+                position = calculateGrid(matchwith, 25, 22, 20)
+                position = (position[0] + 2, position[1] + 2)
+
+            textureExtract = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
+            iconTk = ImageTk.PhotoImage(textureExtract)
+            tree.icons.append(iconTk)
+            tree.item(child, image=iconTk)
 
     def loadResources(self):
         # Load atlas either from source folder or output if exists
