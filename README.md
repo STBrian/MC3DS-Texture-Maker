@@ -1,5 +1,3 @@
-### Please use the lastest beta
-
 # What is MC3DS-Texture-Maker?
 MC3DS-Texture-Maker it's a tool with the main purpose of helping texture creators for Minecraft: New Nintendo 3DS Edition, to make their work easier.
 
