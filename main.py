@@ -12,7 +12,7 @@ from AutoImport import *
 from modules import *
 from modules.py3dst import Texture3dst
 
-VERSION = "2.2-release"
+VERSION = "2.3-dev"
 
 def clearTreeview(tree: ttk.Treeview):
     for item in tree.get_children():
