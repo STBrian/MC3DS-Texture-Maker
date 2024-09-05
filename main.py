@@ -1,9 +1,7 @@
-from __future__ import annotations
 import os, sys
 import difflib, threading, time
 import configparser
 import customtkinter, CTkMenuBar
-import tkinter
 from tkinter import ttk
 from PIL import Image
 from PIL import ImageTk
@@ -14,7 +12,7 @@ from AutoImport import *
 from modules import *
 from modules.py3dst import Texture3dst
 
-VERSION = "2.2-dev"
+VERSION = "2.2-release"
 
 def clearTreeview(tree: ttk.Treeview):
     for item in tree.get_children():
@@ -213,7 +211,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.buttonChange.configure(state="normal")
 
 class MainFrame(customtkinter.CTkFrame):
-    def __init__(self, master: App, **kwargs):
+    def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=5)
