@@ -1,0 +1,23 @@
+name: Release with Submodules
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  compile-source-code:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository with submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: Create zip with submodules
+      run: |
+        zip -r release-with-submodules.zip .
+    - name: Upload release assets
+      uses: actions/upload-artifact@v4
+      with:
+        name: Full source code
+        path: release-with-submodules.zip
