@@ -5,3 +5,4 @@ packaging==23.2
 CTkMenuBar==0.3
 CTkListBox==1.2
 pyinstaller==6.3.0
+py3dst>=1.0.2

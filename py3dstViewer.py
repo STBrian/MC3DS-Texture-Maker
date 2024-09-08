@@ -4,7 +4,7 @@ import CTkMenuBar
 from tkinter import messagebox
 from PIL import Image
 from pathlib import Path
-from modules.py3dst import Texture3dst
+from py3dst import Texture3dst
 
 VERSION = "0.5.1-dev"
 

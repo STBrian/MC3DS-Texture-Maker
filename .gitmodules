@@ -1,3 +1,0 @@
-[submodule "modules/py3dst"]
-	path = modules/py3dst
-	url = https://github.com/STBrian/py3dst.git

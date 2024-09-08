@@ -10,7 +10,7 @@ from pathlib import Path
 from tkinter import messagebox
 from AutoImport import *
 from modules import *
-from modules.py3dst import Texture3dst
+from py3dst import Texture3dst
 
 VERSION = "2.3-dev"
 
