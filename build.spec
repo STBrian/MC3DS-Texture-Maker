@@ -19,6 +19,8 @@ main_datas = [
     ("assets", "assets"),
     ("icon.ico", "."),
     ("icon.png", "."),
+    ("icon_viewer.ico", "."),
+    ("icon_viewer.png", "."),
     ("icon2.png", ".")
 ]
 main_hiddenimports = ["PIL", "PIL._imagingtk", "PIL._tkinter_finder", "pkg_resources.extern"]
@@ -86,7 +88,7 @@ py3dst_exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='./icon.ico'
+    icon='./icon_viewer.ico'
 )
 
 coll = COLLECT(

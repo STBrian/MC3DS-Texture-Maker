@@ -2,11 +2,11 @@ import argparse, os, sys, customtkinter
 import traceback
 import CTkMenuBar
 from tkinter import messagebox
-from PIL import Image
+from PIL import Image, ImageTk, ImageDraw
 from pathlib import Path
 from py3dst import Texture3dst
 
-VERSION = "0.5.1-dev"
+VERSION = "0.6.0"
 
 class App(customtkinter.CTk):
     def __init__(self, imgPath: Path|None):
@@ -14,18 +14,34 @@ class App(customtkinter.CTk):
 
         self.version = VERSION
 
-        self.title("3dstViewer")
-        self.geometry(f"256x{256+30}")
+        if getattr(sys, 'frozen', False):
+            self.running = "exe"
+            self.app_path = sys._MEIPASS
+            self.runningDir = os.path.dirname(sys.executable)
+        elif __file__:
+            self.running = "src"
+            self.app_path = os.path.dirname(__file__)
+            self.runningDir = os.path.dirname(__file__)
+
+        self.title("3DSTViewer")
+        self.geometry(f"{256+250}x{256+30}")
         self.resizable(False, False)
         self.configure(fg_color="black")
+
+        os_name = os.name
+        if os_name == "nt":
+            self.iconbitmap(default=os.path.join(self.app_path, "icon_viewer.ico"))
+        elif os_name == "posix":
+            iconpath = ImageTk.PhotoImage(file=os.path.join(self.app_path, "icon_viewer.png"))
+            self.wm_iconbitmap()
+            self.iconphoto(False, iconpath)
 
         menu_bar = CTkMenuBar.CTkMenuBar(master=self, height=15)
 
         fileMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("File"))
         fileMenu.add_option("Open...", command=self.openFile)
         fileMenu.add_separator()
-        fileMenu.add_option("Properties", command=self.showInfo)
-        fileMenu.add_option("Close texture", command=self.closeFile)
+        fileMenu.add_option("Close file", command=self.closeFile)
         fileMenu.add_separator()
         fileMenu.add_option("Exit", command=self.closeApp)
 
@@ -35,11 +51,35 @@ class App(customtkinter.CTk):
         mainFrame = customtkinter.CTkFrame(self)
         mainFrame.pack(side='top', expand=True, fill='both', pady=0)
         mainFrame.grid_columnconfigure(0, weight=1)
+        mainFrame.grid_columnconfigure(1, weight=0)
         mainFrame.grid_rowconfigure(0, weight=1)
 
         portviewFrame = customtkinter.CTkLabel(mainFrame, text="", compound="top", bg_color="black")
         portviewFrame.grid(column=0, row=0, sticky="nswe")
         self.portviewFrame = portviewFrame
+
+        infoFrame = customtkinter.CTkFrame(mainFrame, width=200)
+        infoFrame.grid(column=1, row=0, sticky="nswe")
+        infoFrame.grid_columnconfigure(0, weight=1)
+
+        propertiesLabel = customtkinter.CTkLabel(infoFrame, text="Properties", width=200, font=(None, 13, "bold"))
+        propertiesLabel.grid(column=0, row=0, sticky="we", pady=(5,0))
+
+        sizeLabel = customtkinter.CTkLabel(infoFrame, text="Texture size", width=200, font=(None, 12), anchor="w")
+        sizeLabel.grid(column=0, row=1, sticky="we", padx=10, pady=(5,0))
+
+        sizeValue = customtkinter.StringVar()
+        self.sizeValue = sizeValue
+        sizeField = customtkinter.CTkEntry(infoFrame, state="readonly", textvariable=sizeValue)
+        sizeField.grid(column=0, row=2, sticky="we", padx=10)
+
+        formatLabel = customtkinter.CTkLabel(infoFrame, text="Pixel format", width=200, font=(None, 12), anchor="w")
+        formatLabel.grid(column=0, row=3, sticky="we", padx=10, pady=(10,0))
+
+        formatValue = customtkinter.StringVar()
+        self.formatValue = formatValue
+        formatField = customtkinter.CTkEntry(infoFrame, state="readonly", textvariable=formatValue)
+        formatField.grid(column=0, row=4, sticky="we", padx=10)
 
         if imgPath != None:
             self.openPath(imgPath.absolute())
@@ -48,17 +88,16 @@ class App(customtkinter.CTk):
         
     def closeFile(self):
         portviewImg = customtkinter.CTkImage(dark_image=Image.new("RGBA", (16, 16)), size=(16, 16))
-        self.imgWidth = 0
-        self.imgHeight = 0
         self.imgName = ""
         self.imgPath = ""
         self.imgOpen = False
         self.portviewFrame.configure(image=portviewImg)
-        self.geometry(f"256x{256+30}")
+        
+        self.title("3DSTViewer")
+        self.geometry(f"{256+250}x{256+30}")
 
-    def showInfo(self):
-        if self.imgOpen:
-            messagebox.showinfo(title=f"Texture info - {self.imgName}", message=f"Texture path: {self.imgPath}\n\nSize: {self.imgWidth} x {self.imgHeight}")
+        self.sizeValue.set("")
+        self.formatValue.set("")
 
     def openFile(self):
         filePath = customtkinter.filedialog.askopenfilename(filetypes=[("3DST Texture", ".3dst")])
@@ -70,7 +109,7 @@ class App(customtkinter.CTk):
                 path = Path(filePath)
                 try:
                     texture = Texture3dst().open(path)
-                    preview = texture.copy(0, 0, texture.width, texture.height)
+                    preview = texture.copy(0, 0, texture.size[0], texture.size[1])
                     preview = preview.convert("RGBA")
 
                     minwidth = 256
@@ -83,13 +122,29 @@ class App(customtkinter.CTk):
                         height = minheight
                     else:
                         height = preview.size[1]
-                    self.geometry(f"{width}x{height+30}")
+                    self.geometry(f"{width+250}x{height+30}")
 
-                    self.title(f"{path.name} - 3dstViewer")
-                    portviewImg = customtkinter.CTkImage(light_image=preview, dark_image=preview, size=(preview.size[0], preview.size[1]))
+                    chessboard = Image.new("RGBA", (texture.size[0], texture.size[1]), (180, 180, 180, 255))
+                    draw = ImageDraw.Draw(chessboard)
+
+                    tilesize = 10
+                    for y in range(0, texture.size[1], tilesize):
+                        for x in range(0, texture.size[0], tilesize):
+                            if (x // tilesize + y // tilesize) % 2 == 0:
+                                draw.rectangle(
+                                    [(x, y), (x + tilesize - 1, y + tilesize - 1)], 
+                                    fill=(128, 128, 128, 255)
+                                )
+                    
+                    previewFinal = Image.alpha_composite(chessboard, preview)
+
+                    self.title(f"{path.name} - 3DSTViewer")
+                    portviewImg = customtkinter.CTkImage(light_image=previewFinal, dark_image=previewFinal, size=(preview.size[0], preview.size[1]))
                     self.portviewFrame.configure(image=portviewImg)
-                    self.imgWidth = preview.size[0]
-                    self.imgHeight = preview.size[1]
+
+                    self.sizeValue.set(f"{preview.size[0]} x {preview.size[1]}")
+                    self.formatValue.set(f"{texture._getFormatInfo(texture.header.format)["name"].upper()}")
+
                     self.imgName = path.name
                     self.imgPath = path.absolute()
                     self.imgOpen = True
