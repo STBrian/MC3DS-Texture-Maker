@@ -4,9 +4,9 @@ import CTkMenuBar
 from tkinter import messagebox
 from PIL import Image, ImageTk, ImageDraw
 from pathlib import Path
-from py3dst import Texture3dst
+from py3dst import Texture3dst, Texture3dstUnsupported, Texture3dstNoSignature
 
-VERSION = "0.6.0"
+VERSION = "0.6.1"
 
 class App(customtkinter.CTk):
     def __init__(self, imgPath: Path|None):
@@ -40,6 +40,8 @@ class App(customtkinter.CTk):
 
         fileMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("File"))
         fileMenu.add_option("Open...", command=self.openFile)
+        fileMenu.add_separator()
+        fileMenu.add_option("Export as...", command=self.exportAs)
         fileMenu.add_separator()
         fileMenu.add_option("Close file", command=self.closeFile)
         fileMenu.add_separator()
@@ -99,6 +101,24 @@ class App(customtkinter.CTk):
         self.sizeValue.set("")
         self.formatValue.set("")
 
+    def exportAs(self):
+        supportedExtensions = Image.registered_extensions()
+        saveSupportedExtensions = {ex for ex, f in supportedExtensions.items() if f in Image.SAVE}
+        saveSuppExtStr = ""
+        for ex in saveSupportedExtensions:
+            saveSuppExtStr += f"{ex} "
+        filePath = customtkinter.filedialog.asksaveasfilename(filetypes=[("Image files", ".png .jpeg .jpg .webp .bmp"), ("All image files", saveSuppExtStr)])
+        if filePath != '':
+            texture = Texture3dst().open(self.imgPath)
+            imgCopy = texture.copy(0, 0, texture.size[0], texture.size[1])
+            try:
+                imgCopy.save(filePath)
+            except ValueError:
+                try:
+                    imgCopy.save(f"{filePath}.png")
+                except:
+                    messagebox.showerror("Error - 3DSTViewer", "An exception occurred while exporting the texture")
+
     def openFile(self):
         filePath = customtkinter.filedialog.askopenfilename(filetypes=[("3DST Texture", ".3dst")])
         self.openPath(filePath)
@@ -148,8 +168,12 @@ class App(customtkinter.CTk):
                     self.imgName = path.name
                     self.imgPath = path.absolute()
                     self.imgOpen = True
-                except Exception:
-                    messagebox.showerror(title="Error - 3dstViewer", message=f"Error while opening file.\n{traceback.format_exc()}")
+                except Texture3dstUnsupported:
+                    messagebox.showerror(title="Error - 3DSTViewer", message=f"Error while opening file.\n{filePath}\n\nUnsupported texture format")
+                except Texture3dstNoSignature:
+                    messagebox.showerror(title="Error - 3DSTViewer", message=f"Error while opening file.\n{filePath}\n\nInvalid or unsupported 3DST file")
+                except:
+                    messagebox.showerror(title="Error - 3DSTViewer", message=f"Unhandled error while opening file.\n{traceback.format_exc()}")
 
     def showAbout(self):
         about_text = f"3DST Viewer\nVersion {self.version}\n\nMade by: STBrian\nGitHub: https://github.com/STBrian"
