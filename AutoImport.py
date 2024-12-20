@@ -219,11 +219,7 @@ class AutoImport(MyCTkTopLevel):
 
         self.app_path = master.app_path
         os_name = os.name
-        if os_name == "nt":
-            iconpath = ImageTk.PhotoImage(file=os.path.join(self.app_path, "icon2.png"))
-            self.wm_iconbitmap()
-            self.iconphoto(False, iconpath)
-        elif os_name == "posix":
+        if os_name == "nt" or os_name == "posix":
             iconpath = ImageTk.PhotoImage(file=os.path.join(self.app_path, "icon2.png"))
             self.wm_iconbitmap()
             self.iconphoto(False, iconpath)
