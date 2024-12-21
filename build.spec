@@ -77,7 +77,7 @@ py3dst_exe = EXE(
     py3dst_a.scripts,
     [],
     exclude_binaries=True,
-    name='py3dstViewer',
+    name='3DSTViewer',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
