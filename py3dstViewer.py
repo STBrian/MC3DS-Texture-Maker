@@ -10,7 +10,7 @@ from py3dst import Texture3dst, Texture3dstUnsupported, Texture3dstNoSignature
 from py3dst.tex3dst import _createPixelDataStructure, _getTexturePosition
 from py3dst.error_classes import Texture3dstUnexpectedEndOfFile
 
-VERSION = "0.7.1"
+VERSION = "0.8.0"
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (180, 180, 180, 255))
@@ -84,6 +84,7 @@ class App(customtkinter.CTk):
         infoFrame = customtkinter.CTkFrame(mainFrame, width=200)
         infoFrame.grid(column=1, row=0, sticky="nswe")
         infoFrame.grid_columnconfigure(0, weight=1)
+        infoFrame.grid_rowconfigure(7, weight=1)
 
         propertiesLabel = customtkinter.CTkLabel(infoFrame, text="Properties", width=200, font=(None, 13, "bold"))
         propertiesLabel.grid(column=0, row=0, sticky="we", pady=(5,0))
@@ -97,7 +98,7 @@ class App(customtkinter.CTk):
         sizeField.grid(column=0, row=2, sticky="we", padx=10)
 
         formatLabel = customtkinter.CTkLabel(infoFrame, text="Pixel format", width=200, font=(None, 12), anchor="w")
-        formatLabel.grid(column=0, row=3, sticky="we", padx=10, pady=(10,0))
+        formatLabel.grid(column=0, row=3, sticky="we", padx=10, pady=(5,0))
 
         formatValue = customtkinter.StringVar()
         self.formatValue = formatValue
@@ -105,12 +106,17 @@ class App(customtkinter.CTk):
         formatField.grid(column=0, row=4, sticky="we", padx=10)
 
         mipLevelLabel = customtkinter.CTkLabel(infoFrame, text="Mipmap levels", width=200, font=(None, 12), anchor="w")
-        mipLevelLabel.grid(column=0, row=5, sticky="we", padx=10, pady=(10,0))
+        mipLevelLabel.grid(column=0, row=5, sticky="we", padx=10, pady=(5,0))
 
         mipLevelValue = customtkinter.StringVar()
         self.mipLevelValue = mipLevelValue
         mipLevelField = customtkinter.CTkEntry(infoFrame, state="readonly", textvariable=mipLevelValue)
         mipLevelField.grid(column=0, row=6, sticky="we", padx=10)
+
+        ignoreAlphaValue = customtkinter.BooleanVar()
+        self.ignoreAlphaValue = ignoreAlphaValue
+        ignAlphaCheckbox = customtkinter.CTkCheckBox(infoFrame, variable=ignoreAlphaValue, text="Ignore alpha channel", checkbox_width=16, checkbox_height=16, border_width=1, command=self.reload_texture)
+        ignAlphaCheckbox.grid(column=0, row=7, pady=(5, 0), padx=10, sticky="ws")
 
         if imgPath != None:
             self.openPath(imgPath.absolute())
@@ -175,9 +181,19 @@ class App(customtkinter.CTk):
                         height = preview.size[1]
                     self.geometry(f"{width+250}x{height+30}")
 
+                    if self.ignoreAlphaValue.get():
+                        pixels = preview.load()
+                        for y in range(preview.size[1]):
+                            for x in range(preview.size[0]):
+                                r, g, b, a = pixels[x, y]
+                                pixels[x, y] = (r, g, b, 255)
+
                     # Generates the chessboard pattern in a secondary image then fuses with the source image
-                    chessboard = _generateChessboardPattern(texture.size[0], texture.size[1])
-                    previewFinal = Image.alpha_composite(chessboard, preview)
+                    if not self.ignoreAlphaValue.get():
+                        chessboard = _generateChessboardPattern(texture.size[0], texture.size[1])
+                        previewFinal = Image.alpha_composite(chessboard, preview)
+                    else:
+                        previewFinal = preview
 
                     self.title(f"{path.name} - 3DSTViewer")
                     portviewImg = customtkinter.CTkImage(light_image=previewFinal, dark_image=previewFinal, size=(preview.size[0], preview.size[1]))
@@ -196,6 +212,12 @@ class App(customtkinter.CTk):
                     messagebox.showerror(title="Error - 3DSTViewer", message=f"Error while opening file.\n{filePath}\n\nInvalid or unsupported 3DST file")
                 except:
                     messagebox.showerror(title="Error - 3DSTViewer", message=f"Unhandled error while opening file.\n{traceback.format_exc()}")
+
+    def reload_texture(self):
+        if self.imgOpen:
+            current_path = self.imgPath
+            self.closeFile()
+            self.openPath(current_path)
 
     def showMipmaps(self):
         if self.imgOpen:
