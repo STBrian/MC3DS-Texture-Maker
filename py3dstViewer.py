@@ -10,7 +10,7 @@ from py3dst import Texture3dst, Texture3dstUnsupported, Texture3dstNoSignature
 from py3dst.tex3dst import _createPixelDataStructure, _getTexturePosition
 from py3dst.error_classes import Texture3dstUnexpectedEndOfFile
 
-VERSION = "0.7.0"
+VERSION = "0.7.1"
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (180, 180, 180, 255))
@@ -287,9 +287,15 @@ if __name__ == "__main__":
             path = Path(args.path)
             try:
                 texture = Texture3dst().open(path)
-            except Exception:
-                messagebox.showerror(title="Error - 3dstViewer", message=f"Error while opening file.\n{traceback.format_exc()}")
-                sys.exit()
+            except Texture3dstUnsupported:
+                messagebox.showerror(title="Error - 3DSTViewer", message=f"Error while opening file.\n{path}\n\nUnsupported texture format")
+                sys.exit(1)
+            except Texture3dstNoSignature:
+                messagebox.showerror(title="Error - 3DSTViewer", message=f"Error while opening file.\n{path}\n\nInvalid or unsupported 3DST file")
+                sys.exit(2)
+            except:
+                messagebox.showerror(title="Error - 3DSTViewer", message=f"Unhandled error while opening file.\n{traceback.format_exc()}")
+                sys.exit(3)
             texture = None
 
             customtkinter.set_appearance_mode("dark")
