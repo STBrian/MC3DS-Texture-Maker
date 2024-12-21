@@ -10,7 +10,7 @@ from py3dst import Texture3dst, Texture3dstUnsupported, Texture3dstNoSignature
 from py3dst.tex3dst import _createPixelDataStructure, _getTexturePosition
 from py3dst.error_classes import Texture3dstUnexpectedEndOfFile
 
-VERSION = "0.8.0"
+VERSION = "0.8.1"
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (180, 180, 180, 255))
@@ -226,10 +226,6 @@ class App(customtkinter.CTk):
                 secondary_window = MyCTkTopLevel(self)
                 secondary_window.title("Mipmap viewer")
                 secondary_window.geometry(f"{int(texture.header.full_size[0]/2)}x{int(texture.header.full_size[1]/2)}")
-
-                icon = ImageTk.PhotoImage(file=os.path.join(self.app_path, "icon_viewer.png"))
-                secondary_window.wm_iconbitmap()
-                secondary_window.iconphoto(False, icon)
 
                 texPixelFormat = texture._getFormatInfo(texture.header.format)
                 texPixelLenght = texPixelFormat["pixel_lenght"]
