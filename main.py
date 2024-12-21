@@ -2,17 +2,32 @@ import os, sys
 import difflib, threading, time
 import configparser
 import customtkinter, CTkMenuBar
+
 from tkinter import ttk
-from PIL import Image
-from PIL import ImageTk
+from PIL import Image, ImageTk, ImageDraw
 from functools import partial
 from pathlib import Path
 from tkinter import messagebox
 from AutoImport import *
 from modules import *
+from modules.MyCTkTopLevel import *
 from py3dst import Texture3dst
 
 VERSION = "2.3-dev"
+
+def _generateChessboardPattern(width, height, tileSize = 10):
+    chessboard = Image.new("RGBA", (width, height), (146, 146, 146, 255))
+    draw = ImageDraw.Draw(chessboard)
+
+    for y in range(0, height, tileSize):
+        for x in range(0, width, tileSize):
+            if (x // tileSize + y // tileSize) % 2 == 0:
+                draw.rectangle(
+                    [(x, y), (x + tileSize - 1, y + tileSize - 1)], 
+                    fill=(86, 86, 86, 255)
+                )
+    
+    return chessboard
 
 def clearTreeview(tree: ttk.Treeview):
     for item in tree.get_children():
@@ -291,6 +306,11 @@ class MainFrame(customtkinter.CTkFrame):
             print(selected)
             portview = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
             portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
+            
+            if mainApp.showPreviewBg == "true":
+                backgound = _generateChessboardPattern(256, 256, tileSize=20)
+                portviewRes = Image.alpha_composite(backgound, portviewRes)
+
             self.infoDispFrame.portview.configure(dark_image=portviewRes)
 
 class App(customtkinter.CTk):
@@ -309,6 +329,7 @@ class App(customtkinter.CTk):
         self.updateList = True
         self.saved = True
         self.atlas = []
+        self.settingsWindow = None
 
         # --------------------------------------------
 
@@ -322,20 +343,37 @@ class App(customtkinter.CTk):
             self.runningDir = os.path.dirname(__file__)
         
         # Ini file
+        self.config = configparser.ConfigParser()
         if os.path.exists(os.path.join(self.runningDir, "mc3ds-tm.ini")):
-            self.config = configparser.ConfigParser()
             self.config.read(os.path.join(self.runningDir, "mc3ds-tm.ini"))
-        else:
-            self.config = configparser.ConfigParser()
-            self.config["Preferences"] = {"theme": "dark"}
-            self.config["Path"] = {"lastdir": os.path.join(self.runningDir, "MC3DS")}
+        
+        if not "Path" in self.config:
+            self.config["Path"] = {}
+        if not "lastdir" in self.config["Path"]:
+            self.config["Path"]["lastdir"] = os.path.join(self.runningDir, "MC3DS")
+
+        if not "Preferences" in self.config:
+            self.config["Preferences"] = {}
+        if not "theme" in self.config["Preferences"]:
+            self.config["Preferences"]["theme"] = "dark"    
+        if not "showpreviewbg" in self.config["Preferences"]:
+            self.config["Preferences"]["showpreviewbg"] = "true"
+
+        if not os.path.exists(self.config["Path"]["lastdir"]):
+            self.config["Path"]["lastdir"] = os.path.join(self.runningDir, "MC3DS")
+
+        if not self.config["Preferences"]["theme"] in ["dark", "light"]:
+            self.config["Preferences"]["theme"] = "dark"
+
+        if not self.config["Preferences"]["showpreviewbg"] in ["true", "false"]:
+            self.config["Preferences"]["showpreviewbg"] = "true"
+
         self.outputFolder = self.config["Path"]["lastdir"]
         self.theme = self.config["Preferences"]["theme"]
-        if not self.theme in ["dark", "light"]:
-            self.theme = "dark"
-            self.config["Preferences"]["theme"] = "dark"
-        customtkinter.set_appearance_mode(self.theme)
+        self.showPreviewBg = self.config["Preferences"]["showpreviewbg"]
+
         self.saveChangesForIniFile()
+        self.changeTheme()
 
         self.title("MC3DS Texture Maker")
         os_name = os.name
@@ -357,9 +395,10 @@ class App(customtkinter.CTk):
 
         fileMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("File"))
         fileMenu.add_option("Open folder", command=self.openFolder)
-        fileMenu.add_option("Toggle theme", command=self.changeTheme)
         fileMenu.add_separator()
         fileMenu.add_option("Save", command=self.saveChanges)
+        fileMenu.add_separator()
+        fileMenu.add_option("Settings", command=self.openSettings)
         fileMenu.add_separator()
         fileMenu.add_option("Exit", command=self.closeApp)
 
@@ -408,15 +447,59 @@ class App(customtkinter.CTk):
                 self.saved = True
                 self.updateList = True
 
-    def changeTheme(self):
-        if self.theme == "dark":
-            customtkinter.set_appearance_mode("light")
-            self.theme = "light"
+    def openSettings(self):
+        if self.settingsWindow is None or not self.settingsWindow.winfo_exists():
+            settingsWindow = MyCTkTopLevel(self)
+            settingsWindow.title("Settings")
+            settingsWindow.resizable(False, False)
+
+            appearanceLabel = customtkinter.CTkLabel(settingsWindow, text="Appearance", font=(None, 14, "bold"))
+            appearanceLabel.grid(column=0, row=0, padx=10, pady=(10, 0), sticky="ws")
+
+            themeLabel = customtkinter.CTkLabel(settingsWindow, text="Theme", font=(None, 12))
+            themeLabel.grid(column=0, row=1, padx=10, pady=0, sticky="ws")
+
+            themeValue = customtkinter.StringVar(value=self.theme)
+            appThemeCombobox = customtkinter.CTkComboBox(settingsWindow, values=["dark", "light"], variable=themeValue, state="readonly")
+            appThemeCombobox.grid(column=0, row=2, padx=10, pady=(0, 10), sticky="w")
+
+            previewBgValue = customtkinter.BooleanVar(value=True if self.showPreviewBg == "true" else False)
+            previewBgCheckbox = customtkinter.CTkCheckBox(settingsWindow, text="Show preview background", variable=previewBgValue)
+            previewBgCheckbox.grid(column=0, row=3, padx=10, pady=(0, 10), sticky="w")
+
+            applyChanges = partial(self.applySettings, 
+                                   {
+                                       "theme": themeValue,
+                                       "showPreviewBg": previewBgValue
+                                   })
+            
+            discardChanges = partial(settingsWindow.destroy)
+
+            cancelButton = customtkinter.CTkButton(settingsWindow, text="Cancel", command=discardChanges)
+            cancelButton.grid(column=0, row=4, padx=10, pady=10)
+
+            applyButton = customtkinter.CTkButton(settingsWindow, text="Apply", command=applyChanges)
+            applyButton.grid(column=1, row=4, padx=(0, 10), pady=10)
+
+            self.settingsWindow = settingsWindow
         else:
-            customtkinter.set_appearance_mode("dark")
-            self.theme = "dark"
+            self.settingsWindow.focus()
+
+    def applySettings(self, newSettings: dict):
+        self.settingsWindow.destroy()
+        self.theme = newSettings["theme"].get()
+        self.showPreviewBg = "true" if newSettings["showPreviewBg"].get() else "false"
+
+        self.changeTheme()
+        self.mainFrame.listElementFun()
+
         self.config["Preferences"]["theme"] = self.theme
+        self.config["Preferences"]["showpreviewbg"] = self.showPreviewBg
         self.saveChangesForIniFile()
+
+    def changeTheme(self):
+        customtkinter.set_appearance_mode(self.theme)
+        self.updateTreeviewTheme()
 
     def about_popup(self):
         about_text = f"MC3DS Texture Maker\nVersion {self.version}\n\nMade by: STBrian\nGitHub: https://github.com/STBrian"
@@ -560,7 +643,7 @@ class App(customtkinter.CTk):
             else:
                 return False
             
-    def updateTreeviewTheme(self, *theme):
+    def updateTreeviewTheme(self):
         bg_color = self._apply_appearance_mode(customtkinter.ThemeManager.theme["CTkFrame"]["fg_color"])
         text_color = self._apply_appearance_mode(customtkinter.ThemeManager.theme["CTkLabel"]["text_color"])
         selected_color = self._apply_appearance_mode(customtkinter.ThemeManager.theme["CTkButton"]["fg_color"])
@@ -576,7 +659,6 @@ if __name__ == "__main__":
     print("Loading app...")
     app = App()
 
-    customtkinter.AppearanceModeTracker.add(app.updateTreeviewTheme)
     app.updateTreeviewTheme()
     app.bind("<<TreeviewSelect>>", lambda event: app.focus_set())
 
