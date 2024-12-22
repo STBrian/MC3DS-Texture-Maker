@@ -469,7 +469,7 @@ class App(customtkinter.CTk):
             appThemeCombobox.grid(column=0, row=2, padx=10, pady=(0, 10), sticky="w")
 
             previewBgValue = customtkinter.BooleanVar(value=True if self.showPreviewBg == "true" else False)
-            previewBgCheckbox = customtkinter.CTkCheckBox(settingsWindow, text="Show preview background", variable=previewBgValue)
+            previewBgCheckbox = customtkinter.CTkCheckBox(settingsWindow, text="Show preview background", variable=previewBgValue, border_width=1, checkbox_width=20, checkbox_height=20)
             previewBgCheckbox.grid(column=0, row=3, padx=10, pady=(0, 10), sticky="w")
 
             applyChanges = partial(self.applySettings, 
@@ -481,7 +481,7 @@ class App(customtkinter.CTk):
             discardChanges = partial(settingsWindow.destroy)
 
             cancelButton = customtkinter.CTkButton(settingsWindow, text="Cancel", command=discardChanges)
-            cancelButton.grid(column=0, row=4, padx=10, pady=10)
+            cancelButton.grid(column=0, row=4, padx=10, pady=10, sticky="e")
 
             applyButton = customtkinter.CTkButton(settingsWindow, text="Apply", command=applyChanges)
             applyButton.grid(column=1, row=4, padx=(0, 10), pady=10)
