@@ -188,41 +188,46 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                 exts_str += " "
         filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("All supported image files", exts_str)])
         if filePath != '':
-            if isImage16x16(filePath):
-                if atlasType == "Items":
-                    textureToReplace = Image.open(filePath)
-                    itemsAtlas.addElement(position, textureToReplace)
-                    duplicated = checkForMatch(items[matchwith], added.getItems())
+            if not canOpenImage(filePath):
+                messagebox.showerror("Failed to open image", "Unable to open the selected image")
+            else:
+                if not isImage16x16(filePath):
+                    messagebox.showerror("Invalid texture", "Texture selected is not 16x16")
+                else:
+                    if atlasType == "Items":
+                        textureToReplace = Image.open(filePath)
+                        itemsAtlas.addElement(position, textureToReplace)
+                        duplicated = checkForMatch(items[matchwith], added.getItems())
 
-                    if not os.path.exists(f"{outputDir}/textures/items"):
-                        os.makedirs(f"{outputDir}/textures/items")
+                        if not os.path.exists(f"{outputDir}/textures/items"):
+                            os.makedirs(f"{outputDir}/textures/items")
 
-                    newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
-                    newTexture.paste(textureToReplace, 0, 0)
-                    newTexture.export(f"{outputDir}/textures/items/{items[matchwith]}.3dst")
+                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
+                        newTexture.paste(textureToReplace, 0, 0)
+                        newTexture.export(f"{outputDir}/textures/items/{items[matchwith]}.3dst")
 
-                    if duplicated == -1:
-                        added.addItem(items[matchwith])
-                elif atlasType == "Blocks":
-                    textureToReplace = Image.open(filePath)
-                    blocksAtlas.addElement(position, Image.open(filePath))
-                    duplicated = checkForMatch(blocks[matchwith], added.getItems())
+                        if duplicated == -1:
+                            added.addItem(items[matchwith])
+                    elif atlasType == "Blocks":
+                        textureToReplace = Image.open(filePath)
+                        blocksAtlas.addElement(position, Image.open(filePath))
+                        duplicated = checkForMatch(blocks[matchwith], added.getItems())
 
-                    if not os.path.exists(f"{outputDir}/textures/blocks"):
-                        os.makedirs(f"{outputDir}/textures/blocks")
+                        if not os.path.exists(f"{outputDir}/textures/blocks"):
+                            os.makedirs(f"{outputDir}/textures/blocks")
 
-                    newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
-                    newTexture.paste(textureToReplace, 0, 0)
+                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
+                        newTexture.paste(textureToReplace, 0, 0)
+                        
+                        newTexture.export(f"{outputDir}/textures/blocks/{blocks[matchwith]}.3dst")
+                        if duplicated == -1:
+                            added.addItem(blocks[matchwith])
                     
-                    newTexture.export(f"{outputDir}/textures/blocks/{blocks[matchwith]}.3dst")
-                    if duplicated == -1:
-                        added.addItem(blocks[matchwith])
-                
-                # Updates portview
-                mainFrame.listElementFun(value, self.lastActualOption)
+                    # Updates portview
+                    mainFrame.listElementFun(value, self.lastActualOption)
 
-                mainApp.saved = False
-                mainApp.updateTreeIcons()
+                    mainApp.saved = False
+                    mainApp.updateTreeIcons()
         self.buttonReplace.configure(state="normal")
 
 class MainFrame(customtkinter.CTkFrame):
