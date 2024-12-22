@@ -78,6 +78,20 @@ class StartFrame(customtkinter.CTkFrame):
         autoImportThread = threading.Thread(target=self.autoImport)
         autoImportThread.daemon = True
         autoImportThread.start()
+
+    def loadRulesFile(self, ruleName: str, source: list, out: list, atlasType: str):
+        appPath = self.root.app_path
+        if os.path.exists(os.path.join(appPath, f"assets/rules/{ruleName}.json")):
+            with open(os.path.join(appPath, f"assets/rules/{ruleName}.json")) as f:
+                ruleData = json.loads(f.read())
+
+            if "parent" in ruleData:
+                self.loadRulesFile(ruleData["parent"], source, out, atlasType)
+
+            if atlasType in ruleData:
+                for element in ruleData[atlasType]:
+                    if element["name"] in source:
+                        out[source.index(element["name"])] = element["value"]
     
     def autoImport(self):
         root = self.root
@@ -109,12 +123,7 @@ class StartFrame(customtkinter.CTkFrame):
 
         # Load rules
         modifiedIndex = index[::]
-        with open(os.path.join(appPath, f"assets/rules/{ruleFile}.json")) as f:
-            ruleData = json.loads(f.read())
-        if atlasType in ruleData:
-            for element in ruleData[atlasType]:
-                if element["name"] in modifiedIndex:
-                    modifiedIndex[modifiedIndex.index(element["name"])] = element["value"]
+        self.loadRulesFile(ruleFile, index, modifiedIndex, atlasType)
 
         # Get the atlas to modify
         if atlasType == "Items":
