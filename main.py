@@ -104,8 +104,8 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.selectionLabel = customtkinter.CTkLabel(self, textvariable=self.selected)
         self.selectionLabel.grid(row=2, column=0, padx=5, pady=5, columnspan=2)
 
-        self.buttonChange = customtkinter.CTkButton(self, text="Change", command=self.changeTextureCall, state="disabled", width=100)
-        self.buttonChange.grid(row=3, column=0, padx=5, pady=5, sticky="wes")
+        self.buttonReplace = customtkinter.CTkButton(self, text="Replace", command=self.changeTextureCall, state="disabled", width=100)
+        self.buttonReplace.grid(row=3, column=0, padx=5, pady=5, sticky="wes")
 
         self.buttonExport = customtkinter.CTkButton(self, text="Export", state="disabled", command=self.saveAs, width=100)
         self.buttonExport.grid(row=3, column=1, padx=(0, 5), pady=5, sticky="wes")
@@ -149,7 +149,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
     def changeTextureCall(self):
         changeTexture = partial(self.changeTextureFunc, self.selected.get())
-        self.buttonChange.configure(state="disabled")
+        self.buttonReplace.configure(state="disabled")
         threading.Thread(target=changeTexture).start()
 
     def changeTextureFunc(self, value):
@@ -223,7 +223,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
                 mainApp.saved = False
                 mainApp.updateTreeIcons()
-        self.buttonChange.configure(state="normal")
+        self.buttonReplace.configure(state="normal")
 
 class MainFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -273,8 +273,8 @@ class MainFrame(customtkinter.CTkFrame):
         else:
             name = value
 
-        if self.infoDispFrame.buttonChange.cget("state") == "disabled":
-            self.infoDispFrame.buttonChange.configure(state="normal")
+        if self.infoDispFrame.buttonReplace.cget("state") == "disabled":
+            self.infoDispFrame.buttonReplace.configure(state="normal")
         if self.infoDispFrame.buttonExport.cget("state") == "disabled":
             self.infoDispFrame.buttonExport.configure(state="normal")
 
