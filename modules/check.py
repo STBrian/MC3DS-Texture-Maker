@@ -24,6 +24,13 @@ def checkForMatches(list1: list, list2: list):
 
     return matches
 
+def canOpenImage(texture_path) -> bool:
+    try:
+        img = Image.open(texture_path)
+        return True
+    except:
+        return False
+
 def isImage16x16(texture_path):
     img = Image.open(texture_path)
     if img.size[0] == 16 and img.size[1] == 16:
