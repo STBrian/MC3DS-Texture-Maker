@@ -186,7 +186,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             exts_str += element
             if idx < len(supported_extensions)-1:
                 exts_str += " "
-        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("All supported image files", exts_str)])
+        filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("All image files", exts_str)])
         if filePath != '':
             if not canOpenImage(filePath):
                 messagebox.showerror("Failed to open image", "Unable to open the selected image")
