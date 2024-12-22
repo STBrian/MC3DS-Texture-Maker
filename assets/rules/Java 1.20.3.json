@@ -1,0 +1,9 @@
+{
+    "parent": "Java 1.20",
+    "Blocks": [
+        {
+            "name": "tallgrass",
+            "value": "short_grass"
+        }
+    ]
+}
