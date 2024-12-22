@@ -1,5 +1,5 @@
 {
-    "parent": "Java 1.20",
+    "parent": "Java 1.17",
     "Blocks": [
         {
             "name": "tallgrass",

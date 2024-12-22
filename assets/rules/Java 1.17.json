@@ -1,0 +1,13 @@
+{
+    "parent": "Java 1.13",
+    "Blocks": [
+        {
+            "name": "grass_path_side",
+            "value": "dirt_path_side"
+        },
+        {
+            "name": "grass_path_top",
+            "value": "dirt_path_top"
+        }
+    ]
+}
