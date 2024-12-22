@@ -110,8 +110,8 @@ class StartFrame(customtkinter.CTkFrame):
 
         items = root.items.getItems()
         blocks = root.blocks.getItems()
-        addedItems = root.addedItems
-        addedBlocks = root.addedBlocks
+        addedItems: IndexFile = root.addedItems
+        addedBlocks: IndexFile = root.addedBlocks
 
         # Get indexes
         if atlasType == "Items":
@@ -127,15 +127,27 @@ class StartFrame(customtkinter.CTkFrame):
 
         # Get the atlas to modify
         if atlasType == "Items":
-            atlas = root.itemsAtlas
+            atlas: atlasTexture3dst = root.itemsAtlas
         elif atlasType == "Blocks":
-            atlas = root.blocksAtlas
+            atlas: atlasTexture3dst = root.blocksAtlas
 
-        for file in glob.iglob(os.path.join(inputDir, "**/*.png"), recursive=True):
+        not_found_textures: list = modifiedIndex[::]
+
+        # Get pillow supported image extensions
+        supportedExtensions = Image.registered_extensions()
+        openSupportedExtensions = [ex for ex, f in supportedExtensions.items() if f in Image.OPEN]
+        
+        patterns = [os.path.join(inputDir, f"**/*{ext}") for ext in openSupportedExtensions]
+        image_files = []
+        for pattern in patterns:
+            image_files.extend(glob.iglob(pattern, recursive=True))
+
+        for file in image_files:
             filepath = Path(file)
             value = filepath.stem
 
-            if value in modifiedIndex:
+            if value in modifiedIndex and value in not_found_textures:
+                not_found_textures.pop(not_found_textures.index(value))
                 print(f"--------------- {value} ---------------")
                 # Calculate position
                 matchwith = checkForMatch(value, modifiedIndex)
@@ -144,7 +156,7 @@ class StartFrame(customtkinter.CTkFrame):
                 elif atlasType == "Blocks":
                     position = calculateGrid(matchwith, 25, 22, 20)
 
-                if isImage16x16(file):
+                if canOpenImage(file) and isImage16x16(file):
                     # Show new texture in preview frame
                     portviewImage = Image.open(file)
                     portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
@@ -172,11 +184,13 @@ class StartFrame(customtkinter.CTkFrame):
                     # Check for duplicated
                     duplicated = checkForMatch(index[matchwith], added.getItems())
                     if duplicated == -1:
-                        if atlasType == "Items":
-                            path = "items.txt"
-                        elif atlasType == "Blocks":
-                            path = "blocks.txt"
                         added.addItem(index[matchwith])
+
+        # Print not found textures
+        print("The following textures were not found")
+        for item in not_found_textures:
+            print(item)
+        print("Total textures not found:", len(not_found_textures))
 
         # Finish reloading lists in main app
         mainApp.updateList = True
