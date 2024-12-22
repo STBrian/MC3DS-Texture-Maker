@@ -21,7 +21,7 @@ class atlasTexture3dst():
         if path.suffix == ".png":
             atlas = Texture3dst().fromImage(Image.open(path))
             if atlas_type == "Blocks":
-                atlas.miplevel = 3
+                atlas.header.mip_level = 3
         elif path.suffix == ".3dst":
             atlas = Texture3dst().open(path)
 
@@ -45,7 +45,7 @@ class atlasTexture3dst():
             for y in range(0, 16):
                 for x in range(0, 16):
                     r, g, b, a = new_texture.getpixel((x, y))
-                    self.atlas.setPixelRGBA(x_atlas, y_atlas, (r, g, b, a))
+                    self.atlas.setPixel(x_atlas, y_atlas, (r, g, b, a))
                     x_atlas += 1
                 x_atlas -= 16
                 y_atlas += 1
@@ -57,7 +57,7 @@ class atlasTexture3dst():
             x2 = 0
             y2 = 0
             for i in range(0, 20):
-                for i in range(0, 20):
+                for j in range(0, 20):
                     if x < 0:
                         x2 = 0
                     if x > 15:
@@ -71,7 +71,7 @@ class atlasTexture3dst():
                     if y >= 0 and y <= 15:
                         y2 = y
                     r, g, b, a = new_texture.getpixel((x2, y2))
-                    self.atlas.setPixelRGBA(x_atlas, y_atlas, (r, g, b, a))
+                    self.atlas.setPixel(x_atlas, y_atlas, (r, g, b, a))
                     x += 1
                     x_atlas += 1
                 x = -2
