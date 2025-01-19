@@ -156,6 +156,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         mainApp = self.master.master
         mainFrame = self.master
         outputDir = mainApp.outputFolder
+        allowResize = True if mainApp.allowResize == "true" else False
 
         atlasType = self.lastActualOption
         items = mainApp.items.getItems()
@@ -191,11 +192,14 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             if not canOpenImage(filePath):
                 messagebox.showerror("Failed to open image", "Unable to open the selected image")
             else:
-                if not isImage16x16(filePath):
+                isSized = isImage16x16(filePath)
+                if not isSized and not allowResize:
                     messagebox.showerror("Invalid texture", "Texture selected is not 16x16")
                 else:
+                    textureToReplace = Image.open(filePath)
+                    if not isSized:
+                        textureToReplace = textureToReplace.resize((16, 16), Image.Resampling.LANCZOS)
                     if atlasType == "Items":
-                        textureToReplace = Image.open(filePath)
                         itemsAtlas.addElement(position, textureToReplace)
                         duplicated = checkForMatch(items[matchwith], added.getItems())
 
@@ -209,7 +213,6 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                         if duplicated == -1:
                             added.addItem(items[matchwith])
                     elif atlasType == "Blocks":
-                        textureToReplace = Image.open(filePath)
                         blocksAtlas.addElement(position, Image.open(filePath))
                         duplicated = checkForMatch(blocks[matchwith], added.getItems())
 
@@ -363,6 +366,8 @@ class App(customtkinter.CTk):
             self.config["Preferences"]["theme"] = "dark"    
         if not "showpreviewbg" in self.config["Preferences"]:
             self.config["Preferences"]["showpreviewbg"] = "true"
+        if not "allowresize" in self.config["Preferences"]:
+            self.config["Preferences"]["allowresize"] = "true"
 
         if not os.path.exists(self.config["Path"]["lastdir"]):
             self.config["Path"]["lastdir"] = os.path.join(self.runningDir, "MC3DS")
@@ -373,9 +378,13 @@ class App(customtkinter.CTk):
         if not self.config["Preferences"]["showpreviewbg"] in ["true", "false"]:
             self.config["Preferences"]["showpreviewbg"] = "true"
 
+        if not self.config["Preferences"]["allowresize"] in ["true", "false"]:
+            self.config["Preferences"]["allowresize"] = "true"
+
         self.outputFolder = self.config["Path"]["lastdir"]
         self.theme = self.config["Preferences"]["theme"]
         self.showPreviewBg = self.config["Preferences"]["showpreviewbg"]
+        self.allowResize = self.config["Preferences"]["allowresize"]
 
         self.saveChangesForIniFile()
         self.changeTheme()
@@ -470,21 +479,26 @@ class App(customtkinter.CTk):
 
             previewBgValue = customtkinter.BooleanVar(value=True if self.showPreviewBg == "true" else False)
             previewBgCheckbox = customtkinter.CTkCheckBox(settingsWindow, text="Show preview background", variable=previewBgValue, border_width=1, checkbox_width=20, checkbox_height=20)
-            previewBgCheckbox.grid(column=0, row=3, padx=10, pady=(0, 10), sticky="w")
+            previewBgCheckbox.grid(column=0, row=3, padx=10, pady=(0, 2), sticky="w")
+
+            allowResizeValue = customtkinter.BooleanVar(value=True if self.allowResize == "true" else False)
+            allowResizeCheckbox = customtkinter.CTkCheckBox(settingsWindow, text="Allow resize textures", variable=allowResizeValue, border_width=1, checkbox_width=20, checkbox_height=20)
+            allowResizeCheckbox.grid(column=0, row=4, padx=10, pady=(0, 10), sticky="w")
 
             applyChanges = partial(self.applySettings, 
                                    {
                                        "theme": themeValue,
-                                       "showPreviewBg": previewBgValue
+                                       "showpreviewbg": previewBgValue,
+                                       "allowresize": allowResizeValue
                                    })
             
             discardChanges = partial(settingsWindow.destroy)
 
             cancelButton = customtkinter.CTkButton(settingsWindow, text="Cancel", command=discardChanges)
-            cancelButton.grid(column=0, row=4, padx=10, pady=10, sticky="e")
+            cancelButton.grid(column=0, row=5, padx=10, pady=10, sticky="e")
 
             applyButton = customtkinter.CTkButton(settingsWindow, text="Apply", command=applyChanges)
-            applyButton.grid(column=1, row=4, padx=(0, 10), pady=10)
+            applyButton.grid(column=1, row=5, padx=(0, 10), pady=10)
 
             self.settingsWindow = settingsWindow
         else:
@@ -493,13 +507,15 @@ class App(customtkinter.CTk):
     def applySettings(self, newSettings: dict):
         self.settingsWindow.destroy()
         self.theme = newSettings["theme"].get()
-        self.showPreviewBg = "true" if newSettings["showPreviewBg"].get() else "false"
+        self.showPreviewBg = "true" if newSettings["showpreviewbg"].get() else "false"
+        self.allowResize = "true" if newSettings["allowresize"].get() else "false"
 
         self.changeTheme()
         self.mainFrame.listElementFun()
 
         self.config["Preferences"]["theme"] = self.theme
         self.config["Preferences"]["showpreviewbg"] = self.showPreviewBg
+        self.config["Preferences"]["allowresize"] = self.allowResize
         self.saveChangesForIniFile()
 
     def changeTheme(self):

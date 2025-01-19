@@ -100,6 +100,7 @@ class StartFrame(customtkinter.CTkFrame):
         ruleFile = root.optionsFrame.rule.get()
         inputDir = self.dirPath
         outputDir = mainApp.outputFolder
+        allowResize = True if mainApp.allowResize == "true" else False
         appPath = root.app_path
         self.button.configure(state="disabled")
         self.button.configure(text="Please wait...")
@@ -154,27 +155,31 @@ class StartFrame(customtkinter.CTkFrame):
                 elif atlasType == "Blocks":
                     position = calculateGrid(matchwith, 25, 22, 20)
 
-                if canOpenImage(file) and isImage16x16(file):
-                    # Show new texture in preview frame
-                    portviewImage = Image.open(file)
-                    portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
-                    root.previewFrame.portview.configure(dark_image=portviewRes)
+                if canOpenImage(file): 
+                    isSized = isImage16x16(file)
+                    if (isSized and not allowResize) or (not isSized and allowResize):
+                        # Show new texture in preview frame
+                        portviewImage = Image.open(file)
+                        portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
+                        root.previewFrame.portview.configure(dark_image=portviewRes)
 
-                    # Replace texture
-                    print("Opening new texture and replacing...")
-                    textureToReplace = Image.open(file)
-                    atlas.addElement(position, textureToReplace)
+                        # Replace texture
+                        print("Opening new texture and replacing...")
+                        textureToReplace = Image.open(file)
+                        if not isSized:
+                            textureToReplace = textureToReplace.resize((16, 16), Image.Resampling.LANCZOS)
+                        atlas.addElement(position, textureToReplace)
 
-                    if not os.path.exists(f"{outputDir}/{textureDestDir}"):
-                        os.makedirs(f"{outputDir}/{textureDestDir}")
-                    newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
-                    newTexture.paste(textureToReplace, 0, 0)
-                    newTexture.export(f"{outputDir}/{textureDestDir}/{index[matchwith]}.3dst")
+                        if not os.path.exists(f"{outputDir}/{textureDestDir}"):
+                            os.makedirs(f"{outputDir}/{textureDestDir}")
+                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
+                        newTexture.paste(textureToReplace, 0, 0)
+                        newTexture.export(f"{outputDir}/{textureDestDir}/{index[matchwith]}.3dst")
 
-                    # Check for duplicated
-                    duplicated = checkForMatch(index[matchwith], added.getItems())
-                    if duplicated == -1:
-                        added.addItem(index[matchwith])
+                        # Check for duplicated
+                        duplicated = checkForMatch(index[matchwith], added.getItems())
+                        if duplicated == -1:
+                            added.addItem(index[matchwith])
 
         # Print not found textures
         print("The following textures were not found")
