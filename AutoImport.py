@@ -155,18 +155,18 @@ class StartFrame(customtkinter.CTkFrame):
                 position = element["uv"]
 
                 if canOpenImage(file):
-                    isSized = isImage16x16(file)
+                    textureToReplace = Image.open(file)
+                    isSized = isImageSize(textureToReplace, element["tileSize"], element["tileSize"])
                     if not (not isSized and not allowResize):
                         # Show new texture in preview frame
-                        portviewImage = Image.open(file)
-                        portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
+                        portviewRes = textureToReplace.resize((256, 256), Image.Resampling.NEAREST)
                         root.previewFrame.portview.configure(dark_image=portviewRes)
 
                         # Replace texture
                         print("Opening new texture and replacing...")
-                        textureToReplace = Image.open(file)
+                        
                         if not isSized:
-                            textureToReplace = textureToReplace.resize((16, 16), Image.Resampling.LANCZOS)
+                            textureToReplace = textureToReplace.resize((element["tileSize"], element["tileSize"]), Image.Resampling.LANCZOS)
                         atlas.addElement(position, textureToReplace)
 
                         if not os.path.exists(f"{outputDir}/{textureDestDir}"):
