@@ -10,7 +10,7 @@ from py3dst import Texture3dst, Texture3dstUnsupported, Texture3dstNoSignature
 from py3dst.tex3dst import _createPixelDataStructure, _getTexturePosition
 from py3dst.error_classes import Texture3dstUnexpectedEndOfFile
 
-VERSION = "0.8.1"
+VERSION = "1.0.0"
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (180, 180, 180, 255))
