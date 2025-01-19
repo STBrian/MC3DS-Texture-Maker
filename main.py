@@ -274,32 +274,33 @@ class MainFrame(customtkinter.CTkFrame):
             self.infoDispFrame.buttonExport.configure(state="normal")
 
         selected = name
-        if cat_opt == None:
-            actualOpt = self.master.searchData[3]
-        else:
-            actualOpt = cat_opt
-        mainApp = self.master
-        self.infoDispFrame.lastActualOption = actualOpt
+        if selected != "No element selected":
+            if cat_opt == None:
+                actualOpt = self.master.searchData[3]
+            else:
+                actualOpt = cat_opt
+            mainApp = self.master
+            self.infoDispFrame.lastActualOption = actualOpt
 
-        # Set variables by atlas type
-        if actualOpt == "Items":
-            element = mainApp.items[selected]
-            atlas = mainApp.itemsAtlas
-        elif actualOpt == "Blocks":
-            element = mainApp.blocks[selected]
-            atlas = mainApp.blocksAtlas
-        position = element["uv"]
+            # Set variables by atlas type
+            if actualOpt == "Items":
+                element = mainApp.items[selected]
+                atlas = mainApp.itemsAtlas
+            elif actualOpt == "Blocks":
+                element = mainApp.blocks[selected]
+                atlas = mainApp.blocksAtlas
+            position = element["uv"]
 
-        # Copy region and update display
-        print(selected)
-        portview = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
-        portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
-        
-        if mainApp.showPreviewBg == "true":
-            backgound = _generateChessboardPattern(256, 256, tileSize=20)
-            portviewRes = Image.alpha_composite(backgound, portviewRes)
+            # Copy region and update display
+            print(selected)
+            portview = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
+            portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
+            
+            if mainApp.showPreviewBg == "true":
+                backgound = _generateChessboardPattern(256, 256, tileSize=20)
+                portviewRes = Image.alpha_composite(backgound, portviewRes)
 
-        self.infoDispFrame.portview.configure(dark_image=portviewRes)
+            self.infoDispFrame.portview.configure(dark_image=portviewRes)
 
 class App(customtkinter.CTk):
     def __init__(self):

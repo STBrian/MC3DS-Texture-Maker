@@ -109,8 +109,8 @@ class StartFrame(customtkinter.CTkFrame):
         print(outputDir)
         print(appPath)
 
-        items: list[str] = root.items.getItems()
-        blocks: list[str] = root.blocks.getItems()
+        items: list[str] = root.items
+        blocks: list[str] = root.blocks
         addedItems: IndexFile = root.addedItems
         addedBlocks: IndexFile = root.addedBlocks
 
@@ -127,8 +127,10 @@ class StartFrame(customtkinter.CTkFrame):
             textureDestDir = "textures/blocks"
 
         # Load rules
-        modifiedIndex = index[::]
-        self.loadRulesFile(ruleFile, index, modifiedIndex, atlasType)
+        sourceIndex = list(index.keys())
+        sourceIndex.sort()
+        modifiedIndex = sourceIndex[::]
+        self.loadRulesFile(ruleFile, sourceIndex, modifiedIndex, atlasType)
 
         not_found_textures: list = modifiedIndex[::]
 
@@ -149,15 +151,12 @@ class StartFrame(customtkinter.CTkFrame):
                 not_found_textures.pop(not_found_textures.index(value))
                 print(f"--------------- {value} ---------------")
                 # Calculate position
-                matchwith = checkForMatch(value, modifiedIndex)
-                if atlasType == "Items":
-                    position = calculateGrid(matchwith, 32, 13, 16)
-                elif atlasType == "Blocks":
-                    position = calculateGrid(matchwith, 25, 22, 20)
+                element = index[sourceIndex[modifiedIndex.index(value)]]
+                position = element["uv"]
 
-                if canOpenImage(file): 
+                if canOpenImage(file):
                     isSized = isImage16x16(file)
-                    if (isSized and not allowResize) or (not isSized and allowResize):
+                    if not (not isSized and not allowResize):
                         # Show new texture in preview frame
                         portviewImage = Image.open(file)
                         portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
@@ -174,12 +173,16 @@ class StartFrame(customtkinter.CTkFrame):
                             os.makedirs(f"{outputDir}/{textureDestDir}")
                         newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
                         newTexture.paste(textureToReplace, 0, 0)
-                        newTexture.export(f"{outputDir}/{textureDestDir}/{index[matchwith]}.3dst")
+                        newTexture.export(f"{outputDir}/{textureDestDir}/{sourceIndex[modifiedIndex.index(value)]}.3dst")
 
                         # Check for duplicated
-                        duplicated = checkForMatch(index[matchwith], added.getItems())
+                        duplicated = checkForMatch(sourceIndex[modifiedIndex.index(value)], added.getItems())
                         if duplicated == -1:
-                            added.addItem(index[matchwith])
+                            added.addItem(sourceIndex[modifiedIndex.index(value)])
+                    else:
+                        print("Image is not sized")
+                else:
+                    print("Cannot open image")
 
         # Print not found textures
         print("The following textures were not found")
