@@ -108,28 +108,26 @@ class StartFrame(customtkinter.CTkFrame):
         print(outputDir)
         print(appPath)
 
-        items = root.items.getItems()
-        blocks = root.blocks.getItems()
+        items: list[str] = root.items.getItems()
+        blocks: list[str] = root.blocks.getItems()
         addedItems: IndexFile = root.addedItems
         addedBlocks: IndexFile = root.addedBlocks
 
-        # Get indexes
+        # Get specific data and set variables
         if atlasType == "Items":
             index = items
             added = addedItems
+            atlas: atlasTexture3dst = root.itemsAtlas
+            textureDestDir = "textures/items"
         elif atlasType == "Blocks":
             index = blocks
             added = addedBlocks
+            atlas: atlasTexture3dst = root.blocksAtlas
+            textureDestDir = "textures/blocks"
 
         # Load rules
         modifiedIndex = index[::]
         self.loadRulesFile(ruleFile, index, modifiedIndex, atlasType)
-
-        # Get the atlas to modify
-        if atlasType == "Items":
-            atlas: atlasTexture3dst = root.itemsAtlas
-        elif atlasType == "Blocks":
-            atlas: atlasTexture3dst = root.blocksAtlas
 
         not_found_textures: list = modifiedIndex[::]
 
@@ -166,20 +164,12 @@ class StartFrame(customtkinter.CTkFrame):
                     print("Opening new texture and replacing...")
                     textureToReplace = Image.open(file)
                     atlas.addElement(position, textureToReplace)
-                    if not os.path.exists(f"{outputDir}/textures"):
-                        os.makedirs(f"{outputDir}/textures")
-                    if atlasType == "Items":
-                        if not os.path.exists(f"{outputDir}/textures/items"):
-                            os.makedirs(f"{outputDir}/textures/items")
-                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
-                        newTexture.paste(textureToReplace, 0, 0)
-                        newTexture.export(f"{outputDir}/textures/items/{index[matchwith]}.3dst")
-                    elif atlasType == "Blocks":
-                        if not os.path.exists(f"{outputDir}/textures/blocks"):
-                            os.makedirs(f"{outputDir}/textures/blocks")
-                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
-                        newTexture.paste(textureToReplace, 0, 0)
-                        newTexture.export(f"{outputDir}/textures/blocks/{index[matchwith]}.3dst")
+
+                    if not os.path.exists(f"{outputDir}/{textureDestDir}"):
+                        os.makedirs(f"{outputDir}/{textureDestDir}")
+                    newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
+                    newTexture.paste(textureToReplace, 0, 0)
+                    newTexture.export(f"{outputDir}/{textureDestDir}/{index[matchwith]}.3dst")
 
                     # Check for duplicated
                     duplicated = checkForMatch(index[matchwith], added.getItems())
