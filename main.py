@@ -120,30 +120,23 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             mainApp = self.master.master
             if value != "":
                 selected = value
-                actualOpt = mainApp.searchData[3]
+                atlasType = self.lastActualOption
 
-                # Calculate positions
-                if actualOpt == "Items":
-                    matchwith = checkForMatch(selected, mainApp.items.getItems())
-                    position = calculateGrid(matchwith, 32, 13, 16)
-                elif actualOpt == "Blocks":
-                    matchwith = checkForMatch(selected, mainApp.blocks.getItems())
-                    position = calculateGrid(matchwith, 25, 22, 20)
-                    position = (position[0] + 2, position[1] + 2)
-
-                # Get atlas
-                if actualOpt == "Items":
+                # Define variables by atlas type
+                if atlasType == "Items":
+                    element = mainApp.items[selected]
                     atlas = mainApp.itemsAtlas
-                elif actualOpt == "Blocks":
+                elif atlasType == "Blocks":
+                    element = mainApp.blocks[selected]
                     atlas = mainApp.blocksAtlas
+                position = element["uv"]
 
                 # Copy region and export
-                export = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)          
+                export = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
                 if extension == ".png":
                     export.save(file)
                 elif extension == ".3dst":
-                    export3dst = Texture3dst().new(16, 16, 1)
-                    export3dst.paste(export, 0, 0)
+                    export3dst = Texture3dst().fromImage(export)
                     export3dst.export(file.name)
         file.close()
 
@@ -159,32 +152,29 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         allowResize = True if mainApp.allowResize == "true" else False
 
         atlasType = self.lastActualOption
-        items = mainApp.items.getItems()
-        blocks = mainApp.blocks.getItems()
+        items = mainApp.items
+        blocks = mainApp.blocks
         itemsAtlas = mainApp.itemsAtlas
         blocksAtlas = mainApp.blocksAtlas
         addedItems = mainApp.addedItems
-        addedBlocks = mainApp.addedBlocks
+        addedBlocks = mainApp.addedBlocks       
 
-        # Load indexes
+        # Define variables by atlas type
         if atlasType == "Items":
             added = addedItems
+            atlas: atlasTexture3dst = itemsAtlas
+            element = items[value]
         elif atlasType == "Blocks":
             added = addedBlocks
-
-        # Calculate positions
-        if atlasType == "Items":
-            matchwith = checkForMatch(value, items)
-            position = calculateGrid(matchwith, 32, 13, 16)
-        elif atlasType == "Blocks":
-            matchwith = checkForMatch(value, blocks)
-            position = calculateGrid(matchwith, 25, 22, 20)
+            atlas: atlasTexture3dst = blocksAtlas
+            element = blocks[value]
+        position = element["uv"]
 
         exts = Image.registered_extensions()
         supported_extensions = {ex for ex, f in exts.items() if f in Image.OPEN}
         exts_str = ""
-        for idx, element in enumerate(supported_extensions):
-            exts_str += element
+        for idx, extension in enumerate(supported_extensions):
+            exts_str += extension
             if idx < len(supported_extensions)-1:
                 exts_str += " "
         filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("All image files", exts_str)])
@@ -192,39 +182,36 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             if not canOpenImage(filePath):
                 messagebox.showerror("Failed to open image", "Unable to open the selected image")
             else:
-                isSized = isImage16x16(filePath)
+                textureToReplace = Image.open(filePath)
+                isSized = isImageSize(textureToReplace, element["tileSize"], element["tileSize"])
                 if not isSized and not allowResize:
-                    messagebox.showerror("Invalid texture", "Texture selected is not 16x16")
+                    messagebox.showerror("Invalid texture", f"Texture selected is not {element['tileSize']}x{element['tileSize']}")
                 else:
-                    textureToReplace = Image.open(filePath)
                     if not isSized:
-                        textureToReplace = textureToReplace.resize((16, 16), Image.Resampling.LANCZOS)
+                        textureToReplace = textureToReplace.resize((element['tileSize'], element['tileSize']), Image.Resampling.LANCZOS)
+                    atlas.addElement(position, textureToReplace)
                     if atlasType == "Items":
-                        itemsAtlas.addElement(position, textureToReplace)
-                        duplicated = checkForMatch(items[matchwith], added.getItems())
+                        duplicated = checkForMatch(value, added.getItems())
 
                         if not os.path.exists(f"{outputDir}/textures/items"):
                             os.makedirs(f"{outputDir}/textures/items")
 
-                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
-                        newTexture.paste(textureToReplace, 0, 0)
-                        newTexture.export(f"{outputDir}/textures/items/{items[matchwith]}.3dst")
+                        newTexture = Texture3dst().fromImage(textureToReplace)
+                        newTexture.export(f"{outputDir}/textures/items/{value}.3dst")
 
                         if duplicated == -1:
-                            added.addItem(items[matchwith])
+                            added.addItem(value)
                     elif atlasType == "Blocks":
-                        blocksAtlas.addElement(position, Image.open(filePath))
-                        duplicated = checkForMatch(blocks[matchwith], added.getItems())
+                        duplicated = checkForMatch(value, added.getItems())
 
                         if not os.path.exists(f"{outputDir}/textures/blocks"):
                             os.makedirs(f"{outputDir}/textures/blocks")
 
-                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
-                        newTexture.paste(textureToReplace, 0, 0)
-                        
-                        newTexture.export(f"{outputDir}/textures/blocks/{blocks[matchwith]}.3dst")
+                        newTexture = Texture3dst().fromImage(textureToReplace)
+                        newTexture.export(f"{outputDir}/textures/blocks/{value}.3dst")
+
                         if duplicated == -1:
-                            added.addItem(blocks[matchwith])
+                            added.addItem(value)
                     
                     # Updates portview
                     mainFrame.listElementFun(value, self.lastActualOption)
@@ -294,32 +281,25 @@ class MainFrame(customtkinter.CTkFrame):
         mainApp = self.master
         self.infoDispFrame.lastActualOption = actualOpt
 
-        # Calculate positions
+        # Set variables by atlas type
         if actualOpt == "Items":
-            matchwith = checkForMatch(selected, mainApp.items.getItems())
-            position = calculateGrid(matchwith, 32, 13, 16)
-        elif actualOpt == "Blocks":
-            matchwith = checkForMatch(selected, mainApp.blocks.getItems())
-            position = calculateGrid(matchwith, 25, 22, 20)
-            position = (position[0] + 2, position[1] + 2)
-
-        # Load atlas
-        if actualOpt == "Items":
+            element = mainApp.items[selected]
             atlas = mainApp.itemsAtlas
         elif actualOpt == "Blocks":
+            element = mainApp.blocks[selected]
             atlas = mainApp.blocksAtlas
+        position = element["uv"]
 
         # Copy region and update display
-        if matchwith != -1:
-            print(selected)
-            portview = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
-            portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
-            
-            if mainApp.showPreviewBg == "true":
-                backgound = _generateChessboardPattern(256, 256, tileSize=20)
-                portviewRes = Image.alpha_composite(backgound, portviewRes)
+        print(selected)
+        portview = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
+        portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
+        
+        if mainApp.showPreviewBg == "true":
+            backgound = _generateChessboardPattern(256, 256, tileSize=20)
+            portviewRes = Image.alpha_composite(backgound, portviewRes)
 
-            self.infoDispFrame.portview.configure(dark_image=portviewRes)
+        self.infoDispFrame.portview.configure(dark_image=portviewRes)
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -431,8 +411,12 @@ class App(customtkinter.CTk):
         # --------------------------------------------
 
         # Load indexes of blocks and items from source
-        self.items = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newItemsIndex.txt"))
-        self.blocks = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newBlocksIndex.txt"))
+        with open("./assets/uvs/atlas.items.vanilla.uvs.json", "r") as f:
+            self.items = json.load(f)
+        with open("./assets/uvs/atlas.terrain.vanilla.uvs.json", "r") as f:
+            self.blocks = json.load(f)
+        #self.items = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newItemsIndex.txt"))
+        #self.blocks = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newBlocksIndex.txt"))
 
         # Load resources
         self.loadResources()
@@ -523,7 +507,7 @@ class App(customtkinter.CTk):
         self.updateTreeviewTheme()
 
     def about_popup(self):
-        about_text = f"MC3DS Texture Maker\nVersion {self.version}\n\nMade by: STBrian\nGitHub: https://github.com/STBrian"
+        about_text = f"MC3DS Texture Maker\nVersion: {self.version}\n\nMade by: STBrian\nGitHub: https://github.com/STBrian"
         messagebox.showinfo("About", about_text)
 
     def updateParamsThread(self):
@@ -548,13 +532,14 @@ class App(customtkinter.CTk):
                 clearTreeview(mainFrame.elementsTreeView)
 
                 if actualOpt == "Items":
-                    elements = items
+                    elements: dict = items
                     added = addedItems
                 elif actualOpt == "Blocks":
                     elements = blocks
                     added = addedBlocks
 
-                elements = elements.getItems()
+                elements = list(elements.keys())
+                elements.sort()
 
                 if (not searchData[0] == ""):
                     elements = difflib.get_close_matches(searchData[0], elements, n = len(elements), cutoff=0.4)
@@ -587,15 +572,14 @@ class App(customtkinter.CTk):
 
             if actualOpt == "Items":
                 atlas = self.itemsAtlas
-                matchwith = checkForMatch(values[1], self.items.getItems())
-                position = calculateGrid(matchwith, 32, 13, 16)
+                element = self.items[values[1]]
+                position = element["uv"]
             elif actualOpt == "Blocks":
                 atlas = self.blocksAtlas
-                matchwith = checkForMatch(values[1], self.blocks.getItems())
-                position = calculateGrid(matchwith, 25, 22, 20)
-                position = (position[0] + 2, position[1] + 2)
+                element = self.blocks[values[1]]
+                position = element["uv"]
 
-            textureExtract = atlas.atlas.copy(position[0], position[1], position[0] + 16, position[1] + 16)
+            textureExtract = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
             iconTk = ImageTk.PhotoImage(textureExtract)
             tree.icons.append(iconTk)
             tree.item(child, image=iconTk)

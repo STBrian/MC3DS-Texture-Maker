@@ -1,0 +1,3614 @@
+{
+    "stone": {
+        "uv": [
+            342,
+            222
+        ],
+        "tileSize": 16
+    },
+    "stone_granite": {
+        "uv": [
+            462,
+            362
+        ],
+        "tileSize": 16
+    },
+    "stone_granite_smooth": {
+        "uv": [
+            482,
+            362
+        ],
+        "tileSize": 16
+    },
+    "stone_diorite": {
+        "uv": [
+            2,
+            382
+        ],
+        "tileSize": 16
+    },
+    "stone_diorite_smooth": {
+        "uv": [
+            22,
+            382
+        ],
+        "tileSize": 16
+    },
+    "stone_andesite": {
+        "uv": [
+            42,
+            382
+        ],
+        "tileSize": 16
+    },
+    "stone_andesite_smooth": {
+        "uv": [
+            62,
+            382
+        ],
+        "tileSize": 16
+    },
+    "dropper_front_vertical": {
+        "uv": [
+            482,
+            122
+        ],
+        "tileSize": 16
+    },
+    "chest_top": {
+        "uv": [
+            22,
+            42
+        ],
+        "tileSize": 16
+    },
+    "chest_side": {
+        "uv": [
+            42,
+            42
+        ],
+        "tileSize": 16
+    },
+    "chest_front": {
+        "uv": [
+            62,
+            42
+        ],
+        "tileSize": 16
+    },
+    "dragon_egg": {
+        "uv": [
+            442,
+            122
+        ],
+        "tileSize": 16
+    },
+    "cobblestone": {
+        "uv": [
+            202,
+            42
+        ],
+        "tileSize": 16
+    },
+    "cobblestone_mossy": {
+        "uv": [
+            222,
+            42
+        ],
+        "tileSize": 16
+    },
+    "grass_path_side": {
+        "uv": [
+            142,
+            162
+        ],
+        "tileSize": 16
+    },
+    "structure_void": {
+        "uv": [
+            302,
+            382
+        ],
+        "tileSize": 16
+    },
+    "structure_air": {
+        "uv": [
+            322,
+            382
+        ],
+        "tileSize": 16
+    },
+    "beetroots_stage_0": {
+        "uv": [
+            222,
+            2
+        ],
+        "tileSize": 16
+    },
+    "beetroots_stage_1": {
+        "uv": [
+            242,
+            2
+        ],
+        "tileSize": 16
+    },
+    "beetroots_stage_2": {
+        "uv": [
+            262,
+            2
+        ],
+        "tileSize": 16
+    },
+    "beetroots_stage_3": {
+        "uv": [
+            282,
+            2
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_gray": {
+        "uv": [
+            42,
+            182
+        ],
+        "tileSize": 16
+    },
+    "lava_placeholder": {
+        "uv": [
+            42,
+            2
+        ],
+        "tileSize": 16
+    },
+    "enchanting_table_bottom": {
+        "uv": [
+            42,
+            142
+        ],
+        "tileSize": 16
+    },
+    "purpur_block": {
+        "uv": [
+            302,
+            262
+        ],
+        "tileSize": 16
+    },
+    "purpur_pillar": {
+        "uv": [
+            342,
+            262
+        ],
+        "tileSize": 16
+    },
+    "melon_top": {
+        "uv": [
+            202,
+            222
+        ],
+        "tileSize": 16
+    },
+    "mushroom_block_inside": {
+        "uv": [
+            402,
+            222
+        ],
+        "tileSize": 16
+    },
+    "mushroom_block_skin_brown": {
+        "uv": [
+            362,
+            222
+        ],
+        "tileSize": 16
+    },
+    "mushroom_block_skin_stem": {
+        "uv": [
+            422,
+            222
+        ],
+        "tileSize": 16
+    },
+    "chain_command_block_conditional_mipmap": {
+        "uv": [
+            362,
+            42
+        ],
+        "tileSize": 16
+    },
+    "leaves_oak_carried": {
+        "uv": [
+            182,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_spruce_carried": {
+        "uv": [
+            202,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_birch_carried": {
+        "uv": [
+            222,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_jungle_carried": {
+        "uv": [
+            242,
+            202
+        ],
+        "tileSize": 16
+    },
+    "fire_1_placeholder": {
+        "uv": [
+            342,
+            142
+        ],
+        "tileSize": 16
+    },
+    "dirt": {
+        "uv": [
+            202,
+            102
+        ],
+        "tileSize": 16
+    },
+    "vine": {
+        "uv": [
+            102,
+            402
+        ],
+        "tileSize": 16
+    },
+    "redstone_torch_off": {
+        "uv": [
+            82,
+            62
+        ],
+        "tileSize": 16
+    },
+    "redstone_torch_on": {
+        "uv": [
+            102,
+            62
+        ],
+        "tileSize": 16
+    },
+    "hay_block_top": {
+        "uv": [
+            122,
+            182
+        ],
+        "tileSize": 16
+    },
+    "slime": {
+        "uv": [
+            382,
+            322
+        ],
+        "tileSize": 16
+    },
+    "stonecutter_other_side": {
+        "uv": [
+            122,
+            382
+        ],
+        "tileSize": 16
+    },
+    "planks_big_oak": {
+        "uv": [
+            482,
+            242
+        ],
+        "tileSize": 16
+    },
+    "cactus_bottom": {
+        "uv": [
+            122,
+            22
+        ],
+        "tileSize": 16
+    },
+    "observer_side": {
+        "uv": [
+            182,
+            242
+        ],
+        "tileSize": 16
+    },
+    "missing_tile": {
+        "uv": [
+            222,
+            222
+        ],
+        "tileSize": 16
+    },
+    "redstone_dust_line": {
+        "uv": [
+            102,
+            302
+        ],
+        "tileSize": 16
+    },
+    "redstone_block": {
+        "uv": [
+            62,
+            302
+        ],
+        "tileSize": 16
+    },
+    "beacon": {
+        "uv": [
+            122,
+            2
+        ],
+        "tileSize": 16
+    },
+    "piston_side": {
+        "uv": [
+            322,
+            242
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_magenta": {
+        "uv": [
+            102,
+            222
+        ],
+        "tileSize": 16
+    },
+    "chorus_flower": {
+        "uv": [
+            82,
+            42
+        ],
+        "tileSize": 16
+    },
+    "chorus_flower_dead": {
+        "uv": [
+            102,
+            42
+        ],
+        "tileSize": 16
+    },
+    "sponge": {
+        "uv": [
+            422,
+            322
+        ],
+        "tileSize": 16
+    },
+    "sponge_wet": {
+        "uv": [
+            442,
+            322
+        ],
+        "tileSize": 16
+    },
+    "stonecutter_bottom": {
+        "uv": [
+            102,
+            382
+        ],
+        "tileSize": 16
+    },
+    "coarse_dirt": {
+        "uv": [
+            222,
+            102
+        ],
+        "tileSize": 16
+    },
+    "fire_0_placeholder": {
+        "uv": [
+            322,
+            142
+        ],
+        "tileSize": 16
+    },
+    "dispenser_front_vertical": {
+        "uv": [
+            302,
+            102
+        ],
+        "tileSize": 16
+    },
+    "gold_ore": {
+        "uv": [
+            82,
+            162
+        ],
+        "tileSize": 16
+    },
+    "deadbush": {
+        "uv": [
+            442,
+            82
+        ],
+        "tileSize": 16
+    },
+    "ladder": {
+        "uv": [
+            382,
+            182
+        ],
+        "tileSize": 16
+    },
+    "redstone_lamp_off": {
+        "uv": [
+            122,
+            302
+        ],
+        "tileSize": 16
+    },
+    "stone_slab_top": {
+        "uv": [
+            62,
+            62
+        ],
+        "tileSize": 16
+    },
+    "stone_slab_side": {
+        "uv": [
+            82,
+            382
+        ],
+        "tileSize": 16
+    },
+    "build_deny": {
+        "uv": [
+            102,
+            22
+        ],
+        "tileSize": 16
+    },
+    "red_sandstone_top": {
+        "uv": [
+            42,
+            302
+        ],
+        "tileSize": 16
+    },
+    "glowstone": {
+        "uv": [
+            42,
+            162
+        ],
+        "tileSize": 16
+    },
+    "camera_top": {
+        "uv": [
+            322,
+            22
+        ],
+        "tileSize": 16
+    },
+    "crafting_table_side": {
+        "uv": [
+            322,
+            82
+        ],
+        "tileSize": 16
+    },
+    "mushroom_block_skin_red": {
+        "uv": [
+            382,
+            222
+        ],
+        "tileSize": 16
+    },
+    "cauldron_inner": {
+        "uv": [
+            442,
+            22
+        ],
+        "tileSize": 16
+    },
+    "chorus_plant": {
+        "uv": [
+            122,
+            42
+        ],
+        "tileSize": 16
+    },
+    "sandstone_top": {
+        "uv": [
+            302,
+            302
+        ],
+        "tileSize": 16
+    },
+    "planks_oak": {
+        "uv": [
+            182,
+            2
+        ],
+        "tileSize": 16
+    },
+    "brick": {
+        "uv": [
+            462,
+            2
+        ],
+        "tileSize": 16
+    },
+    "stonebrick": {
+        "uv": [
+            262,
+            222
+        ],
+        "tileSize": 16
+    },
+    "quartz_block_bottom": {
+        "uv": [
+            362,
+            262
+        ],
+        "tileSize": 16
+    },
+    "nether_brick": {
+        "uv": [
+            22,
+            242
+        ],
+        "tileSize": 16
+    },
+    "frosted_ice_0": {
+        "uv": [
+            382,
+            142
+        ],
+        "tileSize": 16
+    },
+    "frosted_ice_1": {
+        "uv": [
+            402,
+            142
+        ],
+        "tileSize": 16
+    },
+    "frosted_ice_2": {
+        "uv": [
+            422,
+            142
+        ],
+        "tileSize": 16
+    },
+    "frosted_ice_3": {
+        "uv": [
+            442,
+            142
+        ],
+        "tileSize": 16
+    },
+    "stonecutter_top": {
+        "uv": [
+            162,
+            382
+        ],
+        "tileSize": 16
+    },
+    "diamond_block": {
+        "uv": [
+            162,
+            102
+        ],
+        "tileSize": 16
+    },
+    "cake_top": {
+        "uv": [
+            222,
+            22
+        ],
+        "tileSize": 16
+    },
+    "purpur_pillar_top": {
+        "uv": [
+            322,
+            262
+        ],
+        "tileSize": 16
+    },
+    "endframe_top": {
+        "uv": [
+            262,
+            142
+        ],
+        "tileSize": 16
+    },
+    "itemframe_background": {
+        "uv": [
+            322,
+            182
+        ],
+        "tileSize": 16
+    },
+    "wheat_stage_0": {
+        "uv": [
+            202,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wheat_stage_1": {
+        "uv": [
+            222,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wheat_stage_2": {
+        "uv": [
+            242,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wheat_stage_3": {
+        "uv": [
+            262,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wheat_stage_4": {
+        "uv": [
+            282,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wheat_stage_5": {
+        "uv": [
+            302,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wheat_stage_6": {
+        "uv": [
+            322,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wheat_stage_7": {
+        "uv": [
+            342,
+            402
+        ],
+        "tileSize": 16
+    },
+    "web": {
+        "uv": [
+            182,
+            402
+        ],
+        "tileSize": 16
+    },
+    "gravel": {
+        "uv": [
+            22,
+            182
+        ],
+        "tileSize": 16
+    },
+    "double_plant_sunflower_top": {
+        "uv": [
+            382,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_syringa_top": {
+        "uv": [
+            282,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_grass_top": {
+        "uv": [
+            402,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_fern_top": {
+        "uv": [
+            422,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_rose_top": {
+        "uv": [
+            342,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_paeonia_top": {
+        "uv": [
+            362,
+            122
+        ],
+        "tileSize": 16
+    },
+    "repeating_command_block_back_mipmap": {
+        "uv": [
+            462,
+            42
+        ],
+        "tileSize": 16
+    },
+    "trip_wire_source": {
+        "uv": [
+            82,
+            402
+        ],
+        "tileSize": 16
+    },
+    "rail_activator_powered": {
+        "uv": [
+            42,
+            282
+        ],
+        "tileSize": 16
+    },
+    "planks_acacia": {
+        "uv": [
+            462,
+            242
+        ],
+        "tileSize": 16
+    },
+    "furnace_side": {
+        "uv": [
+            322,
+            102
+        ],
+        "tileSize": 16
+    },
+    "end_stone": {
+        "uv": [
+            142,
+            142
+        ],
+        "tileSize": 16
+    },
+    "red_nether_brick": {
+        "uv": [
+            442,
+            282
+        ],
+        "tileSize": 16
+    },
+    "end_rod": {
+        "uv": [
+            122,
+            142
+        ],
+        "tileSize": 16
+    },
+    "piston_top_sticky": {
+        "uv": [
+            382,
+            242
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_white": {
+        "uv": [
+            102,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_orange": {
+        "uv": [
+            122,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_magenta": {
+        "uv": [
+            142,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_light_blue": {
+        "uv": [
+            162,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_yellow": {
+        "uv": [
+            182,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_lime": {
+        "uv": [
+            202,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_pink": {
+        "uv": [
+            222,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_gray": {
+        "uv": [
+            242,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_silver": {
+        "uv": [
+            262,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_cyan": {
+        "uv": [
+            282,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_purple": {
+        "uv": [
+            302,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_blue": {
+        "uv": [
+            322,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_brown": {
+        "uv": [
+            342,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_green": {
+        "uv": [
+            362,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_red": {
+        "uv": [
+            382,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top_black": {
+        "uv": [
+            402,
+            362
+        ],
+        "tileSize": 16
+    },
+    "tnt_side": {
+        "uv": [
+            462,
+            382
+        ],
+        "tileSize": 16
+    },
+    "dispenser_front_horizontal": {
+        "uv": [
+            282,
+            102
+        ],
+        "tileSize": 16
+    },
+    "ender_chest_front": {
+        "uv": [
+            162,
+            142
+        ],
+        "tileSize": 16
+    },
+    "flower_pot": {
+        "uv": [
+            362,
+            142
+        ],
+        "tileSize": 16
+    },
+    "daylight_detector_side": {
+        "uv": [
+            382,
+            82
+        ],
+        "tileSize": 16
+    },
+    "lapis_block": {
+        "uv": [
+            402,
+            182
+        ],
+        "tileSize": 16
+    },
+    "grass_side": {
+        "uv": [
+            102,
+            162
+        ],
+        "tileSize": 16
+    },
+    "grass_side_snowed": {
+        "uv": [
+            482,
+            162
+        ],
+        "tileSize": 16
+    },
+    "magma_placeholder": {
+        "uv": [
+            122,
+            222
+        ],
+        "tileSize": 16
+    },
+    "leaves_acacia": {
+        "uv": [
+            102,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_big_oak": {
+        "uv": [
+            122,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_acacia_opaque": {
+        "uv": [
+            142,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_big_oak_opaque": {
+        "uv": [
+            162,
+            202
+        ],
+        "tileSize": 16
+    },
+    "tallgrass_carried": {
+        "uv": [
+            402,
+            382
+        ],
+        "tileSize": 16
+    },
+    "fern_carried": {
+        "uv": [
+            422,
+            382
+        ],
+        "tileSize": 16
+    },
+    "sandstone_bottom": {
+        "uv": [
+            282,
+            302
+        ],
+        "tileSize": 16
+    },
+    "mob_spawner": {
+        "uv": [
+            242,
+            222
+        ],
+        "tileSize": 16
+    },
+    "trip_wire": {
+        "uv": [
+            62,
+            402
+        ],
+        "tileSize": 16
+    },
+    "cactus_side": {
+        "uv": [
+            142,
+            22
+        ],
+        "tileSize": 16
+    },
+    "piston_inner": {
+        "uv": [
+            342,
+            242
+        ],
+        "tileSize": 16
+    },
+    "camera_side": {
+        "uv": [
+            302,
+            22
+        ],
+        "tileSize": 16
+    },
+    "chain_command_block_front_mipmap": {
+        "uv": [
+            382,
+            42
+        ],
+        "tileSize": 16
+    },
+    "command_block": {
+        "uv": [
+            302,
+            42
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_green": {
+        "uv": [
+            62,
+            182
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_red": {
+        "uv": [
+            422,
+            282
+        ],
+        "tileSize": 16
+    },
+    "pumpkin_top": {
+        "uv": [
+            262,
+            262
+        ],
+        "tileSize": 16
+    },
+    "border": {
+        "uv": [
+            402,
+            2
+        ],
+        "tileSize": 16
+    },
+    "trapped_chest_front": {
+        "uv": [
+            42,
+            402
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_cyan": {
+        "uv": [
+            362,
+            82
+        ],
+        "tileSize": 16
+    },
+    "glowing_obsidian": {
+        "uv": [
+            22,
+            162
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_purple": {
+        "uv": [
+            282,
+            262
+        ],
+        "tileSize": 16
+    },
+    "ice_packed": {
+        "uv": [
+            222,
+            182
+        ],
+        "tileSize": 16
+    },
+    "hay_block_side": {
+        "uv": [
+            102,
+            182
+        ],
+        "tileSize": 16
+    },
+    "quartz_block_side": {
+        "uv": [
+            382,
+            262
+        ],
+        "tileSize": 16
+    },
+    "quartz_block_chiseled": {
+        "uv": [
+            402,
+            262
+        ],
+        "tileSize": 16
+    },
+    "quartz_block_lines": {
+        "uv": [
+            422,
+            262
+        ],
+        "tileSize": 16
+    },
+    "reactor_core_stage_0": {
+        "uv": [
+            182,
+            282
+        ],
+        "tileSize": 16
+    },
+    "reactor_core_stage_1": {
+        "uv": [
+            202,
+            282
+        ],
+        "tileSize": 16
+    },
+    "reactor_core_stage_2": {
+        "uv": [
+            222,
+            282
+        ],
+        "tileSize": 16
+    },
+    "melon_stem_disconnected": {
+        "uv": [
+            162,
+            222
+        ],
+        "tileSize": 16
+    },
+    "melon_stem_connected": {
+        "uv": [
+            182,
+            222
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_blue": {
+        "uv": [
+            322,
+            2
+        ],
+        "tileSize": 16
+    },
+    "cauldron_water_placeholder": {
+        "uv": [
+            2,
+            42
+        ],
+        "tileSize": 16
+    },
+    "lapis_ore": {
+        "uv": [
+            422,
+            182
+        ],
+        "tileSize": 16
+    },
+    "furnace_front_off": {
+        "uv": [
+            462,
+            142
+        ],
+        "tileSize": 16
+    },
+    "clay": {
+        "uv": [
+            142,
+            42
+        ],
+        "tileSize": 16
+    },
+    "rail_normal_turned": {
+        "uv": [
+            162,
+            282
+        ],
+        "tileSize": 16
+    },
+    "obsidian": {
+        "uv": [
+            142,
+            2
+        ],
+        "tileSize": 16
+    },
+    "enchanting_table_side": {
+        "uv": [
+            62,
+            142
+        ],
+        "tileSize": 16
+    },
+    "redstone_ore": {
+        "uv": [
+            162,
+            302
+        ],
+        "tileSize": 16
+    },
+    "water_placeholder": {
+        "uv": [
+            2,
+            2
+        ],
+        "tileSize": 16
+    },
+    "nether_wart_stage_0": {
+        "uv": [
+            42,
+            242
+        ],
+        "tileSize": 16
+    },
+    "nether_wart_stage_1": {
+        "uv": [
+            62,
+            242
+        ],
+        "tileSize": 16
+    },
+    "nether_wart_stage_2": {
+        "uv": [
+            82,
+            242
+        ],
+        "tileSize": 16
+    },
+    "enchanting_table_top": {
+        "uv": [
+            82,
+            142
+        ],
+        "tileSize": 16
+    },
+    "log_oak_top": {
+        "uv": [
+            22,
+            222
+        ],
+        "tileSize": 16
+    },
+    "log_spruce_top": {
+        "uv": [
+            42,
+            222
+        ],
+        "tileSize": 16
+    },
+    "log_birch_top": {
+        "uv": [
+            62,
+            222
+        ],
+        "tileSize": 16
+    },
+    "log_jungle_top": {
+        "uv": [
+            82,
+            222
+        ],
+        "tileSize": 16
+    },
+    "dirt_podzol_side": {
+        "uv": [
+            242,
+            102
+        ],
+        "tileSize": 16
+    },
+    "rail_activator": {
+        "uv": [
+            22,
+            282
+        ],
+        "tileSize": 16
+    },
+    "chain_command_block_side_mipmap": {
+        "uv": [
+            402,
+            42
+        ],
+        "tileSize": 16
+    },
+    "trapdoor": {
+        "uv": [
+            22,
+            402
+        ],
+        "tileSize": 16
+    },
+    "structure_block": {
+        "uv": [
+            182,
+            382
+        ],
+        "tileSize": 16
+    },
+    "structure_block_data": {
+        "uv": [
+            202,
+            382
+        ],
+        "tileSize": 16
+    },
+    "structure_block_save": {
+        "uv": [
+            222,
+            382
+        ],
+        "tileSize": 16
+    },
+    "structure_block_load": {
+        "uv": [
+            242,
+            382
+        ],
+        "tileSize": 16
+    },
+    "structure_block_corner": {
+        "uv": [
+            262,
+            382
+        ],
+        "tileSize": 16
+    },
+    "structure_block_export": {
+        "uv": [
+            282,
+            382
+        ],
+        "tileSize": 16
+    },
+    "dropper_front_horizontal": {
+        "uv": [
+            462,
+            122
+        ],
+        "tileSize": 16
+    },
+    "command_block_conditional_mipmap": {
+        "uv": [
+            422,
+            42
+        ],
+        "tileSize": 16
+    },
+    "camera_back": {
+        "uv": [
+            262,
+            22
+        ],
+        "tileSize": 16
+    },
+    "noteblock": {
+        "uv": [
+            142,
+            242
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay": {
+        "uv": [
+            82,
+            182
+        ],
+        "tileSize": 16
+    },
+    "chain_command_block_back_mipmap": {
+        "uv": [
+            342,
+            42
+        ],
+        "tileSize": 16
+    },
+    "camera_front": {
+        "uv": [
+            282,
+            22
+        ],
+        "tileSize": 16
+    },
+    "comparator_off": {
+        "uv": [
+            122,
+            62
+        ],
+        "tileSize": 16
+    },
+    "comparator_on": {
+        "uv": [
+            142,
+            62
+        ],
+        "tileSize": 16
+    },
+    "sandstone_normal": {
+        "uv": [
+            322,
+            302
+        ],
+        "tileSize": 16
+    },
+    "sandstone_carved": {
+        "uv": [
+            342,
+            302
+        ],
+        "tileSize": 16
+    },
+    "sandstone_smooth": {
+        "uv": [
+            362,
+            302
+        ],
+        "tileSize": 16
+    },
+    "redstone_dust_cross": {
+        "uv": [
+            82,
+            302
+        ],
+        "tileSize": 16
+    },
+    "redstone_lamp_on": {
+        "uv": [
+            142,
+            302
+        ],
+        "tileSize": 16
+    },
+    "piston_bottom": {
+        "uv": [
+            302,
+            242
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_0": {
+        "uv": [
+            462,
+            82
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_1": {
+        "uv": [
+            482,
+            82
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_2": {
+        "uv": [
+            2,
+            102
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_3": {
+        "uv": [
+            22,
+            102
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_4": {
+        "uv": [
+            42,
+            102
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_5": {
+        "uv": [
+            62,
+            102
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_6": {
+        "uv": [
+            82,
+            102
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_7": {
+        "uv": [
+            102,
+            102
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_8": {
+        "uv": [
+            122,
+            102
+        ],
+        "tileSize": 16
+    },
+    "destroy_stage_9": {
+        "uv": [
+            142,
+            102
+        ],
+        "tileSize": 16
+    },
+    "door_wood_upper": {
+        "uv": [
+            2,
+            122
+        ],
+        "tileSize": 16
+    },
+    "door_spruce_upper": {
+        "uv": [
+            22,
+            122
+        ],
+        "tileSize": 16
+    },
+    "door_birch_upper": {
+        "uv": [
+            42,
+            122
+        ],
+        "tileSize": 16
+    },
+    "door_jungle_upper": {
+        "uv": [
+            62,
+            122
+        ],
+        "tileSize": 16
+    },
+    "door_acacia_upper": {
+        "uv": [
+            82,
+            122
+        ],
+        "tileSize": 16
+    },
+    "door_dark_oak_upper": {
+        "uv": [
+            102,
+            122
+        ],
+        "tileSize": 16
+    },
+    "door_iron_upper": {
+        "uv": [
+            122,
+            122
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_lime": {
+        "uv": [
+            342,
+            202
+        ],
+        "tileSize": 16
+    },
+    "log_acacia": {
+        "uv": [
+            362,
+            202
+        ],
+        "tileSize": 16
+    },
+    "log_acacia_top": {
+        "uv": [
+            382,
+            202
+        ],
+        "tileSize": 16
+    },
+    "log_big_oak": {
+        "uv": [
+            402,
+            202
+        ],
+        "tileSize": 16
+    },
+    "log_big_oak_top": {
+        "uv": [
+            422,
+            202
+        ],
+        "tileSize": 16
+    },
+    "end_bricks": {
+        "uv": [
+            102,
+            142
+        ],
+        "tileSize": 16
+    },
+    "quartz_block_top": {
+        "uv": [
+            442,
+            262
+        ],
+        "tileSize": 16
+    },
+    "soul_sand": {
+        "uv": [
+            362,
+            322
+        ],
+        "tileSize": 16
+    },
+    "iron_bars": {
+        "uv": [
+            242,
+            182
+        ],
+        "tileSize": 16
+    },
+    "planks_birch": {
+        "uv": [
+            422,
+            242
+        ],
+        "tileSize": 16
+    },
+    "dirt_podzol_top": {
+        "uv": [
+            262,
+            102
+        ],
+        "tileSize": 16
+    },
+    "cake_side": {
+        "uv": [
+            202,
+            22
+        ],
+        "tileSize": 16
+    },
+    "bookshelf": {
+        "uv": [
+            382,
+            2
+        ],
+        "tileSize": 16
+    },
+    "leaves_acacia_carried": {
+        "uv": [
+            262,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_big_oak_carried": {
+        "uv": [
+            282,
+            202
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_white": {
+        "uv": [
+            482,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_orange": {
+        "uv": [
+            2,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_magenta": {
+        "uv": [
+            22,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_light_blue": {
+        "uv": [
+            42,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_yellow": {
+        "uv": [
+            62,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_lime": {
+        "uv": [
+            82,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_pink": {
+        "uv": [
+            102,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_gray": {
+        "uv": [
+            122,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_silver": {
+        "uv": [
+            142,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_cyan": {
+        "uv": [
+            162,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_purple": {
+        "uv": [
+            182,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_blue": {
+        "uv": [
+            202,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_brown": {
+        "uv": [
+            222,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_green": {
+        "uv": [
+            242,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_red": {
+        "uv": [
+            262,
+            82
+        ],
+        "tileSize": 16
+    },
+    "concrete_powder_black": {
+        "uv": [
+            282,
+            82
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_silver": {
+        "uv": [
+            342,
+            322
+        ],
+        "tileSize": 16
+    },
+    "observer_back": {
+        "uv": [
+            222,
+            242
+        ],
+        "tileSize": 16
+    },
+    "observer_back_lit": {
+        "uv": [
+            242,
+            242
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_light_blue": {
+        "uv": [
+            322,
+            202
+        ],
+        "tileSize": 16
+    },
+    "rail_detector_powered": {
+        "uv": [
+            82,
+            282
+        ],
+        "tileSize": 16
+    },
+    "glass": {
+        "uv": [
+            162,
+            2
+        ],
+        "tileSize": 16
+    },
+    "furnace_front_on": {
+        "uv": [
+            482,
+            142
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_white": {
+        "uv": [
+            22,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_orange": {
+        "uv": [
+            42,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_magenta": {
+        "uv": [
+            62,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_light_blue": {
+        "uv": [
+            82,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_yellow": {
+        "uv": [
+            102,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_lime": {
+        "uv": [
+            442,
+            362
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_pink": {
+        "uv": [
+            142,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_gray": {
+        "uv": [
+            162,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_silver": {
+        "uv": [
+            182,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_cyan": {
+        "uv": [
+            202,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_purple": {
+        "uv": [
+            222,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_blue": {
+        "uv": [
+            242,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_brown": {
+        "uv": [
+            262,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_green": {
+        "uv": [
+            282,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_red": {
+        "uv": [
+            302,
+            322
+        ],
+        "tileSize": 16
+    },
+    "shulker_top_black": {
+        "uv": [
+            322,
+            322
+        ],
+        "tileSize": 16
+    },
+    "nether_wart_block": {
+        "uv": [
+            102,
+            242
+        ],
+        "tileSize": 16
+    },
+    "bedrock": {
+        "uv": [
+            202,
+            2
+        ],
+        "tileSize": 16
+    },
+    "repeating_command_block_conditional_mipmap": {
+        "uv": [
+            482,
+            42
+        ],
+        "tileSize": 16
+    },
+    "bone_block_side": {
+        "uv": [
+            342,
+            2
+        ],
+        "tileSize": 16
+    },
+    "repeating_command_block_side_mipmap": {
+        "uv": [
+            22,
+            62
+        ],
+        "tileSize": 16
+    },
+    "red_sandstone_normal": {
+        "uv": [
+            462,
+            282
+        ],
+        "tileSize": 16
+    },
+    "red_sandstone_carved": {
+        "uv": [
+            2,
+            302
+        ],
+        "tileSize": 16
+    },
+    "red_sandstone_smooth": {
+        "uv": [
+            22,
+            302
+        ],
+        "tileSize": 16
+    },
+    "crafting_table_top": {
+        "uv": [
+            342,
+            82
+        ],
+        "tileSize": 16
+    },
+    "stonebrick_mossy": {
+        "uv": [
+            282,
+            222
+        ],
+        "tileSize": 16
+    },
+    "stonebrick_cracked": {
+        "uv": [
+            302,
+            222
+        ],
+        "tileSize": 16
+    },
+    "stonebrick_carved": {
+        "uv": [
+            322,
+            222
+        ],
+        "tileSize": 16
+    },
+    "pumpkin_face_off": {
+        "uv": [
+            162,
+            262
+        ],
+        "tileSize": 16
+    },
+    "pumpkin_face_on": {
+        "uv": [
+            182,
+            262
+        ],
+        "tileSize": 16
+    },
+    "grass_path_top": {
+        "uv": [
+            162,
+            162
+        ],
+        "tileSize": 16
+    },
+    "command_block_back_mipmap": {
+        "uv": [
+            322,
+            42
+        ],
+        "tileSize": 16
+    },
+    "rail_golden": {
+        "uv": [
+            102,
+            282
+        ],
+        "tileSize": 16
+    },
+    "tallgrass": {
+        "uv": [
+            362,
+            382
+        ],
+        "tileSize": 16
+    },
+    "fern": {
+        "uv": [
+            382,
+            382
+        ],
+        "tileSize": 16
+    },
+    "hopper_top": {
+        "uv": [
+            182,
+            182
+        ],
+        "tileSize": 16
+    },
+    "ender_chest_side": {
+        "uv": [
+            182,
+            142
+        ],
+        "tileSize": 16
+    },
+    "glass_white": {
+        "uv": [
+            282,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_orange": {
+        "uv": [
+            302,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_magenta": {
+        "uv": [
+            322,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_light_blue": {
+        "uv": [
+            342,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_yellow": {
+        "uv": [
+            362,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_lime": {
+        "uv": [
+            382,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_pink": {
+        "uv": [
+            402,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_gray": {
+        "uv": [
+            422,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_silver": {
+        "uv": [
+            442,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_cyan": {
+        "uv": [
+            462,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_purple": {
+        "uv": [
+            482,
+            342
+        ],
+        "tileSize": 16
+    },
+    "glass_blue": {
+        "uv": [
+            2,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_brown": {
+        "uv": [
+            22,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_green": {
+        "uv": [
+            42,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_red": {
+        "uv": [
+            62,
+            362
+        ],
+        "tileSize": 16
+    },
+    "glass_black": {
+        "uv": [
+            82,
+            362
+        ],
+        "tileSize": 16
+    },
+    "command_block_side_mipmap": {
+        "uv": [
+            42,
+            62
+        ],
+        "tileSize": 16
+    },
+    "cauldron_bottom": {
+        "uv": [
+            422,
+            22
+        ],
+        "tileSize": 16
+    },
+    "ender_chest_top": {
+        "uv": [
+            202,
+            142
+        ],
+        "tileSize": 16
+    },
+    "prismarine_placeholder": {
+        "uv": [
+            102,
+            262
+        ],
+        "tileSize": 16
+    },
+    "prismarine_dark": {
+        "uv": [
+            122,
+            262
+        ],
+        "tileSize": 16
+    },
+    "prismarine_bricks": {
+        "uv": [
+            142,
+            262
+        ],
+        "tileSize": 16
+    },
+    "cake_inner": {
+        "uv": [
+            242,
+            22
+        ],
+        "tileSize": 16
+    },
+    "grass_carried": {
+        "uv": [
+            122,
+            162
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_white": {
+        "uv": [
+            382,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_orange": {
+        "uv": [
+            402,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_magenta": {
+        "uv": [
+            422,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_light_blue": {
+        "uv": [
+            442,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_yellow": {
+        "uv": [
+            462,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_lime": {
+        "uv": [
+            482,
+            402
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_pink": {
+        "uv": [
+            2,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_gray": {
+        "uv": [
+            22,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_silver": {
+        "uv": [
+            42,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_cyan": {
+        "uv": [
+            62,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_purple": {
+        "uv": [
+            82,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_blue": {
+        "uv": [
+            102,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_brown": {
+        "uv": [
+            122,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_green": {
+        "uv": [
+            142,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_red": {
+        "uv": [
+            162,
+            422
+        ],
+        "tileSize": 16
+    },
+    "wool_colored_black": {
+        "uv": [
+            182,
+            422
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_white": {
+        "uv": [
+            462,
+            322
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_orange": {
+        "uv": [
+            482,
+            322
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_magenta": {
+        "uv": [
+            2,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_light_blue": {
+        "uv": [
+            22,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_yellow": {
+        "uv": [
+            42,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_lime": {
+        "uv": [
+            62,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_pink": {
+        "uv": [
+            82,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_gray": {
+        "uv": [
+            102,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_silver": {
+        "uv": [
+            122,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_cyan": {
+        "uv": [
+            142,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_purple": {
+        "uv": [
+            162,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_blue": {
+        "uv": [
+            182,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_brown": {
+        "uv": [
+            202,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_green": {
+        "uv": [
+            222,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_red": {
+        "uv": [
+            242,
+            342
+        ],
+        "tileSize": 16
+    },
+    "hardened_clay_stained_black": {
+        "uv": [
+            262,
+            342
+        ],
+        "tileSize": 16
+    },
+    "concrete_white": {
+        "uv": [
+            162,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_orange": {
+        "uv": [
+            182,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_magenta": {
+        "uv": [
+            202,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_light_blue": {
+        "uv": [
+            222,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_yellow": {
+        "uv": [
+            242,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_lime": {
+        "uv": [
+            262,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_pink": {
+        "uv": [
+            282,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_gray": {
+        "uv": [
+            302,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_silver": {
+        "uv": [
+            322,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_cyan": {
+        "uv": [
+            342,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_purple": {
+        "uv": [
+            362,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_blue": {
+        "uv": [
+            382,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_brown": {
+        "uv": [
+            402,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_green": {
+        "uv": [
+            422,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_red": {
+        "uv": [
+            442,
+            62
+        ],
+        "tileSize": 16
+    },
+    "concrete_black": {
+        "uv": [
+            462,
+            62
+        ],
+        "tileSize": 16
+    },
+    "cauldron_side": {
+        "uv": [
+            462,
+            22
+        ],
+        "tileSize": 16
+    },
+    "planks_spruce": {
+        "uv": [
+            402,
+            242
+        ],
+        "tileSize": 16
+    },
+    "hopper_inside": {
+        "uv": [
+            142,
+            182
+        ],
+        "tileSize": 16
+    },
+    "pumpkin_stem_disconnected": {
+        "uv": [
+            222,
+            262
+        ],
+        "tileSize": 16
+    },
+    "pumpkin_stem_connected": {
+        "uv": [
+            242,
+            262
+        ],
+        "tileSize": 16
+    },
+    "hopper_outside": {
+        "uv": [
+            162,
+            182
+        ],
+        "tileSize": 16
+    },
+    "mycelium_top": {
+        "uv": [
+            2,
+            242
+        ],
+        "tileSize": 16
+    },
+    "log_oak": {
+        "uv": [
+            442,
+            202
+        ],
+        "tileSize": 16
+    },
+    "log_spruce": {
+        "uv": [
+            462,
+            202
+        ],
+        "tileSize": 16
+    },
+    "log_birch": {
+        "uv": [
+            482,
+            202
+        ],
+        "tileSize": 16
+    },
+    "log_jungle": {
+        "uv": [
+            2,
+            222
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_black": {
+        "uv": [
+            302,
+            2
+        ],
+        "tileSize": 16
+    },
+    "flower_dandelion": {
+        "uv": [
+            202,
+            422
+        ],
+        "tileSize": 16
+    },
+    "coal_ore": {
+        "uv": [
+            182,
+            42
+        ],
+        "tileSize": 16
+    },
+    "brewing_stand_base": {
+        "uv": [
+            442,
+            2
+        ],
+        "tileSize": 16
+    },
+    "tnt_bottom": {
+        "uv": [
+            442,
+            382
+        ],
+        "tileSize": 16
+    },
+    "cocoa_stage_0": {
+        "uv": [
+            242,
+            42
+        ],
+        "tileSize": 16
+    },
+    "cocoa_stage_1": {
+        "uv": [
+            262,
+            42
+        ],
+        "tileSize": 16
+    },
+    "cocoa_stage_2": {
+        "uv": [
+            282,
+            42
+        ],
+        "tileSize": 16
+    },
+    "rail_golden_powered": {
+        "uv": [
+            122,
+            282
+        ],
+        "tileSize": 16
+    },
+    "double_plant_sunflower_front": {
+        "uv": [
+            262,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_sunflower_back": {
+        "uv": [
+            342,
+            382
+        ],
+        "tileSize": 16
+    },
+    "ice": {
+        "uv": [
+            202,
+            182
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_brown": {
+        "uv": [
+            482,
+            2
+        ],
+        "tileSize": 16
+    },
+    "pumpkin_side": {
+        "uv": [
+            202,
+            262
+        ],
+        "tileSize": 16
+    },
+    "iron_ore": {
+        "uv": [
+            282,
+            182
+        ],
+        "tileSize": 16
+    },
+    "brewing_stand": {
+        "uv": [
+            422,
+            2
+        ],
+        "tileSize": 16
+    },
+    "endframe_side": {
+        "uv": [
+            242,
+            142
+        ],
+        "tileSize": 16
+    },
+    "sapling_oak": {
+        "uv": [
+            382,
+            302
+        ],
+        "tileSize": 16
+    },
+    "sapling_spruce": {
+        "uv": [
+            402,
+            302
+        ],
+        "tileSize": 16
+    },
+    "sapling_birch": {
+        "uv": [
+            422,
+            302
+        ],
+        "tileSize": 16
+    },
+    "sapling_jungle": {
+        "uv": [
+            442,
+            302
+        ],
+        "tileSize": 16
+    },
+    "sapling_acacia": {
+        "uv": [
+            462,
+            302
+        ],
+        "tileSize": 16
+    },
+    "sapling_roofed_oak": {
+        "uv": [
+            482,
+            302
+        ],
+        "tileSize": 16
+    },
+    "grass_top": {
+        "uv": [
+            2,
+            182
+        ],
+        "tileSize": 16
+    },
+    "vine_carried": {
+        "uv": [
+            122,
+            402
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_orange": {
+        "uv": [
+            262,
+            242
+        ],
+        "tileSize": 16
+    },
+    "cactus_top": {
+        "uv": [
+            162,
+            22
+        ],
+        "tileSize": 16
+    },
+    "rail_detector": {
+        "uv": [
+            62,
+            282
+        ],
+        "tileSize": 16
+    },
+    "observer_top": {
+        "uv": [
+            162,
+            242
+        ],
+        "tileSize": 16
+    },
+    "mycelium_side": {
+        "uv": [
+            482,
+            222
+        ],
+        "tileSize": 16
+    },
+    "mushroom_red": {
+        "uv": [
+            462,
+            222
+        ],
+        "tileSize": 16
+    },
+    "gold_block": {
+        "uv": [
+            62,
+            162
+        ],
+        "tileSize": 16
+    },
+    "cake_bottom": {
+        "uv": [
+            182,
+            22
+        ],
+        "tileSize": 16
+    },
+    "iron_trapdoor": {
+        "uv": [
+            302,
+            182
+        ],
+        "tileSize": 16
+    },
+    "glass_pane_top": {
+        "uv": [
+            2,
+            162
+        ],
+        "tileSize": 16
+    },
+    "repeater_off": {
+        "uv": [
+            202,
+            302
+        ],
+        "tileSize": 16
+    },
+    "repeater_on": {
+        "uv": [
+            222,
+            302
+        ],
+        "tileSize": 16
+    },
+    "stonecutter_side": {
+        "uv": [
+            142,
+            382
+        ],
+        "tileSize": 16
+    },
+    "carrots_stage_0": {
+        "uv": [
+            342,
+            22
+        ],
+        "tileSize": 16
+    },
+    "carrots_stage_1": {
+        "uv": [
+            362,
+            22
+        ],
+        "tileSize": 16
+    },
+    "carrots_stage_2": {
+        "uv": [
+            382,
+            22
+        ],
+        "tileSize": 16
+    },
+    "carrots_stage_3": {
+        "uv": [
+            402,
+            22
+        ],
+        "tileSize": 16
+    },
+    "double_plant_sunflower_bottom": {
+        "uv": [
+            142,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_syringa_bottom": {
+        "uv": [
+            162,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_grass_bottom": {
+        "uv": [
+            182,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_fern_bottom": {
+        "uv": [
+            202,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_rose_bottom": {
+        "uv": [
+            222,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_paeonia_bottom": {
+        "uv": [
+            242,
+            122
+        ],
+        "tileSize": 16
+    },
+    "rail_normal": {
+        "uv": [
+            142,
+            282
+        ],
+        "tileSize": 16
+    },
+    "door_wood_lower": {
+        "uv": [
+            362,
+            102
+        ],
+        "tileSize": 16
+    },
+    "door_spruce_lower": {
+        "uv": [
+            382,
+            102
+        ],
+        "tileSize": 16
+    },
+    "door_birch_lower": {
+        "uv": [
+            402,
+            102
+        ],
+        "tileSize": 16
+    },
+    "door_jungle_lower": {
+        "uv": [
+            422,
+            102
+        ],
+        "tileSize": 16
+    },
+    "door_acacia_lower": {
+        "uv": [
+            442,
+            102
+        ],
+        "tileSize": 16
+    },
+    "door_dark_oak_lower": {
+        "uv": [
+            462,
+            102
+        ],
+        "tileSize": 16
+    },
+    "door_iron_lower": {
+        "uv": [
+            482,
+            102
+        ],
+        "tileSize": 16
+    },
+    "repeating_command_block_front_mipmap": {
+        "uv": [
+            2,
+            62
+        ],
+        "tileSize": 16
+    },
+    "waterlily": {
+        "uv": [
+            142,
+            402
+        ],
+        "tileSize": 16
+    },
+    "carried_waterlily": {
+        "uv": [
+            162,
+            402
+        ],
+        "tileSize": 16
+    },
+    "daylight_detector_top": {
+        "uv": [
+            402,
+            82
+        ],
+        "tileSize": 16
+    },
+    "daylight_detector_inverted_top": {
+        "uv": [
+            422,
+            82
+        ],
+        "tileSize": 16
+    },
+    "portal_placeholder": {
+        "uv": [
+            2,
+            262
+        ],
+        "tileSize": 16
+    },
+    "observer_front": {
+        "uv": [
+            202,
+            242
+        ],
+        "tileSize": 16
+    },
+    "leaves_oak": {
+        "uv": [
+            442,
+            182
+        ],
+        "tileSize": 16
+    },
+    "leaves_spruce": {
+        "uv": [
+            462,
+            182
+        ],
+        "tileSize": 16
+    },
+    "leaves_birch": {
+        "uv": [
+            482,
+            182
+        ],
+        "tileSize": 16
+    },
+    "leaves_jungle": {
+        "uv": [
+            2,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_oak_opaque": {
+        "uv": [
+            22,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_spruce_opaque": {
+        "uv": [
+            42,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_birch_opaque": {
+        "uv": [
+            62,
+            202
+        ],
+        "tileSize": 16
+    },
+    "leaves_jungle_opaque": {
+        "uv": [
+            82,
+            202
+        ],
+        "tileSize": 16
+    },
+    "quartz_block_chiseled_top": {
+        "uv": [
+            462,
+            262
+        ],
+        "tileSize": 16
+    },
+    "quartz_block_lines_top": {
+        "uv": [
+            482,
+            262
+        ],
+        "tileSize": 16
+    },
+    "lever": {
+        "uv": [
+            302,
+            202
+        ],
+        "tileSize": 16
+    },
+    "potatoes_stage_0": {
+        "uv": [
+            22,
+            262
+        ],
+        "tileSize": 16
+    },
+    "potatoes_stage_1": {
+        "uv": [
+            42,
+            262
+        ],
+        "tileSize": 16
+    },
+    "potatoes_stage_2": {
+        "uv": [
+            62,
+            262
+        ],
+        "tileSize": 16
+    },
+    "potatoes_stage_3": {
+        "uv": [
+            82,
+            262
+        ],
+        "tileSize": 16
+    },
+    "anvil_top_damaged_0": {
+        "uv": [
+            242,
+            422
+        ],
+        "tileSize": 16
+    },
+    "anvil_top_damaged_1": {
+        "uv": [
+            82,
+            2
+        ],
+        "tileSize": 16
+    },
+    "anvil_top_damaged_2": {
+        "uv": [
+            102,
+            2
+        ],
+        "tileSize": 16
+    },
+    "anvil_base": {
+        "uv": [
+            122,
+            322
+        ],
+        "tileSize": 16
+    },
+    "double_plant_grass_carried": {
+        "uv": [
+            302,
+            122
+        ],
+        "tileSize": 16
+    },
+    "double_plant_fern_carried": {
+        "uv": [
+            322,
+            122
+        ],
+        "tileSize": 16
+    },
+    "sand": {
+        "uv": [
+            242,
+            302
+        ],
+        "tileSize": 16
+    },
+    "red_sand": {
+        "uv": [
+            262,
+            302
+        ],
+        "tileSize": 16
+    },
+    "melon_side": {
+        "uv": [
+            142,
+            222
+        ],
+        "tileSize": 16
+    },
+    "furnace_top": {
+        "uv": [
+            342,
+            102
+        ],
+        "tileSize": 16
+    },
+    "emerald_ore": {
+        "uv": [
+            22,
+            142
+        ],
+        "tileSize": 16
+    },
+    "torch_on": {
+        "uv": [
+            2,
+            402
+        ],
+        "tileSize": 16
+    },
+    "planks_jungle": {
+        "uv": [
+            442,
+            242
+        ],
+        "tileSize": 16
+    },
+    "crafting_table_front": {
+        "uv": [
+            302,
+            82
+        ],
+        "tileSize": 16
+    },
+    "farmland_wet": {
+        "uv": [
+            282,
+            142
+        ],
+        "tileSize": 16
+    },
+    "farmland_dry": {
+        "uv": [
+            302,
+            142
+        ],
+        "tileSize": 16
+    },
+    "coal_block": {
+        "uv": [
+            162,
+            42
+        ],
+        "tileSize": 16
+    },
+    "quartz_ore": {
+        "uv": [
+            2,
+            282
+        ],
+        "tileSize": 16
+    },
+    "iron_block": {
+        "uv": [
+            262,
+            182
+        ],
+        "tileSize": 16
+    },
+    "emerald_block": {
+        "uv": [
+            2,
+            142
+        ],
+        "tileSize": 16
+    },
+    "cauldron_top": {
+        "uv": [
+            482,
+            22
+        ],
+        "tileSize": 16
+    },
+    "jukebox_side": {
+        "uv": [
+            342,
+            182
+        ],
+        "tileSize": 16
+    },
+    "diamond_ore": {
+        "uv": [
+            182,
+            102
+        ],
+        "tileSize": 16
+    },
+    "tnt_top": {
+        "uv": [
+            482,
+            382
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_yellow": {
+        "uv": [
+            222,
+            422
+        ],
+        "tileSize": 16
+    },
+    "flower_rose": {
+        "uv": [
+            242,
+            282
+        ],
+        "tileSize": 16
+    },
+    "flower_blue_orchid": {
+        "uv": [
+            262,
+            282
+        ],
+        "tileSize": 16
+    },
+    "flower_allium": {
+        "uv": [
+            282,
+            282
+        ],
+        "tileSize": 16
+    },
+    "flower_houstonia": {
+        "uv": [
+            302,
+            282
+        ],
+        "tileSize": 16
+    },
+    "flower_tulip_red": {
+        "uv": [
+            322,
+            282
+        ],
+        "tileSize": 16
+    },
+    "flower_tulip_orange": {
+        "uv": [
+            342,
+            282
+        ],
+        "tileSize": 16
+    },
+    "flower_tulip_white": {
+        "uv": [
+            362,
+            282
+        ],
+        "tileSize": 16
+    },
+    "flower_tulip_pink": {
+        "uv": [
+            382,
+            282
+        ],
+        "tileSize": 16
+    },
+    "flower_oxeye_daisy": {
+        "uv": [
+            402,
+            282
+        ],
+        "tileSize": 16
+    },
+    "endframe_eye": {
+        "uv": [
+            222,
+            142
+        ],
+        "tileSize": 16
+    },
+    "snow": {
+        "uv": [
+            402,
+            322
+        ],
+        "tileSize": 16
+    },
+    "bone_block_top": {
+        "uv": [
+            362,
+            2
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_pink": {
+        "uv": [
+            282,
+            242
+        ],
+        "tileSize": 16
+    },
+    "reeds": {
+        "uv": [
+            182,
+            302
+        ],
+        "tileSize": 16
+    },
+    "netherrack": {
+        "uv": [
+            122,
+            242
+        ],
+        "tileSize": 16
+    },
+    "glazed_terracotta_white": {
+        "uv": [
+            362,
+            402
+        ],
+        "tileSize": 16
+    },
+    "piston_top_normal": {
+        "uv": [
+            362,
+            242
+        ],
+        "tileSize": 16
+    },
+    "command_block_front_mipmap": {
+        "uv": [
+            442,
+            42
+        ],
+        "tileSize": 16
+    },
+    "mushroom_brown": {
+        "uv": [
+            442,
+            222
+        ],
+        "tileSize": 16
+    },
+    "jukebox_top": {
+        "uv": [
+            362,
+            182
+        ],
+        "tileSize": 16
+    },
+    "red_sandstone_bottom": {
+        "uv": [
+            482,
+            282
+        ],
+        "tileSize": 16
+    },
+    "sealantern_placeholder": {
+        "uv": [
+            2,
+            322
+        ],
+        "tileSize": 16
+    },
+    "build_allow": {
+        "uv": [
+            82,
+            22
+        ],
+        "tileSize": 16
+    }
+}

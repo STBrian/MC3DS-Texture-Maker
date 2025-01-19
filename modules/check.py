@@ -39,3 +39,9 @@ def isImage16x16(texture_path):
     else:
         img.close()
         return False
+    
+def isImageSize(image: Image.Image, width: int, height: int):
+    if image.size[0] == width and image.size[1] == height:
+        return True
+    else:
+        return False
