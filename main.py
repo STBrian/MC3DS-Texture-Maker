@@ -416,8 +416,6 @@ class App(customtkinter.CTk):
             self.items = json.load(f)
         with open("./assets/uvs/atlas.terrain.vanilla.uvs.json", "r") as f:
             self.blocks = json.load(f)
-        #self.items = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newItemsIndex.txt"))
-        #self.blocks = IndexFile().open(os.path.join(self.app_path, f"{self.sourceFolder}/indexes/newBlocksIndex.txt"))
 
         # Load resources
         self.loadResources()
@@ -581,6 +579,8 @@ class App(customtkinter.CTk):
                 position = element["uv"]
 
             textureExtract = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
+            if textureExtract.size != (16, 16):
+                textureExtract = textureExtract.resize((16, 16), Image.Resampling.LANCZOS)
             iconTk = ImageTk.PhotoImage(textureExtract)
             tree.icons.append(iconTk)
             tree.item(child, image=iconTk)
