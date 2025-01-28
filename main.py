@@ -422,9 +422,9 @@ class App(customtkinter.CTk):
         # --------------------------------------------
 
         # Load indexes of blocks and items from source
-        with open("./assets/uvs/atlas.items.vanilla.uvs.json", "r") as f:
+        with open(os.path.join(self.app_path, "assets/uvs/atlas.items.vanilla.uvs.json"), "r") as f:
             self.globalVars["items"] = json.load(f)
-        with open("./assets/uvs/atlas.terrain.vanilla.uvs.json", "r") as f:
+        with open(os.path.join(self.app_path, "assets/uvs/atlas.terrain.vanilla.uvs.json"), "r") as f:
             self.globalVars["blocks"] = json.load(f)
 
         # Load resources
