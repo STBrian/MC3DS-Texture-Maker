@@ -220,7 +220,7 @@ class App(customtkinter.CTk):
         if not "Path" in self.config:
             self.config["Path"] = {}
         if not "lastdir" in self.config["Path"]:
-            self.config["Path"]["lastdir"] = self.globalVars["runningDir"].joinpath("MC3DS")
+            self.config["Path"]["lastdir"] = str(self.globalVars["runningDir"].joinpath("MC3DS"))
 
         if not "Preferences" in self.config:
             self.config["Preferences"] = {}
