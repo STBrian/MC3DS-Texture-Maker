@@ -42,10 +42,11 @@ class OptionsFrame(customtkinter.CTkFrame):
         self.cb2.grid(row=2, column=1, padx=10, pady=(5, 10), sticky="w")
 
 class StartFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, globalVars, **kwargs):
         super().__init__(master, **kwargs)
 
         self.root = master
+        self.globalVars = globalVars
 
         self.grid_columnconfigure(0, weight=1)
 
@@ -95,12 +96,11 @@ class StartFrame(customtkinter.CTkFrame):
     
     def autoImport(self):
         root = self.root
-        mainApp = root.root
         atlasType = root.optionsFrame.type.get()
         ruleFile = root.optionsFrame.rule.get()
         inputDir = self.dirPath
-        outputDir = mainApp.outputFolder
-        allowResize = True if mainApp.allowResize == "true" else False
+        outputDir = self.globalVars.outputFolder
+        allowResize = self.globalVars.allowResize
         appPath = root.app_path
         self.button.configure(state="disabled")
         self.button.configure(text="Please wait...")
@@ -191,9 +191,11 @@ class StartFrame(customtkinter.CTkFrame):
         print("Total textures not found:", len(not_found_textures))
 
         # Finish reloading lists in main app
-        mainApp.updateList = True
-        mainApp.saved = False
-        mainApp.mainFrame.listElementFun(mainApp.mainFrame.infoDispFrame.selected.get(), mainApp.mainFrame.infoDispFrame.lastActualOption)
+        self.globalVars.saved = False
+        mainApp = self.root.root
+        infoDispFrame = mainApp.mainFrame.infoDispFrame
+        infoDispFrame.showItemInfo(infoDispFrame.selected.get(), infoDispFrame.lastActualOption)
+        self.globalVars.updateList()
 
         portviewImage = Image.new("RGBA", (16, 16))
         portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
@@ -221,7 +223,7 @@ class PreviewFrame(customtkinter.CTkFrame):
         self.portviewFrame.grid(row=0, column=0, padx=2, pady=2, sticky="wnse")
 
 class AutoImport(MyCTkTopLevel):
-    def __init__(self, master, *args, **kwargs):
+    def __init__(self, master, globalVars, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
         self.geometry("400x240")
         self.resizable(False, False)
@@ -230,28 +232,30 @@ class AutoImport(MyCTkTopLevel):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.root = master
-        self.itemsAtlas = master.itemsAtlas
-        self.blocksAtlas = master.blocksAtlas
-        self.items = master.items
-        self.blocks = master.blocks
-        self.addedItems = master.addedItems
-        self.addedBlocks = master.addedBlocks
+        self.globalVars = globalVars
 
-        self.app_path = master.app_path
+        self.root = master
+        self.itemsAtlas = self.globalVars.itemsAtlas
+        self.blocksAtlas = self.globalVars.blocksAtlas
+        self.items = self.globalVars.items
+        self.blocks = self.globalVars.blocks
+        self.addedItems = self.globalVars.addedItems
+        self.addedBlocks = self.globalVars.addedBlocks
+
+        self.app_path = self.globalVars.appPath
         os_name = os.name
         if os_name == "nt" or os_name == "posix":
-            iconpath = ImageTk.PhotoImage(file=os.path.join(self.app_path, "icon2.png"))
+            iconpath = ImageTk.PhotoImage(file=(self.globalVars.iconPath.joinpath("icon2.png")))
             self.wm_iconbitmap()
             self.iconphoto(False, iconpath)
 
-        self.output_dir = master.outputFolder
+        self.output_dir = self.globalVars.outputFolder
         self.inputDir = customtkinter.StringVar(value="")
 
         self.optionsFrame = OptionsFrame(self)
         self.optionsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="we")
 
-        self.startFrame = StartFrame(self)
+        self.startFrame = StartFrame(self, self.globalVars)
         self.startFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
 
         self.previewFrame = PreviewFrame(self)
