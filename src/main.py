@@ -1,7 +1,8 @@
 import os
 import sys
 import json
-import difflib, threading, time
+from types import MethodType
+import difflib
 import configparser
 import customtkinter, CTkMenuBar
 
@@ -10,11 +11,14 @@ from PIL import Image, ImageTk
 from functools import partial
 from pathlib import Path
 from tkinter import messagebox
-from autoImport import AutoImport
+
 from modules import *
 from modules.MyCTkTopLevel import *
+from appGlobalVars import appGlobalVars
 
 from infoDisplay import InfoDisplayFrame
+from searchOptions import SearchOptionsFrame
+from autoImport import AutoImport
 
 VERSION = "3.0-dev"
 
@@ -22,63 +26,8 @@ def clearTreeview(tree: ttk.Treeview):
     for item in tree.get_children():
         tree.delete(item)
 
-class SearchOptionsFrame(customtkinter.CTkFrame):
-    def __init__(self, master, globalVars: dict, **kwargs):
-        super().__init__(master, **kwargs)
-
-        self.globalVars = globalVars
-
-        # Variables
-        self.searchText = customtkinter.StringVar(value="")
-        self.lastSearchText = ""
-        self.showModifiedVar = customtkinter.StringVar(value="off")
-        self.lastModifiedVar = "off"
-        self.showUnmodifiedVar = customtkinter.StringVar(value="on")
-        self.lastUnmodifiedVar = "on"
-        self.actualOpt = customtkinter.StringVar(value="Items")
-        self.lastOpt = "Items"
-        self.globalVars["searchDataLoc"] = ["", "off", "on", "Items"]
-
-        self.grid_columnconfigure(0, weight=1)
-
-        self.searchOptionsLabel = customtkinter.CTkLabel(self, text="Search options:")
-        self.searchOptionsLabel.grid(row=0, column=0, padx=5, sticky="wn")
-
-        self.showUnmodifiedSwitch = customtkinter.CTkSwitch(self, text="Show unmodified elements", onvalue="on", offvalue="off", variable=self.showUnmodifiedVar)
-        self.showUnmodifiedSwitch.grid(row=1, column=0, padx=5, pady=0, sticky="wn")
-
-        self.showModifiedSwitch = customtkinter.CTkSwitch(self, text="Show modified elements", onvalue="on", offvalue="off", variable=self.showModifiedVar)
-        self.showModifiedSwitch.grid(row=2, column=0, padx=5, pady=5, sticky="wn")
-
-        self.entryTextFrame = customtkinter.CTkFrame(self)
-        self.entryTextFrame.grid(row=3, column=0, padx=5, pady=5, sticky="wen")
-        self.entryTextFrame.grid_columnconfigure(1, weight=1)
-
-        self.showMenu = customtkinter.CTkComboBox(self.entryTextFrame, values=["Items", "Blocks"], variable=self.actualOpt, state="readonly")
-        self.showMenu.grid(row=0, column=0, padx=5, pady=0, sticky="w")
-
-        self.entryText = customtkinter.CTkEntry(self.entryTextFrame, textvariable=self.searchText, placeholder_text="Search")
-        self.entryText.grid(row=0, column=1, padx=0, pady=5, sticky="wen")
-
-        self.button = customtkinter.CTkButton(self.entryTextFrame, text="Search", width=80, command=self.saveSearch)
-        self.button.grid(row=0, column=2, padx=5, pady=5, sticky="wn")
-        
-    def saveSearch(self):
-        if self.lastSearchText != self.searchText.get() or self.lastModifiedVar != self.showModifiedVar.get() or self.lastUnmodifiedVar != self.showUnmodifiedVar.get() or self.lastOpt != self.actualOpt.get():
-            self.lastSearchText = self.searchText.get()
-            self.lastModifiedVar = self.showModifiedVar.get()
-            self.lastUnmodifiedVar = self.showUnmodifiedVar.get()
-            self.lastOpt = self.actualOpt.get()
-            self.globalVars["searchDataLoc"][0] = self.lastSearchText
-            self.globalVars["searchDataLoc"][1] = self.lastModifiedVar
-            self.globalVars["searchDataLoc"][2] = self.lastUnmodifiedVar
-            self.globalVars["searchDataLoc"][3] = self.lastOpt
-
-            if self.globalVars["searchData"] != self.globalVars["searchDataLoc"]:
-                self.globalVars["searchData"] = self.globalVars["searchDataLoc"][::]
-
 class MainFrame(customtkinter.CTkFrame):
-    def __init__(self, master, globalVars: dict, **kwargs):
+    def __init__(self, master, globalVars: appGlobalVars, **kwargs):
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=5)
@@ -111,20 +60,19 @@ class MainFrame(customtkinter.CTkFrame):
         self.infoDispFrame = InfoDisplayFrame(self, globalVars)
         self.infoDispFrame.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
 
-        self.globalVars["updateList"] = self.updateList
-        self.globalVars["updateTreeIcons"] = self.updateTreeIcons
+        self.globalVars.updateList = self.updateList
 
     def showItemInfoCallback(self, *event):
-        self.globalVars["treeElementSelected"] = self.elementsTreeView.item(self.elementsTreeView.selection())
-        threading.Thread(target=self.infoDispFrame.showItemInfo).start()
+        self.globalVars.treeElementSelected = self.elementsTreeView.item(self.elementsTreeView.selection())
+        self.infoDispFrame.showItemInfo()
 
     def updateList(self):
-        searchData = self.globalVars["searchData"]
+        searchData = self.globalVars.searchData
         actualOpt = searchData[3]
-        items = self.globalVars["items"]
-        blocks = self.globalVars["blocks"]
-        addedItems = self.globalVars["addedItems"]
-        addedBlocks = self.globalVars["addedBlocks"]
+        items = self.globalVars.items
+        blocks = self.globalVars.blocks
+        addedItems: IndexFile = self.globalVars.addedItems
+        addedBlocks: IndexFile = self.globalVars.addedBlocks
 
         clearTreeview(self.elementsTreeView)
 
@@ -132,7 +80,7 @@ class MainFrame(customtkinter.CTkFrame):
             elements: dict = items
             added = addedItems
         elif actualOpt == "Blocks":
-            elements = blocks
+            elements: dict = blocks
             added = addedBlocks
 
         elements = list(elements.keys())
@@ -153,7 +101,7 @@ class MainFrame(customtkinter.CTkFrame):
         self.updateTreeIcons()
 
     def updateTreeIcons(self):
-        searchData = self.globalVars["searchData"]
+        searchData = self.globalVars.searchData
         actualOpt = searchData[3]
 
         tree = self.elementsTreeView
@@ -164,12 +112,12 @@ class MainFrame(customtkinter.CTkFrame):
             values = item["values"]
 
             if actualOpt == "Items":
-                atlas = self.globalVars["itemsAtlas"]
-                element = self.globalVars["items"][values[1]]
+                atlas = self.globalVars.itemsAtlas
+                element = self.globalVars.items[values[1]]
                 position = element["uv"]
             elif actualOpt == "Blocks":
-                atlas = self.globalVars["blocksAtlas"]
-                element = self.globalVars["blocks"][values[1]]
+                atlas = self.globalVars.blocksAtlas
+                element = self.globalVars.blocks[values[1]]
                 position = element["uv"]
 
             textureExtract = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
@@ -185,42 +133,65 @@ class App(customtkinter.CTk):
 
         self.version = VERSION
 
-        # --------------------------------------------
-
+        # ----------------------------------------------------------------------
         # Variables declaration
-        self.globalVars = {}
-        self.globalVars["searchData"] = ["", "off", "on", "Items"]
-        self.globalVars["selected"] = ""
-        self.globalVars["elementsList"] = []
-        self.globalVars["saved"] = True
-        self.globalVars["atlas"] = []
+        self.globalVars = appGlobalVars(
+            [("searchData", list), 
+             ("searchDataLoc", list), 
+             ("selected", str), 
+             ("treeElementSelected", dict), 
+             ("elementsList", list), 
+             ("saved", bool), 
+             ("atlas", list), 
+             ("running", str), 
+             ("appPath", Path), 
+             ("assetsPath", Path), 
+             ("iconPath", Path), 
+             ("runningDir", Path),
+             ("outputFolder", str), 
+             ("showPreviewBg", bool), 
+             ("allowResize", bool),
+             ("items", dict),
+             ("blocks", dict),
+             ("itemsAtlas", atlasTexture3dst),
+             ("blocksAtlas", atlasTexture3dst),
+             ("addedItems", IndexFile),
+             ("addedBlocks", IndexFile),
+             ("updateList", MethodType)
+            ])
+        self.globalVars.searchData = ["", "off", "on", "Items"]
+        self.globalVars.selected = ""
+        self.globalVars.elementsList = []
+        self.globalVars.saved = True
+        self.globalVars.atlas = []
         
         self.settingsWindow = None
 
-        # --------------------------------------------
+        # ----------------------------------------------------------------------
 
         if getattr(sys, 'frozen', False):
-            self.globalVars["running"] = "exe"
-            self.globalVars["appPath"] = Path(sys._MEIPASS)
-            self.globalVars["assetsPath"] = Path(sys._MEIPASS).joinpath("assets")
-            self.globalVars["iconPath"] = Path(sys._MEIPASS)
-            self.globalVars["runningDir"] = Path(os.path.dirname(sys.executable))
+            self.globalVars.running = "exe"
+            self.globalVars.appPath = Path(sys._MEIPASS)
+            self.globalVars.assetsPath = Path(sys._MEIPASS).joinpath("assets")
+            self.globalVars.iconPath = Path(sys._MEIPASS)
+            self.globalVars.runningDir = Path(os.path.dirname(sys.executable))
         elif __file__:
-            self.globalVars["running"] = "src"
-            self.globalVars["appPath"] = Path(os.path.dirname(__file__))
-            self.globalVars["assetsPath"] = Path(os.path.dirname(__file__)).parent.joinpath("assets")
-            self.globalVars["iconPath"] = Path(os.path.dirname(__file__)).parent
-            self.globalVars["runningDir"] = Path(os.path.dirname(__file__))
+            self.globalVars.running = "src"
+            self.globalVars.appPath = Path(os.path.dirname(__file__))
+            self.globalVars.assetsPath = Path(os.path.dirname(__file__)).parent.joinpath("assets")
+            self.globalVars.iconPath = Path(os.path.dirname(__file__)).parent
+            self.globalVars.runningDir = Path(os.path.dirname(__file__))
         
+        # ----------------------------------------------------------------------
         # Ini file
         self.config = configparser.ConfigParser()
-        if self.globalVars["runningDir"].joinpath("mc3ds-tm.ini").exists():
-            self.config.read(self.globalVars["runningDir"].joinpath("mc3ds-tm.ini"))
+        if self.globalVars.runningDir.joinpath("mc3ds-tm.ini").exists():
+            self.config.read(self.globalVars.runningDir.joinpath("mc3ds-tm.ini"))
         
         if not "Path" in self.config:
             self.config["Path"] = {}
         if not "lastdir" in self.config["Path"]:
-            self.config["Path"]["lastdir"] = str(self.globalVars["runningDir"].joinpath("MC3DS"))
+            self.config["Path"]["lastdir"] = ""
 
         if not "Preferences" in self.config:
             self.config["Preferences"] = {}
@@ -231,22 +202,24 @@ class App(customtkinter.CTk):
         if not "allowresize" in self.config["Preferences"]:
             self.config["Preferences"]["allowresize"] = "true"
 
-        if not os.path.exists(self.config["Path"]["lastdir"]):
-            self.config["Path"]["lastdir"] = str(self.globalVars["runningDir"].joinpath("MC3DS"))
+        if not Path(self.config["Path"]["lastdir"]).exists():
+            self.config["Path"]["lastdir"] = ""
 
-        if not self.config["Preferences"]["theme"] in ["dark", "light"]:
+        if not self.config["Preferences"]["theme"] in ("dark", "light"):
             self.config["Preferences"]["theme"] = "dark"
 
-        if not self.config["Preferences"]["showpreviewbg"] in ["true", "false"]:
+        if not self.config["Preferences"]["showpreviewbg"] in ("true", "false"):
             self.config["Preferences"]["showpreviewbg"] = "true"
 
-        if not self.config["Preferences"]["allowresize"] in ["true", "false"]:
+        if not self.config["Preferences"]["allowresize"] in ("true", "false"):
             self.config["Preferences"]["allowresize"] = "true"
 
-        self.globalVars["outputFolder"] = self.config["Path"]["lastdir"]
+        # ----------------------------------------------------------------------
+
         self.theme = self.config["Preferences"]["theme"]
-        self.globalVars["showPreviewBg"] = self.config["Preferences"]["showpreviewbg"]
-        self.globalVars["allowResize"] = self.config["Preferences"]["allowresize"]
+        self.globalVars.outputFolder = self.config["Path"]["lastdir"]
+        self.globalVars.showPreviewBg = self.config["Preferences"]["showpreviewbg"] == "true"
+        self.globalVars.allowResize = self.config["Preferences"]["allowresize"] == "true"
 
         self.saveChangesForIniFile()
         self.changeTheme()
@@ -254,9 +227,9 @@ class App(customtkinter.CTk):
         self.title("MC3DS Texture Maker")
         os_name = os.name
         if os_name == "nt":
-            self.iconbitmap(default=Path(self.globalVars["iconPath"]).joinpath("icon.ico"))
+            self.iconbitmap(default=self.globalVars.iconPath.joinpath("icon.ico"))
         elif os_name == "posix":
-            iconpath = ImageTk.PhotoImage(file=self.globalVars["iconPath"].joinpath("icon.png"))
+            iconpath = ImageTk.PhotoImage(file=self.globalVars.iconPath.joinpath("icon.png"))
             self.wm_iconbitmap()
             self.iconphoto(False, iconpath)
 
@@ -293,29 +266,29 @@ class App(customtkinter.CTk):
         # --------------------------------------------
 
         # Load indexes of blocks and items from source
-        with open(self.globalVars["assetsPath"].joinpath("uvs/atlas.items.vanilla.uvs.json"), "r") as f:
-            self.globalVars["items"] = json.load(f)
-        with open(self.globalVars["assetsPath"].joinpath("uvs/atlas.terrain.vanilla.uvs.json"), "r") as f:
-            self.globalVars["blocks"] = json.load(f)
+        with open(self.globalVars.assetsPath.joinpath("uvs/atlas.items.vanilla.uvs.json"), "r") as f:
+            self.globalVars.items = json.load(f)
+        with open(self.globalVars.assetsPath.joinpath("uvs/atlas.terrain.vanilla.uvs.json"), "r") as f:
+            self.globalVars.blocks = json.load(f)
 
-        # Load resources
-        self.loadResources()
-        self.mainFrame.updateList()
+        if self.globalVars.outputFolder != "":
+            self.loadResources()
+            self.globalVars.updateList()
 
     def saveChangesForIniFile(self):
-        with open(self.globalVars["runningDir"].joinpath("mc3ds-tm.ini"), "w") as configfile:
+        with open(self.globalVars.runningDir.joinpath("mc3ds-tm.ini"), "w") as configfile:
             self.config.write(configfile)
 
     def openFolder(self):
         if self.askForChanges():
             input = customtkinter.filedialog.askdirectory()
-            if self.globalVars["outputFolder"] != input and input != "":
-                self.globalVars["outputFolder"] = input
+            if self.globalVars.outputFolder != input and input != "":
+                self.globalVars.outputFolder = input
                 self.config["Path"]["lastdir"] = input
                 self.saveChangesForIniFile()
                 self.loadResources()
-                self.globalVars["saved"] = True
-                self.globalVars["updateList"]()
+                self.globalVars.saved = True
+                self.globalVars.updateList()
 
     def openSettings(self):
         if self.settingsWindow is None or not self.settingsWindow.winfo_exists():
@@ -333,11 +306,11 @@ class App(customtkinter.CTk):
             appThemeCombobox = customtkinter.CTkComboBox(settingsWindow, values=["dark", "light"], variable=themeValue, state="readonly")
             appThemeCombobox.grid(column=0, row=2, padx=10, pady=(0, 10), sticky="w")
 
-            previewBgValue = customtkinter.BooleanVar(value=True if self.globalVars["showPreviewBg"] == "true" else False)
+            previewBgValue = customtkinter.BooleanVar(value=self.globalVars.showPreviewBg)
             previewBgCheckbox = customtkinter.CTkCheckBox(settingsWindow, text="Show preview background", variable=previewBgValue, border_width=1, checkbox_width=20, checkbox_height=20)
             previewBgCheckbox.grid(column=0, row=3, padx=10, pady=(0, 2), sticky="w")
 
-            allowResizeValue = customtkinter.BooleanVar(value=True if self.globalVars["allowResize"] == "true" else False)
+            allowResizeValue = customtkinter.BooleanVar(value=self.globalVars.allowResize)
             allowResizeCheckbox = customtkinter.CTkCheckBox(settingsWindow, text="Allow resize textures", variable=allowResizeValue, border_width=1, checkbox_width=20, checkbox_height=20)
             allowResizeCheckbox.grid(column=0, row=4, padx=10, pady=(0, 10), sticky="w")
 
@@ -363,15 +336,15 @@ class App(customtkinter.CTk):
     def applySettings(self, newSettings: dict):
         self.settingsWindow.destroy()
         self.theme = newSettings["theme"].get()
-        self.globalVars["showPreviewBg"] = "true" if newSettings["showpreviewbg"].get() else "false"
-        self.globalVars["allowResize"] = "true" if newSettings["allowresize"].get() else "false"
+        self.globalVars.showPreviewBg = newSettings["showpreviewbg"].get()
+        self.globalVars.allowResize = newSettings["allowresize"].get()
 
         self.changeTheme()
-        self.mainFrame.listElementFun()
+        self.mainFrame.infoDispFrame.showItemInfo()
 
         self.config["Preferences"]["theme"] = self.theme
-        self.config["Preferences"]["showpreviewbg"] = self.globalVars["showPreviewBg"]
-        self.config["Preferences"]["allowresize"] = self.globalVars["allowResize"]
+        self.config["Preferences"]["showpreviewbg"] = "true" if self.globalVars.showPreviewBg else "false"
+        self.config["Preferences"]["allowresize"] = "true" if self.globalVars.allowResize else "false"
         self.saveChangesForIniFile()
 
     def changeTheme(self):
@@ -387,42 +360,42 @@ class App(customtkinter.CTk):
 
     def loadResources(self):
         # Load atlas either from source folder or output if exists
-        if os.path.exists(os.path.normpath(f"{self.globalVars["outputFolder"]}/atlas/atlas.items.meta_79954554_0.3dst")):
-            self.globalVars["itemsAtlas"] = atlasTexture3dst().open(os.path.normpath(f"{self.globalVars["outputFolder"]}/atlas/atlas.items.meta_79954554_0.3dst"), "Items")
+        if os.path.exists(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
+            self.globalVars.itemsAtlas = atlasTexture3dst().open(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"), "Items")
         else:
-            self.globalVars["itemsAtlas"] = atlasTexture3dst().open(self.globalVars["assetsPath"].joinpath("atlas/atlas.items.vanilla.png"), "Items")
-        if os.path.exists(os.path.normpath(f"{self.globalVars["outputFolder"]}/atlas/atlas.terrain.meta_79954554_0.3dst")):
-            self.globalVars["blocksAtlas"] = atlasTexture3dst().open(os.path.normpath(f"{self.globalVars["outputFolder"]}/atlas/atlas.terrain.meta_79954554_0.3dst"), "Blocks")
+            self.globalVars.itemsAtlas = atlasTexture3dst().open(self.globalVars.assetsPath.joinpath("atlas/atlas.items.vanilla.png"), "Items")
+        if os.path.exists(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
+            self.globalVars.blocksAtlas = atlasTexture3dst().open(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"), "Blocks")
         else:
-            self.globalVars["blocksAtlas"] = atlasTexture3dst().open(self.globalVars["assetsPath"].joinpath("atlas/atlas.terrain.vanilla.png"), "Blocks")
+            self.globalVars.blocksAtlas = atlasTexture3dst().open(self.globalVars.assetsPath.joinpath("atlas/atlas.terrain.vanilla.png"), "Blocks")
 
         # Load index of added blocks and items if exists
-        if os.path.exists(os.path.normpath(f"{self.globalVars["outputFolder"]}/items.txt")):
-            self.globalVars["addedItems"] = IndexFile().open(os.path.normpath(f"{self.globalVars["outputFolder"]}/items.txt"))
+        if os.path.exists(os.path.normpath(f"{self.globalVars.outputFolder}/items.txt")):
+            self.globalVars.addedItems = IndexFile().open(os.path.normpath(f"{self.globalVars.outputFolder}/items.txt"))
         else:
-            self.globalVars["addedItems"] = IndexFile().new()
-        if os.path.exists(os.path.normpath(f"{self.globalVars["outputFolder"]}/blocks.txt")):
-            self.globalVars["addedBlocks"] = IndexFile().open(os.path.normpath(f"{self.globalVars["outputFolder"]}/blocks.txt"))
+            self.globalVars.addedItems = IndexFile().new()
+        if os.path.exists(os.path.normpath(f"{self.globalVars.outputFolder}/blocks.txt")):
+            self.globalVars.addedBlocks = IndexFile().open(os.path.normpath(f"{self.globalVars.outputFolder}/blocks.txt"))
         else:
-            self.globalVars["addedBlocks"] = IndexFile().new()
+            self.globalVars.addedBlocks = IndexFile().new()
         return
     
     def saveChanges(self):
-        if not self.saved:
-            out = os.path.join(self.globalVars["outputFolder"], "atlas")
+        if not self.globalVars.saved:
+            out = os.path.join(self.globalVars.outputFolder, "atlas")
             if not os.path.exists(out):
                 os.makedirs(out)
-            self.globalVars["itemsAtlas"].save(os.path.normpath(f"{self.globalVars["outputFolder"]}/atlas/atlas.items.meta_79954554_0.3dst"))
-            self.globalVars["blocksAtlas"].save(os.path.normpath(f"{self.globalVars["outputFolder"]}/atlas/atlas.terrain.meta_79954554_0.3dst"))
-            self.globalVars["addedItems"].save(os.path.normpath(f"{self.globalVars["outputFolder"]}/items.txt"))
-            self.globalVars["addedBlocks"].save(os.path.normpath(f"{self.globalVars["outputFolder"]}/blocks.txt"))
-            self.saved = True
+            self.globalVars.itemsAtlas.save(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+            self.globalVars.blocksAtlas.save(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
+            self.globalVars.addedItems.save(os.path.normpath(f"{self.globalVars.outputFolder}/items.txt"))
+            self.globalVars.addedBlocks.save(os.path.normpath(f"{self.globalVars.outputFolder}/blocks.txt"))
+            self.globalVars.saved = True
 
     def openAutoImport(self):
-        autoImport = AutoImport(self)
+        autoImport = AutoImport(self, self.globalVars)
 
     def closeApp(self, val=None):
-        if self.globalVars["saved"]:
+        if self.globalVars.saved:
             sys.exit()
         else:
             print("Not saved")
@@ -436,7 +409,7 @@ class App(customtkinter.CTk):
                 pass
 
     def askForChanges(self):
-        if self.globalVars["saved"]:
+        if self.globalVars.saved:
             return True
         else:
             print("Not saved")

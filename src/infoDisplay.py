@@ -5,6 +5,7 @@ from pathlib import Path
 from py3dst import Texture3dst
 from tkinter import messagebox
 from modules import atlasTexture3dst, canOpenImage, isImageSize, checkForMatch
+from appGlobalVars import appGlobalVars
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (146, 146, 146, 255))
@@ -21,7 +22,7 @@ def _generateChessboardPattern(width, height, tileSize = 10):
     return chessboard
 
 class InfoDisplayFrame(customtkinter.CTkFrame):
-    def __init__(self, master, globalVars: dict, **kwargs):
+    def __init__(self, master, globalVars: appGlobalVars, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure((0, 1, 2, 3), weight=1)
@@ -64,11 +65,11 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
                 # Define variables by atlas type
                 if atlasType == "Items":
-                    element = self.globalVars["items"][selected]
-                    atlas = self.globalVars["itemsAtlas"]
+                    element = self.globalVars.items[selected]
+                    atlas = self.globalVars.itemsAtlas
                 elif atlasType == "Blocks":
-                    element = self.globalVars["blocks"][selected]
-                    atlas = self.globalVars["blocksAtlas"]
+                    element = self.globalVars.blocks[selected]
+                    atlas = self.globalVars.blocksAtlas
                 position = element["uv"]
 
                 # Copy region and export
@@ -84,18 +85,17 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.changeTextureFunc(self.selected.get())
 
     def changeTextureFunc(self, value):
-        mainApp = self.master.master
         mainFrame = self.master
-        outputDir = self.globalVars["outputFolder"]
-        allowResize = True if self.globalVars["allowResize"] == "true" else False
+        outputDir = self.globalVars.outputFolder
+        allowResize = self.globalVars.allowResize
 
         atlasType = self.lastActualOption
-        items = self.globalVars["items"]
-        blocks = self.globalVars["blocks"]
-        itemsAtlas = self.globalVars["itemsAtlas"]
-        blocksAtlas = self.globalVars["blocksAtlas"]
-        addedItems = self.globalVars["addedItems"]
-        addedBlocks = self.globalVars["addedBlocks"]       
+        items = self.globalVars.items
+        blocks = self.globalVars.blocks
+        itemsAtlas = self.globalVars.itemsAtlas
+        blocksAtlas = self.globalVars.blocksAtlas
+        addedItems = self.globalVars.addedItems
+        addedBlocks = self.globalVars.addedBlocks
 
         # Define variables by atlas type
         if atlasType == "Items":
@@ -152,16 +152,19 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                             added.addItem(value)
                     
                     # Updates portview
-                    mainFrame.listElementFun(value, self.lastActualOption)
+                    self.showItemInfo(value, self.lastActualOption)
 
-                    self.globalVars["saved"] = False
-                    self.globalVars["updateTreeIcons"]()
+                    self.globalVars.saved = False
+                    self.globalVars.updateList()
         self.buttonReplace.configure(state="normal")
 
     def showItemInfo(self, value = None, cat_opt = None):
         if value == None:
-            item = self.globalVars["treeElementSelected"]
+            item = self.globalVars.treeElementSelected
+            print(item)
             values = item['values']
+            if values == '':
+                return
             name = values[1]
         else:
             name = value
@@ -172,21 +175,21 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             self.buttonExport.configure(state="normal")
 
         selected = name
-        if selected != "No element selected" and selected != self.selected.get():
+        if selected != "No element selected":
             self.selected.set(selected)
             if cat_opt == None:
-                actualOpt = self.globalVars["searchData"][3]
+                actualOpt = self.globalVars.searchData[3]
             else:
                 actualOpt = cat_opt
             self.lastActualOption = actualOpt
 
             # Set variables by atlas type
             if actualOpt == "Items":
-                element = self.globalVars["items"][selected]
-                atlas: atlasTexture3dst = self.globalVars["itemsAtlas"]
+                element = self.globalVars.items[selected]
+                atlas: atlasTexture3dst = self.globalVars.itemsAtlas
             elif actualOpt == "Blocks":
-                element = self.globalVars["blocks"][selected]
-                atlas: atlasTexture3dst = self.globalVars["blocksAtlas"]
+                element = self.globalVars.blocks[selected]
+                atlas: atlasTexture3dst = self.globalVars.blocksAtlas
             position = element["uv"]
 
             # Copy region and update display
@@ -194,7 +197,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             portview = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
             portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
             
-            if self.globalVars["showPreviewBg"] == "true":
+            if self.globalVars.showPreviewBg:
                 backgound = _generateChessboardPattern(256, 256, tileSize=20)
                 portviewRes = Image.alpha_composite(backgound, portviewRes)
 
