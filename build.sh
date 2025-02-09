@@ -1,37 +1,35 @@
 #!/bin/bash
 
-release_type=$1
+rel_t=$1
 
-if [ "$release_type" == "--debug" ]
-then
-    if [ -d ./build ]
-    then
-    rm -r ./build
-    fi
+if [[ "$rel_t" = "--debug" || "$rel_t" = "--release" ]]; then
+	if [[ -d ./build || -d ./dist ]]; then
+		echo "Cleaning..."
+	fi
+	if [ -d ./build ]; then
+		rm -r ./build
+	fi
+	if [ -d ./dist ]; then
+		rm -r ./dist
+	fi
 
-    if [ -d ./dist ]
-    then
-    rm -r ./dist
-    fi
+	if [[ "$rel_t" = "--debug" ]]; then
+		echo "Building debug"
+		echo "debug" > release_type.txt
+	elif [[ "$rel_t" = "--release" ]]; then
+		echo "Building release"
+		echo "release" > release_type.txt
+	fi
 
-    echo "debug" > release_type.txt
-    python3.12 -m PyInstaller --noconfirm --clean build.spec
-    rm release_type.txt
-elif [ "$release_type" == "--release" ]
-then
-    if [ -d ./build ]
-    then
-    rm -r ./build
-    fi
+	if command -v python3.12 &> /dev/null; then
+		python3.12 -m PyInstaller --noconfirm --clean build.spec
+	elif command -v python3.11 &> /dev/null; then
+		python3.11 -m PyInstaller --noconfirm --clean build.spec
+	else
+		echo "Please install at least version 3.11 of Python"
+	fi
 
-    if [ -d ./dist ]
-    then
-    rm -r ./dist
-    fi
-
-    echo "release" > release_type.txt
-    python3.12 -m PyInstaller --noconfirm --clean build.spec
-    rm release_type.txt
+	rm release_type.txt
 else
-    echo "Invalid release type"
+	echo "Invalid release type"
 fi
