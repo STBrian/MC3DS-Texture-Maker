@@ -200,7 +200,7 @@ class App(customtkinter.CTk):
                     self.portviewFrame.configure(image=portviewImg)
 
                     self.sizeValue.set(f"{preview.size[0]} x {preview.size[1]}")
-                    self.formatValue.set(f"{texture._getFormatInfo(texture.header.format)["name"].upper()}")
+                    self.formatValue.set(f"{texture._getFormatInfo(texture.header.format)['name'].upper()}")
                     self.mipLevelValue.set(f"{texture.header.mip_level}")
 
                     self.imgName = path.name
