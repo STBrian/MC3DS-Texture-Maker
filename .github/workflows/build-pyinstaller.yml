@@ -92,7 +92,7 @@ jobs:
         path: dist/MC3DS-Texture-Maker
 
   build-linux-debug:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v4
