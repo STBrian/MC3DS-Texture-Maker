@@ -35,5 +35,21 @@ If you don't know your game ID, here's a list with the game IDs for each region 
 #### Windows
 Execute the `build.bat` file after installed the dependencies
 
-#### Linux
+### Linux
+#### Install dependencies
+```bash
+sudo apt-get update
+```
+You can either install Python 3.11 or 3.12, just find the way to install Python 3.12 on your distribution
+```bash
+sudo apt-get install python3.11 python3-tk python3-pip python3.11-dev
+```
+Here replace 3.11 with 3.12 if you have that Python version installed
+```bash
+python3.11 -m pip install -r requirements.txt
+```
+#### Build script
+```bash
+bash ./build.sh --release
+```
 Execute the `build.sh` file after installed the dependencies
