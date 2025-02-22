@@ -161,6 +161,8 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
     def showItemInfo(self, value = None, cat_opt = None):
         if value == None:
             item = self.globalVars.treeElementSelected
+            if not "values" in item:
+                return
             print(item)
             values = item['values']
             if values == '':
