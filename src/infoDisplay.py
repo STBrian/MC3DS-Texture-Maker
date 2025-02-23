@@ -179,24 +179,14 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         selected = name
         if selected != "No element selected":
             self.selected.set(selected)
-            if cat_opt == None:
-                actualOpt = self.globalVars.searchData[3]
-            else:
-                actualOpt = cat_opt
-            self.lastActualOption = actualOpt
 
-            # Set variables by atlas type
-            if actualOpt == "Items":
-                element = self.globalVars.items[selected]
-                atlas: atlasTexture3dst = self.globalVars.itemsAtlas
-            elif actualOpt == "Blocks":
-                element = self.globalVars.blocks[selected]
-                atlas: atlasTexture3dst = self.globalVars.blocksAtlas
+            element = self.globalVars.items[selected]
+            atlas: atlasTexture3dst = self.globalVars.atlasHandler
             position = element["uv"]
 
             # Copy region and update display
             print(selected)
-            portview = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
+            portview = atlas.atlas.copy(position[0], position[1], position[2], position[3])
             portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
             
             if self.globalVars.showPreviewBg:

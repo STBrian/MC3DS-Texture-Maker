@@ -14,6 +14,7 @@ from tkinter import messagebox
 
 from modules import *
 from modules.MyCTkTopLevel import *
+from modules.uvsExtractor import exportUVs
 from appGlobalVars import appGlobalVars
 
 from infoDisplay import InfoDisplayFrame
@@ -25,6 +26,47 @@ VERSION = "3.0-dev"
 def clearTreeview(tree: ttk.Treeview):
     for item in tree.get_children():
         tree.delete(item)
+
+def parseConfigFile(fp: str):
+    config = configparser.ConfigParser()
+    if Path(fp).exists():
+        config.read(fp)
+
+    if not "Project" in config:
+        config["Project"] = {}
+    if not "lastdir" in config["Project"]:
+        config["Project"]["lastdir"] = ""
+
+    if not "Preferences" in config:
+        config["Preferences"] = {}
+    if not "theme" in config["Preferences"]:
+        config["Preferences"]["theme"] = "dark"    
+    if not "showpreviewbg" in config["Preferences"]:
+        config["Preferences"]["showpreviewbg"] = "true"
+    if not "allowresize" in config["Preferences"]:
+        config["Preferences"]["allowresize"] = "true"
+
+    if not Path(config["Project"]["lastdir"]).exists():
+        config["Project"]["lastdir"] = ""
+
+    if not config["Preferences"]["theme"] in ("dark", "light"):
+        config["Preferences"]["theme"] = "dark"
+
+    if not config["Preferences"]["showpreviewbg"] in ("true", "false"):
+        config["Preferences"]["showpreviewbg"] = "true"
+
+    if not config["Preferences"]["allowresize"] in ("true", "false"):
+        config["Preferences"]["allowresize"] = "true"
+    return config
+
+def createNewConfigFile(fp: str | Path, values: dict):
+    configFile = configparser.ConfigParser()
+    for section in values.keys():
+        configFile[section] = {}
+        for field in values[section].keys():
+            configFile[section][field] = values[section][field]
+    with open(fp, "w") as file:
+        configFile.write(file)
 
 class MainFrame(customtkinter.CTkFrame):
     def __init__(self, master, globalVars: appGlobalVars, **kwargs):
@@ -68,20 +110,13 @@ class MainFrame(customtkinter.CTkFrame):
 
     def updateList(self):
         searchData = self.globalVars.searchData
-        actualOpt = searchData[3]
         items = self.globalVars.items
-        blocks = self.globalVars.blocks
         addedItems: IndexFile = self.globalVars.addedItems
-        addedBlocks: IndexFile = self.globalVars.addedBlocks
 
         clearTreeview(self.elementsTreeView)
 
-        if actualOpt == "Items":
-            elements: dict = items
-            added = addedItems
-        elif actualOpt == "Blocks":
-            elements: dict = blocks
-            added = addedBlocks
+        elements: dict = items
+        added = addedItems
 
         elements = list(elements.keys())
         elements.sort()
@@ -101,9 +136,6 @@ class MainFrame(customtkinter.CTkFrame):
         self.updateTreeIcons()
 
     def updateTreeIcons(self):
-        searchData = self.globalVars.searchData
-        actualOpt = searchData[3]
-
         tree = self.elementsTreeView
         tree.icons.clear()
         children = tree.get_children("")
@@ -111,16 +143,11 @@ class MainFrame(customtkinter.CTkFrame):
             item = tree.item(child)
             values = item["values"]
 
-            if actualOpt == "Items":
-                atlas = self.globalVars.itemsAtlas
-                element = self.globalVars.items[values[1]]
-                position = element["uv"]
-            elif actualOpt == "Blocks":
-                atlas = self.globalVars.blocksAtlas
-                element = self.globalVars.blocks[values[1]]
-                position = element["uv"]
+            atlas = self.globalVars.atlasHandler
+            element = self.globalVars.items[values[1]]
+            position = element["uv"]
 
-            textureExtract = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
+            textureExtract = atlas.atlas.copy(position[0], position[1], position[2], position[3])
             if textureExtract.size != (16, 16):
                 textureExtract = textureExtract.resize((16, 16), Image.Resampling.LANCZOS)
             iconTk = ImageTk.PhotoImage(textureExtract)
@@ -149,14 +176,14 @@ class App(customtkinter.CTk):
              ("iconPath", Path), 
              ("runningDir", Path),
              ("outputFolder", str), 
+             ("atlasPath", str), 
+             ("uvsPath", str), 
              ("showPreviewBg", bool), 
              ("allowResize", bool),
              ("items", dict),
-             ("blocks", dict),
-             ("itemsAtlas", atlasTexture3dst),
-             ("blocksAtlas", atlasTexture3dst),
+             ("uvs", dict),
+             ("atlasHandler", atlasTexture3dst),
              ("addedItems", IndexFile),
-             ("addedBlocks", IndexFile),
              ("updateList", MethodType)
             ])
         self.globalVars.searchData = ["", "off", "on", "Items"]
@@ -164,7 +191,10 @@ class App(customtkinter.CTk):
         self.globalVars.elementsList = []
         self.globalVars.saved = True
         self.globalVars.atlas = []
+        self.globalVars.treeElementSelected = {}
+        self.globalVars.items = {}
         
+        self.newProjectWindow = None
         self.settingsWindow = None
 
         # ----------------------------------------------------------------------
@@ -184,40 +214,12 @@ class App(customtkinter.CTk):
         
         # ----------------------------------------------------------------------
         # Ini file
-        self.config = configparser.ConfigParser()
-        if self.globalVars.runningDir.joinpath("mc3ds-tm.ini").exists():
-            self.config.read(self.globalVars.runningDir.joinpath("mc3ds-tm.ini"))
-        
-        if not "Path" in self.config:
-            self.config["Path"] = {}
-        if not "lastdir" in self.config["Path"]:
-            self.config["Path"]["lastdir"] = ""
-
-        if not "Preferences" in self.config:
-            self.config["Preferences"] = {}
-        if not "theme" in self.config["Preferences"]:
-            self.config["Preferences"]["theme"] = "dark"    
-        if not "showpreviewbg" in self.config["Preferences"]:
-            self.config["Preferences"]["showpreviewbg"] = "true"
-        if not "allowresize" in self.config["Preferences"]:
-            self.config["Preferences"]["allowresize"] = "true"
-
-        if not Path(self.config["Path"]["lastdir"]).exists():
-            self.config["Path"]["lastdir"] = ""
-
-        if not self.config["Preferences"]["theme"] in ("dark", "light"):
-            self.config["Preferences"]["theme"] = "dark"
-
-        if not self.config["Preferences"]["showpreviewbg"] in ("true", "false"):
-            self.config["Preferences"]["showpreviewbg"] = "true"
-
-        if not self.config["Preferences"]["allowresize"] in ("true", "false"):
-            self.config["Preferences"]["allowresize"] = "true"
-
+        print("Parsing config file")
+        self.config = parseConfigFile(self.globalVars.runningDir.joinpath("mc3ds-tm.ini"))
         # ----------------------------------------------------------------------
 
         self.theme = self.config["Preferences"]["theme"]
-        self.globalVars.outputFolder = self.config["Path"]["lastdir"]
+        self.globalVars.outputFolder = self.config["Project"]["lastdir"]
         self.globalVars.showPreviewBg = self.config["Preferences"]["showpreviewbg"] == "true"
         self.globalVars.allowResize = self.config["Preferences"]["allowresize"] == "true"
 
@@ -243,7 +245,8 @@ class App(customtkinter.CTk):
         menu_bar = CTkMenuBar.CTkMenuBar(master=self, height=15)
 
         fileMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("File"))
-        fileMenu.add_option("Open folder", command=self.openFolder)
+        fileMenu.add_option("New project", command=self.newProject)
+        fileMenu.add_option("Open project", command=self.askOpenProject)
         fileMenu.add_separator()
         fileMenu.add_option("Save", command=self.saveChanges)
         fileMenu.add_separator()
@@ -265,30 +268,182 @@ class App(customtkinter.CTk):
 
         # --------------------------------------------
 
-        # Load indexes of blocks and items from source
-        with open(self.globalVars.assetsPath.joinpath("uvs/atlas.items.vanilla.uvs.json"), "r") as f:
-            self.globalVars.items = json.load(f)
-        with open(self.globalVars.assetsPath.joinpath("uvs/atlas.terrain.vanilla.uvs.json"), "r") as f:
-            self.globalVars.blocks = json.load(f)
-
         if self.globalVars.outputFolder != "":
-            self.loadResources()
-            self.globalVars.updateList()
+            if not Path(self.globalVars.outputFolder).joinpath("project.conf").exists():
+                messagebox.showwarning("Missing project", "Last project cannot be opened. Missing path")
+                self.globalVars.outputFolder = ""
+                self.config["Project"]["lastdir"] = ""
+                self.saveChangesForIniFile()
+            else:
+                self.openProject(self.globalVars.outputFolder)
 
     def saveChangesForIniFile(self):
         with open(self.globalVars.runningDir.joinpath("mc3ds-tm.ini"), "w") as configfile:
             self.config.write(configfile)
 
-    def openFolder(self):
+    def newProject(self):
+        if self.newProjectWindow is None or not self.newProjectWindow.winfo_exists():
+            newProjectWindow = MyCTkTopLevel(self)
+            newProjectWindow.title("Create new project")
+            newProjectWindow.resizable(False, False)
+
+            windowLabel = customtkinter.CTkLabel(newProjectWindow, text="New project", font=(None, 14, "bold"))
+            windowLabel.grid(column=0, row=0, padx=10, pady=(10, 0), sticky="ws")
+
+            projNameLabel = customtkinter.CTkLabel(newProjectWindow, text="Project name", font=(None, 12))
+            projNameLabel.grid(column=0, row=1, padx=10, pady=0, sticky="ws")
+
+            nameValue = customtkinter.StringVar(value="")
+            projNameEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=nameValue)
+            projNameEntry.grid(column=0, row=2, padx=10, pady=(0, 10), sticky="w")
+
+            atlasPathLabel = customtkinter.CTkLabel(newProjectWindow, text="Atlas file", font=(None, 12))
+            atlasPathLabel.grid(column=0, row=3, padx=10, pady=0, sticky="ws")
+
+            atlasPathValue = customtkinter.StringVar(value="")
+            projAtlasPathEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=atlasPathValue, state="readonly")
+            projAtlasPathEntry.grid(column=0, row=4, padx=10, pady=(0, 10), sticky="we", columnspan=2)
+
+            def openAtlasPath():
+                atlasPathValue.set(customtkinter.filedialog.askopenfilename(filetypes=[("3DST files", ".3dst")], title="Select atlas file"))
+                newProjectWindow.focus()
+
+            selectAtlasPath = customtkinter.CTkButton(newProjectWindow, text="Select", command=openAtlasPath)
+            selectAtlasPath.grid(column=2, row=4, padx=10, pady=(0, 10), sticky="e")
+
+            uvsPathLabel = customtkinter.CTkLabel(newProjectWindow, text="UVs file", font=(None, 12))
+            uvsPathLabel.grid(column=0, row=6, padx=10, pady=0, sticky="ws")
+
+            uvsPathValue = customtkinter.StringVar(value="")
+            projUVsPathEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=uvsPathValue, state="readonly")
+            projUVsPathEntry.grid(column=0, row=7, padx=10, pady=(0, 10), sticky="we", columnspan=2)
+
+            def openUVsPath():
+                uvsPathValue.set(customtkinter.filedialog.askopenfilename(filetypes=[("UVs files", ".uvs")], title="Select UVs file"))
+                newProjectWindow.focus()
+
+            selectUVsPath = customtkinter.CTkButton(newProjectWindow, text="Select", command=openUVsPath)
+            selectUVsPath.grid(column=2, row=7, padx=10, pady=(0, 10), sticky="e")
+
+            projectPathLabel = customtkinter.CTkLabel(newProjectWindow, text="Project directory", font=(None, 12))
+            projectPathLabel.grid(column=0, row=9, padx=10, pady=0, sticky="ws")
+
+            projectPathValue = customtkinter.StringVar(value="")
+            projDirPathEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=projectPathValue, state="readonly")
+            projDirPathEntry.grid(column=0, row=10, padx=10, pady=(0, 10), sticky="we", columnspan=2)
+
+            def openProjectPath():
+                projectPathValue.set(customtkinter.filedialog.askdirectory(title="Select project directory"))
+                newProjectWindow.focus()
+
+            selectProjectPath = customtkinter.CTkButton(newProjectWindow, text="Select", command=openProjectPath)
+            selectProjectPath.grid(column=2, row=10, padx=10, pady=(0, 10), sticky="e")
+
+            createProject = partial(self.createProject, 
+                                   {
+                                        "name": nameValue,
+                                        "atlaspath": atlasPathValue,
+                                        "uvspath": uvsPathValue,
+                                        "projectpath": projectPathValue
+                                   })
+            
+            discard = partial(newProjectWindow.destroy)
+
+            cancelButton = customtkinter.CTkButton(newProjectWindow, text="Cancel", command=discard)
+            cancelButton.grid(column=0, row=12, padx=10, pady=15, sticky="e")
+
+            applyButton = customtkinter.CTkButton(newProjectWindow, text="Create", command=createProject)
+            applyButton.grid(column=1, row=12, padx=10, sticky="e", pady=10)
+
+            self.newProjectWindow = newProjectWindow
+        else:
+            self.newProjectWindow.focus()
+
+    def createProject(self, values: dict):
+        name: str = values["name"].get()
+        atlaspath = values["atlaspath"].get()
+        uvspath = values["uvspath"].get()
+        projectpath = values["projectpath"].get()
+        if name == "" or not name.isalnum():
+            messagebox.showerror("Invalid field value", "Enter a valid project name")
+            self.newProjectWindow.focus()
+            return
+        if atlaspath == "":
+            messagebox.showerror("Invalid field value", "Enter a valid atlas path")
+            self.newProjectWindow.focus()
+            return
+        if uvspath == "":
+            messagebox.showerror("Invalid field value", "Enter a valid uvs path")
+            self.newProjectWindow.focus()
+            return
+        if projectpath == "":
+            messagebox.showerror("Invalid field value", "Enter a valid project path")
+            self.newProjectWindow.focus()
+            return
+        atlaspath = Path(atlaspath)
+        uvspath = Path(uvspath)
+        projectpath = Path(projectpath)
+
+        if projectpath.joinpath(name, "project.conf").exists():
+            messagebox.showerror("Existing project", "The directory already has an existing project. Please select another directory or name.")
+            self.newProjectWindow.focus()
+            return
+        
+        projectConfigValues = {"Project": {"name": name}}
+        if not projectpath.joinpath(name, "atlas").exists():
+            projectpath.joinpath(name, "atlas").mkdir(parents=True)
+        with open(projectpath.joinpath(name, "atlas", atlaspath.name), "wb") as fout:
+            with open(atlaspath, "rb") as fin:
+                fout.write(fin.read())
+        projectConfigValues["Project"]["atlaspath"] = str(Path("atlas").joinpath(atlaspath.name))
+
+        if not projectpath.joinpath(name, "uvs").exists():
+            projectpath.joinpath(name, "uvs").mkdir(parents=True)
+        exportUVs(uvspath, projectpath.joinpath(name, "uvs", f"{uvspath.name}.json"))
+        projectConfigValues["Project"]["uvspath"] = str(Path("uvs").joinpath(f"{uvspath.name}.json"))
+
+        createNewConfigFile(projectpath.joinpath(name, "project.conf"), projectConfigValues)
+        self.newProjectWindow.destroy()
+        self.openProject(projectpath.joinpath(name))
+
+    def askOpenProject(self):
         if self.askForChanges():
-            input = customtkinter.filedialog.askdirectory()
-            if self.globalVars.outputFolder != input and input != "":
-                self.globalVars.outputFolder = input
-                self.config["Path"]["lastdir"] = input
-                self.saveChangesForIniFile()
-                self.loadResources()
-                self.globalVars.saved = True
-                self.globalVars.updateList()
+            dirpath = customtkinter.filedialog.askdirectory()
+            if self.globalVars.outputFolder != dirpath and dirpath != "":
+                self.openProject(dirpath)
+
+    def openProject(self, dirpath: str | Path):
+        if isinstance(dirpath, str):
+            dirpath = Path(dirpath)
+        if not Path(dirpath).joinpath("project.conf").exists():
+            messagebox.showerror("Invalid project folder", "No project config found in directory")
+        else:
+            config = configparser.ConfigParser()
+            config.read(Path(dirpath).joinpath("project.conf"))
+
+            if not "Project" in config:
+                messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'Project' section")
+                return
+            if not "name" in config["Project"]:
+                messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'name' field")
+                return
+            if not "atlaspath" in config["Project"]:
+                messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'atlaspath' field")
+                return
+            if not "uvspath" in config["Project"]:
+                messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'uvspath' field")
+                return
+
+            self.title(f"MC3DS Texture Maker - {config["Project"]["name"]}")
+            self.globalVars.atlasPath = config["Project"]["atlaspath"]
+            self.globalVars.uvsPath = config["Project"]["uvspath"]
+
+            self.globalVars.outputFolder = str(dirpath.absolute())
+            self.config["Project"]["lastdir"] = self.globalVars.outputFolder
+            self.saveChangesForIniFile()
+            self.loadResources()
+            self.globalVars.saved = True
+            self.globalVars.updateList()
 
     def openSettings(self):
         if self.settingsWindow is None or not self.settingsWindow.winfo_exists():
@@ -359,36 +514,24 @@ class App(customtkinter.CTk):
         self.mainFrame.searchOptionsFrame.saveSearch()
 
     def loadResources(self):
-        # Load atlas either from source folder or output if exists
-        if os.path.exists(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst")):
-            self.globalVars.itemsAtlas = atlasTexture3dst().open(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"), "Items")
-        else:
-            self.globalVars.itemsAtlas = atlasTexture3dst().open(self.globalVars.assetsPath.joinpath("atlas/atlas.items.vanilla.png"), "Items")
-        if os.path.exists(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst")):
-            self.globalVars.blocksAtlas = atlasTexture3dst().open(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"), "Blocks")
-        else:
-            self.globalVars.blocksAtlas = atlasTexture3dst().open(self.globalVars.assetsPath.joinpath("atlas/atlas.terrain.vanilla.png"), "Blocks")
+        self.globalVars.atlasHandler = atlasTexture3dst().open(Path(self.globalVars.outputFolder).joinpath(self.globalVars.atlasPath), "Items")
+        # Load indexes of blocks and items from source
+        with open(Path(self.globalVars.outputFolder).joinpath(self.globalVars.uvsPath), "r") as f:
+            self.globalVars.items = json.load(f)
 
-        # Load index of added blocks and items if exists
-        if os.path.exists(os.path.normpath(f"{self.globalVars.outputFolder}/items.txt")):
+        # Load index of added items if exists
+        if Path(f"{self.globalVars.outputFolder}/added.txt").exists():
             self.globalVars.addedItems = IndexFile().open(os.path.normpath(f"{self.globalVars.outputFolder}/items.txt"))
         else:
             self.globalVars.addedItems = IndexFile().new()
-        if os.path.exists(os.path.normpath(f"{self.globalVars.outputFolder}/blocks.txt")):
-            self.globalVars.addedBlocks = IndexFile().open(os.path.normpath(f"{self.globalVars.outputFolder}/blocks.txt"))
-        else:
-            self.globalVars.addedBlocks = IndexFile().new()
-        return
     
     def saveChanges(self):
         if not self.globalVars.saved:
             out = os.path.join(self.globalVars.outputFolder, "atlas")
             if not os.path.exists(out):
                 os.makedirs(out)
-            self.globalVars.itemsAtlas.save(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
-            self.globalVars.blocksAtlas.save(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.terrain.meta_79954554_0.3dst"))
-            self.globalVars.addedItems.save(os.path.normpath(f"{self.globalVars.outputFolder}/items.txt"))
-            self.globalVars.addedBlocks.save(os.path.normpath(f"{self.globalVars.outputFolder}/blocks.txt"))
+            self.globalVars.atlasHandler.save(os.path.normpath(f"{self.globalVars.outputFolder}/atlas/atlas.items.meta_79954554_0.3dst"))
+            self.globalVars.addedItems.save(os.path.normpath(f"{self.globalVars.outputFolder}/added.txt"))
             self.globalVars.saved = True
 
     def openAutoImport(self):
