@@ -26,11 +26,11 @@ def readFloat(f: BinaryIO) -> float:
     num = struct.unpack("<f", f.read(4))[0]
     return num
 
-def exportUVs(fp: str | Path, out_dir: str | Path):
+def exportUVs(fp: str | Path, out_path: str | Path):
     if isinstance(fp, str):
         fp = Path(fp).absolute()
-    if isinstance(out_dir, str):
-        out_dir = Path(out_dir).absolute()
+    if isinstance(out_path, str):
+        out_path = Path(out_path).absolute()
     with open(fp, "rb") as f:
         header_1 = readU32(f)
         header_2 = readU32(f)
@@ -54,7 +54,7 @@ def exportUVs(fp: str | Path, out_dir: str | Path):
             uvs_data[strip] = {"uv": [int(uv_1 * w / 1), int(uv_2 * h / 1), int(uv_3 * w / 1), int(uv_4 * h / 1)]}
             uvs_data[strip]["tileSize"] = uvs_data[strip]["uv"][2] - uvs_data[strip]["uv"][0]
 
-        with open(f"{out_dir.joinpath(fp.stem)}.uvs.json", "w") as o:
+        with open(out_path, "w") as o:
             json.dump(uvs_data, o, indent=4)
 
 if __name__ == "__main__":
