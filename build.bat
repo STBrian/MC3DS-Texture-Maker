@@ -13,7 +13,7 @@ if "%release_type%"=="--debug" (
     )
 
     echo debug> release_type.txt
-    python -m PyInstaller --noconfirm --clean build.spec
+    py -3.12 -m PyInstaller --noconfirm --clean build.spec
     del release_type.txt
 ) else (
     if "%release_type%"=="--release" (
@@ -27,7 +27,7 @@ if "%release_type%"=="--debug" (
         )
 
         echo release> release_type.txt
-        python -m PyInstaller --noconfirm --clean build.spec
+        py -3.12 -m PyInstaller --noconfirm --clean build.spec
         del release_type.txt
     ) else (
         echo Invalid release type

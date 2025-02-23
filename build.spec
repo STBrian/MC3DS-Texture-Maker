@@ -25,8 +25,8 @@ main_datas = [
 ]
 main_hiddenimports = ["PIL", "PIL._imagingtk", "PIL._tkinter_finder", "pkg_resources.extern"]
 
-main_a = Analysis(
-    ['main.py'],
+main_a = Analysis( # type: ignore
+    ['src/main.py'],
     pathex=[],
     binaries=[],
     datas=main_datas,
@@ -37,8 +37,8 @@ main_a = Analysis(
     excludes=[],
     noarchive=False,
 )
-main_pyz = PYZ(main_a.pure)
-main_exe = EXE(
+main_pyz = PYZ(main_a.pure) # type: ignore
+main_exe = EXE( # type: ignore
     main_pyz,
     main_a.scripts,
     [],
@@ -59,7 +59,7 @@ main_exe = EXE(
 
 py3dst_hiddenimports = ["PIL", "PIL._imagingtk", "PIL._tkinter_finder", "pkg_resources.extern"]
 
-py3dst_a = Analysis(
+py3dst_a = Analysis( # type: ignore
     ['py3dstViewer.py'],
     pathex=[],
     binaries=[],
@@ -71,8 +71,8 @@ py3dst_a = Analysis(
     excludes=[],
     noarchive=False,
 )
-py3dst_pyz = PYZ(py3dst_a.pure)
-py3dst_exe = EXE(
+py3dst_pyz = PYZ(py3dst_a.pure) # type: ignore
+py3dst_exe = EXE( # type: ignore
     py3dst_pyz,
     py3dst_a.scripts,
     [],
@@ -91,7 +91,7 @@ py3dst_exe = EXE(
     icon='./icon_viewer.ico'
 )
 
-coll = COLLECT(
+coll = COLLECT( # type: ignore
     main_exe,
     main_a.binaries,
     main_a.datas,
