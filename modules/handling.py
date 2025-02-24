@@ -33,11 +33,9 @@ class atlasTexture3dst():
     def addElement(self, position: tuple | list, new_texture: Image.Image):
         new_texture = new_texture.convert("RGBA")
 
-        # Define las variables de posición
-        x_atlas = position[0]
-        y_atlas = position[1]
-
         if self.atlas_type == "Items":
+            x_atlas = position[0]
+            y_atlas = position[1]
             # Reemplazar la textura original por la nueva
             print("Replacing texture...")
             x = 0
@@ -50,6 +48,8 @@ class atlasTexture3dst():
                 x_atlas -= 16
                 y_atlas += 1
         elif self.atlas_type == "Blocks":
+            x_atlas = position[0] - 2
+            y_atlas = position[1] - 2
             # Reemplazar la textura original por la nueva
             print("Replacing texture...")
             x = -2
