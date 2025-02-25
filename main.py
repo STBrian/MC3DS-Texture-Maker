@@ -217,7 +217,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     mainFrame.listElementFun(value, self.lastActualOption)
 
                     mainApp.saved = False
-                    mainApp.updateTreeIcons()
+                    mainApp.updateList = True
         self.buttonReplace.configure(state="normal")
 
 class MainFrame(customtkinter.CTkFrame):
