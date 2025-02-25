@@ -2,9 +2,9 @@ name: Build Windows-Linux
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "v2" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "v2" ]
 
 permissions:
   contents: read
