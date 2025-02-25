@@ -13,7 +13,7 @@ from modules import *
 from modules.MyCTkTopLevel import *
 from py3dst import Texture3dst
 
-VERSION = "2.3-release"
+VERSION = "2.4-release"
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (146, 146, 146, 255))
