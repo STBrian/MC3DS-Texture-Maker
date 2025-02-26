@@ -5,15 +5,15 @@ from pathlib import Path
 from modules import *
 from modules.MyCTkTopLevel import *
 
-def getFilesWithExtensionInDir(path: str, ext: str):
+def getFileNamesWithExtensionInDir(path: Path, ext: str):
     matches = []
-    for file in glob.iglob(os.path.join(os.path.abspath(f"{path}"), f"**/*.{ext}"), recursive=True):
-        filepath = Path(file)
-        matches.append(filepath.stem)
+    for file in path.glob(f"**/*.{ext}"):
+        if file.is_file():
+            matches.append(file.stem)
     return matches
 
 class OptionsFrame(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, globalVars, **kwargs):
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
@@ -22,24 +22,15 @@ class OptionsFrame(customtkinter.CTkFrame):
         self.title = customtkinter.CTkLabel(self, text="Options:", font=("default", 13, "bold"))
         self.title.grid(row=0, column=0, padx=10, pady=0, sticky="w")
 
-        self.label = customtkinter.CTkLabel(self, text="Atlas type:")
-        self.label.grid(row=1, column=0, padx=10, pady=0, sticky="w")
-
-        self.type = customtkinter.StringVar(value="Items")
-
-        self.cb = customtkinter.CTkComboBox(self, values=["Items", "Blocks"], variable=self.type, state="readonly")
-        self.cb.grid(row=2, column=0, padx=10, pady=(5, 10), sticky="w")
-
         self.label2 = customtkinter.CTkLabel(self, text="Version:")
-        self.label2.grid(row=1, column=1, padx=10, pady=0, sticky="w")
+        self.label2.grid(row=1, column=0, padx=10, pady=0, sticky="w")
 
-        app_path = master.app_path
-        rules = getFilesWithExtensionInDir(os.path.join(app_path, "assets/rules/"), "json")
+        rules = getFileNamesWithExtensionInDir(Path(globalVars.assetsPath, "rules"), "json")
 
         self.rule = customtkinter.StringVar(value="nn3ds 1.9.19")
 
         self.cb2 = customtkinter.CTkComboBox(self, values=rules, variable=self.rule, state="readonly")
-        self.cb2.grid(row=2, column=1, padx=10, pady=(5, 10), sticky="w")
+        self.cb2.grid(row=2, column=0, padx=10, pady=(5, 10), sticky="w")
 
 class StartFrame(customtkinter.CTkFrame):
     def __init__(self, master, globalVars, **kwargs):
@@ -55,8 +46,6 @@ class StartFrame(customtkinter.CTkFrame):
 
         self.label = customtkinter.CTkLabel(self, text="Folder selected:")
         self.label.grid(row=1, column=0, padx=10, pady=0, sticky="w")
-
-        self.type = customtkinter.StringVar(value="Items")
 
         self.cb = customtkinter.CTkButton(self, text="Select textures folder", command=self.selectFolder)
         self.cb.grid(row=2, column=0, padx=10, pady=0, sticky="we")
@@ -81,9 +70,8 @@ class StartFrame(customtkinter.CTkFrame):
         autoImportThread.start()
 
     def loadRulesFile(self, ruleName: str, source: list, out: list, atlasType: str):
-        appPath = self.root.app_path
-        if os.path.exists(os.path.join(appPath, f"assets/rules/{ruleName}.json")):
-            with open(os.path.join(appPath, f"assets/rules/{ruleName}.json")) as f:
+        if Path(self.globalVars.assetsPath, f"rules/{ruleName}.json").exists():
+            with open(Path(self.globalVars.assetsPath, f"rules/{ruleName}.json"), "r") as f:
                 ruleData = json.loads(f.read())
 
             if "parent" in ruleData:
@@ -96,12 +84,12 @@ class StartFrame(customtkinter.CTkFrame):
     
     def autoImport(self):
         root = self.root
-        atlasType = root.optionsFrame.type.get()
+        atlasType = self.globalVars.atlasType
         ruleFile = root.optionsFrame.rule.get()
         inputDir = self.dirPath
         outputDir = self.globalVars.outputFolder
         allowResize = self.globalVars.allowResize
-        appPath = root.app_path
+        appPath = self.globalVars.appPath
         self.button.configure(state="disabled")
         self.button.configure(text="Please wait...")
         print(atlasType)
@@ -109,24 +97,13 @@ class StartFrame(customtkinter.CTkFrame):
         print(outputDir)
         print(appPath)
 
-        items: list[str] = root.items
-        blocks: list[str] = root.blocks
-        addedItems: IndexFile = root.addedItems
-        addedBlocks: IndexFile = root.addedBlocks
-
-        # Get specific data and set variables
-        if atlasType == "Items":
-            index = items
-            added = addedItems
-            atlas: atlasTexture3dst = root.itemsAtlas
-            textureDestDir = "textures/items"
-        elif atlasType == "Blocks":
-            index = blocks
-            added = addedBlocks
-            atlas: atlasTexture3dst = root.blocksAtlas
-            textureDestDir = "textures/blocks"
+        index: dict = self.globalVars.items
+        added: IndexFile = self.globalVars.addedItems
+        atlas: atlasTexture3dst = self.globalVars.atlasHandler
+        textureDestDir = "textures"
 
         # Load rules
+        atlasType = "Blocks" if atlasType == "Terrain" else atlasType
         sourceIndex = list(index.keys())
         sourceIndex.sort()
         modifiedIndex = sourceIndex[::]
@@ -156,7 +133,7 @@ class StartFrame(customtkinter.CTkFrame):
 
                 if canOpenImage(file):
                     textureToReplace = Image.open(file)
-                    isSized = isImageSize(textureToReplace, element["tileSize"], element["tileSize"])
+                    isSized = isImageSize(textureToReplace, position[2] - position[0], position[3] - position[1])
                     if not (not isSized and not allowResize):
                         # Show new texture in preview frame
                         portviewRes = textureToReplace.resize((256, 256), Image.Resampling.NEAREST)
@@ -166,11 +143,11 @@ class StartFrame(customtkinter.CTkFrame):
                         print("Opening new texture and replacing...")
                         
                         if not isSized:
-                            textureToReplace = textureToReplace.resize((element["tileSize"], element["tileSize"]), Image.Resampling.LANCZOS)
+                            textureToReplace = textureToReplace.resize((position[2] - position[0], position[3] - position[1]), Image.Resampling.LANCZOS)
                         atlas.addElement(position, textureToReplace)
 
-                        if not os.path.exists(f"{outputDir}/{textureDestDir}"):
-                            os.makedirs(f"{outputDir}/{textureDestDir}")
+                        if not Path(f"{outputDir}/{textureDestDir}").exists():
+                            Path(f"{outputDir}/{textureDestDir}").mkdir(parents=True)
                         newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
                         newTexture.paste(textureToReplace, 0, 0)
                         newTexture.export(f"{outputDir}/{textureDestDir}/{sourceIndex[modifiedIndex.index(value)]}.3dst")
@@ -180,9 +157,9 @@ class StartFrame(customtkinter.CTkFrame):
                         if duplicated == -1:
                             added.addItem(sourceIndex[modifiedIndex.index(value)])
                     else:
-                        print("Image is not sized")
+                        print("Image is not sized. Skipping")
                 else:
-                    print("Cannot open image")
+                    print("Cannot open image. Skipping")
 
         # Print not found textures
         print("The following textures were not found")
@@ -194,7 +171,7 @@ class StartFrame(customtkinter.CTkFrame):
         self.globalVars.saved = False
         mainApp = self.root.root
         infoDispFrame = mainApp.mainFrame.infoDispFrame
-        infoDispFrame.showItemInfo(infoDispFrame.selected.get(), infoDispFrame.lastActualOption)
+        infoDispFrame.showItemInfo(infoDispFrame.selected.get())
         self.globalVars.updateList()
 
         portviewImage = Image.new("RGBA", (16, 16))
@@ -235,12 +212,9 @@ class AutoImport(MyCTkTopLevel):
         self.globalVars = globalVars
 
         self.root = master
-        self.itemsAtlas = self.globalVars.itemsAtlas
-        self.blocksAtlas = self.globalVars.blocksAtlas
+        self.itemsAtlas = self.globalVars.atlasHandler
         self.items = self.globalVars.items
-        self.blocks = self.globalVars.blocks
         self.addedItems = self.globalVars.addedItems
-        self.addedBlocks = self.globalVars.addedBlocks
 
         self.app_path = self.globalVars.appPath
         os_name = os.name
@@ -252,10 +226,10 @@ class AutoImport(MyCTkTopLevel):
         self.output_dir = self.globalVars.outputFolder
         self.inputDir = customtkinter.StringVar(value="")
 
-        self.optionsFrame = OptionsFrame(self)
+        self.optionsFrame = OptionsFrame(self, globalVars)
         self.optionsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="we")
 
-        self.startFrame = StartFrame(self, self.globalVars)
+        self.startFrame = StartFrame(self, globalVars)
         self.startFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
 
         self.previewFrame = PreviewFrame(self)
