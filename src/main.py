@@ -1,5 +1,6 @@
 import os, sys, json, difflib, configparser, customtkinter, CTkMenuBar
 from types import MethodType
+# from colorama import just_fix_windows_console // enable when needed
 
 from tkinter import ttk
 from PIL import Image, ImageTk
@@ -169,6 +170,7 @@ class App(customtkinter.CTk):
              ("runningDir", Path),
              ("atlasPath", str), 
              ("uvsPath", str), 
+             ("atlasType", str), 
              ("tilePadding", int), 
              ("outputFolder", str), 
              ("showPreviewBg", bool), 
@@ -274,7 +276,11 @@ class App(customtkinter.CTk):
                 self.config["Project"]["lastdir"] = ""
                 self.saveChangesForIniFile()
             else:
-                self.openProject(self.globalVars.outputFolder)
+                if not self.openProject(self.globalVars.outputFolder):
+                    messagebox.showerror("Failed to open project", "Last project cannot be opened. Verify the integrity of the project")
+                    self.globalVars.outputFolder = ""
+                    self.config["Project"]["lastdir"] = ""
+                    self.saveChangesForIniFile()
 
     def saveChangesForIniFile(self):
         with open(self.globalVars.runningDir.joinpath("mc3ds-tm.ini"), "w") as configfile:
@@ -288,77 +294,77 @@ class App(customtkinter.CTk):
                 newProjectWindow.resizable(False, False)
 
                 projNameLabel = customtkinter.CTkLabel(newProjectWindow, text="Project name", font=(None, 12))
-                projNameLabel.grid(column=0, row=1, padx=10, pady=(10, 0), sticky="ws")
+                projNameLabel.grid(column=0, row=0, padx=10, pady=(10, 0), sticky="ws")
 
                 nameValue = customtkinter.StringVar(value="")
                 projNameEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=nameValue)
-                projNameEntry.grid(column=0, row=2, padx=10, pady=(0, 10), sticky="w")
+                projNameEntry.grid(column=0, row=1, padx=10, pady=(0, 10), sticky="w")
 
                 atlasPathLabel = customtkinter.CTkLabel(newProjectWindow, text="Atlas file", font=(None, 12))
-                atlasPathLabel.grid(column=0, row=3, padx=10, pady=0, sticky="ws")
+                atlasPathLabel.grid(column=0, row=2, padx=10, pady=0, sticky="ws")
 
                 atlasPathValue = customtkinter.StringVar(value="")
                 projAtlasPathEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=atlasPathValue, state="readonly")
-                projAtlasPathEntry.grid(column=0, row=4, padx=10, pady=(0, 10), sticky="we", columnspan=2)
+                projAtlasPathEntry.grid(column=0, row=3, padx=10, pady=(0, 10), sticky="we", columnspan=2)
 
                 def openAtlasPath():
                     atlasPathValue.set(customtkinter.filedialog.askopenfilename(filetypes=[("3DST files", ".3dst")], title="Select atlas file"))
                     newProjectWindow.focus()
 
                 selectAtlasPath = customtkinter.CTkButton(newProjectWindow, text="Select", command=openAtlasPath)
-                selectAtlasPath.grid(column=2, row=4, padx=10, pady=(0, 10), sticky="e")
+                selectAtlasPath.grid(column=2, row=3, padx=10, pady=(0, 10), sticky="e")
 
                 uvsPathLabel = customtkinter.CTkLabel(newProjectWindow, text="UVs file", font=(None, 12))
-                uvsPathLabel.grid(column=0, row=5, padx=10, pady=0, sticky="ws")
+                uvsPathLabel.grid(column=0, row=4, padx=10, pady=0, sticky="ws")
 
                 uvsPathValue = customtkinter.StringVar(value="")
                 projUVsPathEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=uvsPathValue, state="readonly")
-                projUVsPathEntry.grid(column=0, row=6, padx=10, pady=(0, 10), sticky="we", columnspan=2)
+                projUVsPathEntry.grid(column=0, row=5, padx=10, pady=(0, 10), sticky="we", columnspan=2)
 
                 def openUVsPath():
                     uvsPathValue.set(customtkinter.filedialog.askopenfilename(filetypes=[("UVs files", ".uvs")], title="Select UVs file"))
                     newProjectWindow.focus()
 
                 selectUVsPath = customtkinter.CTkButton(newProjectWindow, text="Select", command=openUVsPath)
-                selectUVsPath.grid(column=2, row=6, padx=10, pady=(0, 10), sticky="e")
+                selectUVsPath.grid(column=2, row=5, padx=10, pady=(0, 10), sticky="e")
 
-                tilePaddingLabel = customtkinter.CTkLabel(newProjectWindow, text="Tile padding", font=(None, 12))
-                tilePaddingLabel.grid(column=0, row=7, padx=10, pady=0, sticky="ws")
+                atlasTypeLabel = customtkinter.CTkLabel(newProjectWindow, text="Atlas type", font=(None, 12))
+                atlasTypeLabel.grid(column=0, row=6, padx=10, pady=0, sticky="ws")
 
-                tilePaddingValue = customtkinter.StringVar(value="0")
-                projtilePaddingEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=tilePaddingValue)
-                projtilePaddingEntry.grid(column=0, row=8, padx=10, pady=(0, 10), sticky="we", columnspan=2)
+                atlasTypeValue = customtkinter.StringVar(value="Items")
+                projAtlasTypeEntry = customtkinter.CTkComboBox(newProjectWindow, variable=atlasTypeValue, values=["Items", "Terrain"], state="readonly")
+                projAtlasTypeEntry.grid(column=0, row=7, padx=10, pady=(0, 10), sticky="we", columnspan=2)
 
                 projectPathLabel = customtkinter.CTkLabel(newProjectWindow, text="Project directory", font=(None, 12))
-                projectPathLabel.grid(column=0, row=9, padx=10, pady=0, sticky="ws")
+                projectPathLabel.grid(column=0, row=8, padx=10, pady=0, sticky="ws")
 
                 projectPathValue = customtkinter.StringVar(value="")
                 projDirPathEntry = customtkinter.CTkEntry(newProjectWindow, textvariable=projectPathValue, state="readonly")
-                projDirPathEntry.grid(column=0, row=10, padx=10, pady=(0, 10), sticky="we", columnspan=2)
+                projDirPathEntry.grid(column=0, row=9, padx=10, pady=(0, 10), sticky="we", columnspan=2)
 
                 def openProjectPath():
                     projectPathValue.set(customtkinter.filedialog.askdirectory(title="Select project directory"))
                     newProjectWindow.focus()
 
                 selectProjectPath = customtkinter.CTkButton(newProjectWindow, text="Select", command=openProjectPath)
-                selectProjectPath.grid(column=2, row=10, padx=10, pady=(0, 10), sticky="e")
+                selectProjectPath.grid(column=2, row=9, padx=10, pady=(0, 10), sticky="e")
 
                 createProject = partial(self.createProject, 
                                     {
                                             "name": nameValue,
                                             "atlaspath": atlasPathValue,
                                             "uvspath": uvsPathValue,
-                                            "tilepadding": tilePaddingValue,
+                                            "atlastype": atlasTypeValue,
                                             "projectpath": projectPathValue
                                     })
                 
                 discard = partial(newProjectWindow.destroy)
 
                 cancelButton = customtkinter.CTkButton(newProjectWindow, text="Cancel", command=discard)
-                cancelButton.grid(column=0, row=12, padx=10, pady=15, sticky="e")
+                cancelButton.grid(column=0, row=11, padx=10, pady=15, sticky="e")
 
                 applyButton = customtkinter.CTkButton(newProjectWindow, text="Create", command=createProject)
-                applyButton.grid(column=1, row=12, padx=10, sticky="e", pady=10)
+                applyButton.grid(column=1, row=11, padx=10, sticky="e", pady=10)
 
                 self.newProjectWindow = newProjectWindow
             else:
@@ -368,7 +374,7 @@ class App(customtkinter.CTk):
         name: str = values["name"].get()
         atlaspath = values["atlaspath"].get()
         uvspath = values["uvspath"].get()
-        tilepadding: str = values["tilepadding"].get()
+        atlastype: str = values["atlastype"].get()
         projectpath = values["projectpath"].get()
         if name == "" or not name.isalnum():
             messagebox.showerror("Invalid field value", "Enter a valid project name")
@@ -382,8 +388,8 @@ class App(customtkinter.CTk):
             messagebox.showerror("Invalid field value", "Enter a valid uvs path")
             self.newProjectWindow.focus()
             return
-        if tilepadding == "" or not tilepadding.isdigit():
-            messagebox.showerror("Invalid field value", "Enter a valid project name")
+        if not atlastype in ("Items", "Terrain"):
+            messagebox.showerror("Invalid field value", "Enter a valid atlas type")
             self.newProjectWindow.focus()
             return
         if projectpath == "":
@@ -392,7 +398,6 @@ class App(customtkinter.CTk):
             return
         atlaspath = Path(atlaspath)
         uvspath = Path(uvspath)
-        tilepadding = int(tilepadding)
         projectpath = Path(projectpath)
 
         if projectpath.joinpath(name, "project.conf").exists():
@@ -433,7 +438,7 @@ class App(customtkinter.CTk):
             return
         projectConfigValues["Project"]["uvspath"] = str(Path("uvs").joinpath(f"{uvspath.name}.json"))
 
-        projectConfigValues["Project"]["tilepadding"] = str(tilepadding)
+        projectConfigValues["Project"]["atlastype"] = atlastype
 
         createNewConfigFile(projectpath.joinpath(name, "project.conf"), projectConfigValues)
         self.newProjectWindow.destroy()
@@ -445,39 +450,42 @@ class App(customtkinter.CTk):
             if self.globalVars.outputFolder != dirpath and dirpath != "":
                 self.openProject(dirpath)
 
-    def openProject(self, dirpath: str | Path):
+    def openProject(self, dirpath: str | Path) -> bool:
         if isinstance(dirpath, str):
             dirpath = Path(dirpath)
         if not Path(dirpath).joinpath("project.conf").exists():
             messagebox.showerror("Failed to open project", "No project config found in folder")
+            return False
         else:
             config = configparser.ConfigParser()
             config.read(Path(dirpath).joinpath("project.conf"))
 
             if not "Project" in config:
                 messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'Project' section")
-                return
+                return False
             if not "name" in config["Project"]:
                 messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'name' field")
-                return
+                return False
             if not "atlaspath" in config["Project"]:
                 messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'atlaspath' field")
-                return
+                return False
             if not "uvspath" in config["Project"]:
                 messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'uvspath' field")
-                return
-            if not "tilepadding" in config["Project"]:
-                messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'tilepadding' field")
-                return
+                return False
+            if not "atlastype" in config["Project"]:
+                messagebox.showerror("Invalid project config file", "Project config file is invalid! Missing 'atlastype' field")
+                return False
 
             self.title(f"MC3DS Texture Maker - {config["Project"]["name"]}")
             self.globalVars.atlasPath = config["Project"]["atlaspath"]
             self.globalVars.uvsPath = config["Project"]["uvspath"]
-            if not str(config["Project"]["tilepadding"]).isdigit():
-                messagebox.showwarning("Invalid value", "Project config file has invalid value! Using default value for 'tilepadding' field")
-                self.globalVars.tilePadding = 0
-            else:
-                self.globalVars.tilePadding = int(config["Project"]["tilepadding"])
+            if not config["Project"]["atlastype"] in ("Items", "Terrain"):
+                messagebox.showwarning("Invalid value", "Project config file has invalid value! Using default value 'Items' for 'atlastype' field")
+                config["Project"]["atlastype"] = "Items"
+                with open(Path(dirpath).joinpath("project.conf"), "w") as f:
+                    config.write(f)
+            self.globalVars.atlasType = config["Project"]["atlastype"]
+            self.globalVars.tilePadding = 2 if self.globalVars.atlasType == "Terrain" else 0
 
             self.globalVars.outputFolder = str(dirpath.absolute())
             self.config["Project"]["lastdir"] = self.globalVars.outputFolder
@@ -487,10 +495,11 @@ class App(customtkinter.CTk):
                 self.globalVars.outputFolder = ""
                 self.config["Project"]["lastdir"] = ""
                 self.saveChangesForIniFile()
-                return
+                return False
             self.globalVars.openedProject = True
             self.globalVars.saved = True
             self.globalVars.updateList()
+            return True
 
     def openSettings(self):
         if self.settingsWindow is None or not self.settingsWindow.winfo_exists():
@@ -593,18 +602,8 @@ class App(customtkinter.CTk):
         autoImport = AutoImport(self, self.globalVars)
 
     def closeApp(self, val=None):
-        if self.globalVars.saved:
-            sys.exit()
-        else:
-            print("Not saved")
-            op = messagebox.askyesnocancel(title="Unsaved changes", message="There are unsaved changes. Would you like to save them before exit?")
-            if op == True:
-                self.saveChanges()
-                sys.exit()
-            elif op == False:
-                sys.exit()
-            else:
-                pass
+        if self.askForChanges():
+            sys.exit(0)
 
     def askForChanges(self):
         if self.globalVars.saved:
@@ -631,6 +630,7 @@ class App(customtkinter.CTk):
         treestyle.map('Treeview', background=[('selected', selected_color)], foreground=[('selected', text_color)])
 
 if __name__ == "__main__":
+    # just_fix_windows_console() // enable when needed
     customtkinter.set_default_color_theme("blue")
     
     print("Loading app...")
