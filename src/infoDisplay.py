@@ -58,54 +58,32 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         if file:
             extension = Path(file.name).suffix
             value = self.selected.get()
-            mainApp = self.master.master
             if value != "":
                 selected = value
-                atlasType = self.lastActualOption
 
-                # Define variables by atlas type
-                if atlasType == "Items":
-                    element = self.globalVars.items[selected]
-                    atlas = self.globalVars.itemsAtlas
-                elif atlasType == "Blocks":
-                    element = self.globalVars.blocks[selected]
-                    atlas = self.globalVars.blocksAtlas
+                element = self.globalVars.items[selected]
+                atlas = self.globalVars.atlasHandler
                 position = element["uv"]
 
                 # Copy region and export
-                export = atlas.atlas.copy(position[0], position[1], position[0] + element["tileSize"], position[1] + element["tileSize"])
+                export = atlas.atlas.copy(position[0], position[1], position[2], position[3])
                 if extension == ".png":
                     export.save(file)
                 elif extension == ".3dst":
                     export3dst = Texture3dst().fromImage(export)
                     export3dst.export(file.name)
-        file.close()
+            file.close()
 
     def changeTextureCallback(self):
         self.changeTextureFunc(self.selected.get())
 
     def changeTextureFunc(self, value):
-        mainFrame = self.master
         outputDir = self.globalVars.outputFolder
         allowResize = self.globalVars.allowResize
 
-        atlasType = self.lastActualOption
-        items = self.globalVars.items
-        blocks = self.globalVars.blocks
-        itemsAtlas = self.globalVars.itemsAtlas
-        blocksAtlas = self.globalVars.blocksAtlas
-        addedItems = self.globalVars.addedItems
-        addedBlocks = self.globalVars.addedBlocks
-
-        # Define variables by atlas type
-        if atlasType == "Items":
-            added = addedItems
-            atlas: atlasTexture3dst = itemsAtlas
-            element = items[value]
-        elif atlasType == "Blocks":
-            added = addedBlocks
-            atlas: atlasTexture3dst = blocksAtlas
-            element = blocks[value]
+        added = self.globalVars.addedItems
+        atlas: atlasTexture3dst = self.globalVars.atlasHandler
+        element = self.globalVars.items[value]
         position = element["uv"]
 
         exts = Image.registered_extensions()
@@ -116,49 +94,37 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             if idx < len(supported_extensions)-1:
                 exts_str += " "
         filePath = customtkinter.filedialog.askopenfilename(filetypes=[("Image files", ".jpeg .jpg .gif .png .webp .tiff .tif .bmp .psd .ico"), ("All image files", exts_str)])
-        if filePath != '':
+        if filePath != '' and isinstance(filePath, str):
             if not canOpenImage(filePath):
                 messagebox.showerror("Failed to open image", "Unable to open the selected image")
             else:
                 textureToReplace = Image.open(filePath)
-                isSized = isImageSize(textureToReplace, element["tileSize"], element["tileSize"])
+                isSized = isImageSize(textureToReplace, position[2] - position[0], position[3] - position[1])
                 if not isSized and not allowResize:
-                    messagebox.showerror("Invalid texture", f"Texture selected is not {element['tileSize']}x{element['tileSize']}")
+                    messagebox.showerror("Invalid texture", f"Texture selected is not {position[2] - position[0]}x{position[3] - position[1]}")
                 else:
                     if not isSized:
-                        textureToReplace = textureToReplace.resize((element['tileSize'], element['tileSize']), Image.Resampling.LANCZOS)
+                        textureToReplace = textureToReplace.resize((position[2] - position[0], position[3] - position[1]), Image.Resampling.LANCZOS)
                     atlas.addElement(position, textureToReplace)
-                    if atlasType == "Items":
-                        duplicated = checkForMatch(value, added.getItems())
+                    duplicated = checkForMatch(value, added.getItems())
 
-                        if not os.path.exists(f"{outputDir}/textures/items"):
-                            os.makedirs(f"{outputDir}/textures/items")
+                    if not os.path.exists(f"{outputDir}/textures"):
+                        os.makedirs(f"{outputDir}/textures")
 
-                        newTexture = Texture3dst().fromImage(textureToReplace)
-                        newTexture.export(f"{outputDir}/textures/items/{value}.3dst")
+                    newTexture = Texture3dst().fromImage(textureToReplace)
+                    newTexture.export(f"{outputDir}/textures/{value}.3dst")
 
-                        if duplicated == -1:
-                            added.addItem(value)
-                    elif atlasType == "Blocks":
-                        duplicated = checkForMatch(value, added.getItems())
-
-                        if not os.path.exists(f"{outputDir}/textures/blocks"):
-                            os.makedirs(f"{outputDir}/textures/blocks")
-
-                        newTexture = Texture3dst().fromImage(textureToReplace)
-                        newTexture.export(f"{outputDir}/textures/blocks/{value}.3dst")
-
-                        if duplicated == -1:
-                            added.addItem(value)
+                    if duplicated == -1:
+                        added.addItem(value)
                     
                     # Updates portview
-                    self.showItemInfo(value, self.lastActualOption)
+                    self.showItemInfo(value)
 
                     self.globalVars.saved = False
                     self.globalVars.updateList()
         self.buttonReplace.configure(state="normal")
 
-    def showItemInfo(self, value = None, cat_opt = None):
+    def showItemInfo(self, value = None):
         if value == None:
             item = self.globalVars.treeElementSelected
             if not "values" in item:

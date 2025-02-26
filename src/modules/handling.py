@@ -8,76 +8,78 @@ class atlasTexture3dst():
     def __init__(self):
         pass
 
-    def open(self, path: str | Path, atlas_type: str):
+    def open(self, path: str | Path, tile_padding: int):
         if type(path) == str:
             path = Path(path)
         if not isinstance(path, Path):
             raise TypeError("Expected str or Path type for path.")
-        if not atlas_type in ["Items", "Blocks"]:
-            raise ValueError("Expected 'Items' or 'Blocks' type for atlas_type.")
+        if not isinstance(tile_padding, int):
+            raise ValueError("Expected int type for tile_padding.")
 
         print("Opening atlas...")
-        atlas = None
-        if path.suffix == ".png":
-            atlas = Texture3dst().fromImage(Image.open(path))
-            if atlas_type == "Blocks":
-                atlas.header.mip_level = 3
-        elif path.suffix == ".3dst":
-            atlas = Texture3dst().open(path)
+        atlas = Texture3dst().open(path)
 
         self.atlas = atlas
-        self.atlas_type = atlas_type
-
+        self.tile_padding = tile_padding
         return self
 
     def addElement(self, position: tuple | list, new_texture: Image.Image):
         new_texture = new_texture.convert("RGBA")
 
-        # Define las variables de posición
-        x_atlas = position[0]
-        y_atlas = position[1]
+        x1_pos = position[0]
+        y1_pos = position[1]
+        x2_pos = position[2]
+        y2_pos = position[3]
+        width = x2_pos - x1_pos
+        height = y2_pos - y1_pos
 
-        if self.atlas_type == "Items":
-            # Reemplazar la textura original por la nueva
-            print("Replacing texture...")
-            x = 0
-            y = 0
-            for y in range(0, 16):
-                for x in range(0, 16):
-                    r, g, b, a = new_texture.getpixel((x, y))
-                    self.atlas.setPixel(x_atlas, y_atlas, (r, g, b, a))
-                    x_atlas += 1
-                x_atlas -= 16
-                y_atlas += 1
-        elif self.atlas_type == "Blocks":
-            # Reemplazar la textura original por la nueva
-            print("Replacing texture...")
-            x = -2
-            y = -2
-            x2 = 0
-            y2 = 0
-            for i in range(0, 20):
-                for j in range(0, 20):
-                    if x < 0:
-                        x2 = 0
-                    if x > 15:
-                        x2 = 15
-                    if y < 0:
-                        y2 = 0
-                    if y > 15:
-                        y2 = 15
-                    if x >= 0 and x <= 15:
-                        x2 = x
-                    if y >= 0 and y <= 15:
-                        y2 = y
-                    r, g, b, a = new_texture.getpixel((x2, y2))
-                    self.atlas.setPixel(x_atlas, y_atlas, (r, g, b, a))
-                    x += 1
-                    x_atlas += 1
-                x = -2
-                x_atlas -= 20
-                y += 1
-                y_atlas += 1
+        print("Replacing texture...")
+        x_atlas = x1_pos - self.tile_padding
+        y_atlas = y1_pos - self.tile_padding
+        x2_atlas = x_atlas
+        y2_atlas = y_atlas
+        x = -self.tile_padding
+        y = -self.tile_padding
+        x2 = 0
+        y2 = 0
+        for i in range(0, height + self.tile_padding*2):
+            for j in range(0, width + self.tile_padding*2):
+                if x < 0:
+                    x2 = 0
+                elif x >= width:
+                    x2 = width - 1
+                else:
+                    x2 = x
+
+                if y < 0:
+                    y2 = 0
+                elif y >= height:
+                    y2 = height - 1
+                else:
+                    y2 = y
+                    
+                if x_atlas < 0:
+                    x2_atlas = 0
+                elif x_atlas >= self.atlas.size[0]:
+                    x2_atlas = self.atlas.size[0] - 1
+                else:
+                    x2_atlas = x_atlas
+                
+                if y_atlas < 0:
+                    y2_atlas = 0
+                elif y_atlas >= self.atlas.size[1]:
+                    y2_atlas = self.atlas.size[1] - 1
+                else:
+                    y2_atlas = y_atlas
+
+                r, g, b, a = new_texture.getpixel((x2, y2))
+                self.atlas.setPixel(x2_atlas, y2_atlas, (r, g, b, a))
+                x += 1
+                x_atlas += 1
+            x = -self.tile_padding
+            x_atlas -= width + self.tile_padding*2
+            y += 1
+            y_atlas += 1
         print("Texture replaced")
 
     def save(self, path: str | Path):
@@ -136,13 +138,3 @@ class IndexFile():
 
         with open(path, "w") as f:
             f.write(outstr)
-
-def calculateGrid(value: int, grid_width: int, grid_height: int, cube_lenght: int):
-    x_grid = value - ((value // grid_width) * grid_width)
-    y_grid = value // grid_width
-    if y_grid > grid_height:
-        return -1
-    x = x_grid * cube_lenght
-    y = y_grid * cube_lenght
-
-    return (x, y)
