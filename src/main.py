@@ -1,4 +1,4 @@
-import os, sys, json, difflib, configparser, customtkinter, CTkMenuBar
+import os, sys, json, configparser, customtkinter, CTkMenuBar
 from types import MethodType
 # from colorama import just_fix_windows_console // enable when needed
 
@@ -115,7 +115,11 @@ class MainFrame(customtkinter.CTkFrame):
         elements.sort()
 
         if (not searchData[0] == ""):
-            elements = difflib.get_close_matches(searchData[0], elements, n = len(elements), cutoff=0.4)
+            elementsSearch = []
+            for element in elements:
+                if searchData[0] in element:
+                    elementsSearch.append(element)
+            elements = elementsSearch
         
         if searchData[1] == "off":
             elements = deleteMatches(elements, added.getItems())
@@ -124,8 +128,16 @@ class MainFrame(customtkinter.CTkFrame):
             elements = checkForMatches(elements, added.getItems())
 
         self.elementsTreeView.icons = []
-        for i in range(0, len(elements)):
+        i = 0
+        for item in self.elementsTreeView.get_children():
+            if i < len(elements):
+                self.elementsTreeView.item(item, text="  " + elements[i], values=(i, elements[i]))
+            else:
+                self.elementsTreeView.delete(item)
+            i += 1
+        while i < len(elements):
             self.elementsTreeView.insert("", "end", text="  " + elements[i], values=(i, elements[i]))
+            i += 1
         self.updateTreeIcons()
 
     def updateTreeIcons(self):
@@ -488,14 +500,12 @@ class App(customtkinter.CTk):
             self.globalVars.tilePadding = 2 if self.globalVars.atlasType == "Terrain" else 0
 
             self.globalVars.outputFolder = str(dirpath.absolute())
-            self.config["Project"]["lastdir"] = self.globalVars.outputFolder
-            self.saveChangesForIniFile()
             if not self.loadResources():
                 messagebox.showerror("Failed to open project", "Some project resources cannot be found. Please ensure that all files are in their folders")
                 self.globalVars.outputFolder = ""
-                self.config["Project"]["lastdir"] = ""
-                self.saveChangesForIniFile()
                 return False
+            self.config["Project"]["lastdir"] = self.globalVars.outputFolder
+            self.saveChangesForIniFile()
             self.globalVars.openedProject = True
             self.globalVars.saved = True
             self.globalVars.updateList()
