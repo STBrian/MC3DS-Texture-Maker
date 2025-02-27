@@ -135,15 +135,20 @@ class StartFrame(customtkinter.CTkFrame):
                     textureToReplace = Image.open(file)
                     isSized = isImageSize(textureToReplace, position[2] - position[0], position[3] - position[1])
                     if not (not isSized and not allowResize):
-                        # Show new texture in preview frame
-                        portviewRes = textureToReplace.resize((256, 256), Image.Resampling.NEAREST)
-                        root.previewFrame.portview.configure(dark_image=portviewRes)
-
                         # Replace texture
                         print("Opening new texture and replacing...")
                         
                         if not isSized:
-                            textureToReplace = textureToReplace.resize((position[2] - position[0], position[3] - position[1]), Image.Resampling.LANCZOS)
+                            resampling = Image.Resampling.LANCZOS
+                            if self.globalVars.resamplingType == "Bilinear":
+                                resampling = Image.Resampling.BILINEAR
+                            elif self.globalVars.resamplingType == "Nearest":
+                                resampling = Image.Resampling.NEAREST
+                            textureToReplace = textureToReplace.resize((position[2] - position[0], position[3] - position[1]), resampling)
+                        # Show new texture in preview frame
+                        portviewRes = textureToReplace.resize((256, 256), Image.Resampling.NEAREST)
+                        root.previewFrame.portview.configure(dark_image=portviewRes)
+                        # Replace
                         atlas.addElement(position, textureToReplace)
 
                         if not Path(f"{outputDir}/{textureDestDir}").exists():

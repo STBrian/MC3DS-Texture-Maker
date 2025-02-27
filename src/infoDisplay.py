@@ -104,7 +104,12 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     messagebox.showerror("Invalid texture", f"Texture selected is not {position[2] - position[0]}x{position[3] - position[1]}")
                 else:
                     if not isSized:
-                        textureToReplace = textureToReplace.resize((position[2] - position[0], position[3] - position[1]), Image.Resampling.LANCZOS)
+                        resampling = Image.Resampling.LANCZOS
+                        if self.globalVars.resamplingType == "Bilinear":
+                            resampling = Image.Resampling.BILINEAR
+                        elif self.globalVars.resamplingType == "Nearest":
+                            resampling = Image.Resampling.NEAREST
+                        textureToReplace = textureToReplace.resize((position[2] - position[0], position[3] - position[1]), resampling)
                     atlas.addElement(position, textureToReplace)
                     duplicated = checkForMatch(value, added.getItems())
 
