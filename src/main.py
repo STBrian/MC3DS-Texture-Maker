@@ -17,7 +17,7 @@ from infoDisplay import InfoDisplayFrame
 from searchOptions import SearchOptionsFrame
 from autoImport import AutoImport
 
-VERSION = "3.0-dev"
+VERSION = "3.0.0-preview.1"
 
 def clearTreeview(tree: ttk.Treeview):
     for item in tree.get_children():
