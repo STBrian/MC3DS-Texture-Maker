@@ -17,11 +17,8 @@ else:
 
 main_datas = [
     ("assets", "assets"),
-    ("icon.ico", "."),
-    ("icon.png", "."),
     ("icon_viewer.ico", "."),
-    ("icon_viewer.png", "."),
-    ("icon2.png", ".")
+    ("icon_viewer.png", ".")
 ]
 main_hiddenimports = ["PIL", "PIL._imagingtk", "PIL._tkinter_finder", "pkg_resources.extern"]
 
@@ -54,7 +51,7 @@ main_exe = EXE( # type: ignore
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='./icon.ico'
+    icon='./assets/icon.ico'
 )
 
 py3dst_hiddenimports = ["PIL", "PIL._imagingtk", "PIL._tkinter_finder", "pkg_resources.extern"]

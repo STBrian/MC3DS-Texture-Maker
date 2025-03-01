@@ -216,13 +216,13 @@ class App(customtkinter.CTk):
             self.globalVars.running = "exe"
             self.globalVars.appPath = Path(sys._MEIPASS)
             self.globalVars.assetsPath = Path(sys._MEIPASS).joinpath("assets")
-            self.globalVars.iconPath = Path(sys._MEIPASS)
+            self.globalVars.iconPath = self.globalVars.assetsPath
             self.globalVars.runningDir = Path(os.path.dirname(sys.executable))
         elif __file__:
             self.globalVars.running = "src"
             self.globalVars.appPath = Path(os.path.dirname(__file__))
             self.globalVars.assetsPath = Path(os.path.dirname(__file__)).parent.joinpath("assets")
-            self.globalVars.iconPath = Path(os.path.dirname(__file__)).parent
+            self.globalVars.iconPath = self.globalVars.assetsPath
             self.globalVars.runningDir = Path(os.path.dirname(__file__))
         
         # ----------------------------------------------------------------------
