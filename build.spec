@@ -13,6 +13,7 @@ elif release_type == "release":
 else:
     print("Unknown release:", release_type)
     sys.exit(1)
+os.remove("./release_type.txt")
 # End custom code
 
 main_datas = [

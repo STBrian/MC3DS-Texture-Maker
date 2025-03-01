@@ -28,8 +28,6 @@ if [[ "$rel_t" = "--debug" || "$rel_t" = "--release" ]]; then
 	else
 		echo "Please install at least version 3.11 of Python"
 	fi
-
-	rm release_type.txt
 else
 	echo "Invalid release type"
 fi
