@@ -1,11 +1,10 @@
-/MC3DS
 /build
 /dist
-/block
-/item
 /venv
 /*/__pycache__
 /*/*/__pycache__
 /*/*/*/__pycache__
-/*/mc3ds-tm.ini
-/uvs_test
+/src/*/*.json
+*.ini
+*.uvs
+*.3dst
