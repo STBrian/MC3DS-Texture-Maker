@@ -10,7 +10,7 @@ from py3dst import Texture3dst, Texture3dstUnsupported, Texture3dstNoSignature
 from py3dst.tex3dst import _createPixelDataStructure, _getTexturePosition
 from py3dst.error_classes import Texture3dstUnexpectedEndOfFile
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (180, 180, 180, 255))
@@ -64,6 +64,9 @@ class App(customtkinter.CTk):
         fileMenu.add_option("Close file", command=self.closeFile)
         fileMenu.add_separator()
         fileMenu.add_option("Exit", command=self.closeApp)
+
+        viewMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("Tools"))
+        viewMenu.add_option("Rebuild texture", command=self.rebuildTexture)
 
         viewMenu = CTkMenuBar.CustomDropdownMenu(widget=menu_bar.add_cascade("View"))
         viewMenu.add_option("Show mipmaps", command=self.showMipmaps)
@@ -283,6 +286,11 @@ class App(customtkinter.CTk):
                 secondary_window.geometry(f"{int(finalWidth)}x{finalHeight}")
             else:
                 messagebox.showinfo("No mipmaps available", "Texture does not contain mipmap data\nMipmap level is 1")
+
+    def rebuildTexture(self):
+        if self.imgOpen:
+            texture = Texture3dst().open(self.imgPath)
+            texture.export(self.imgPath)
 
     def showAbout(self):
         about_text = f"3DSTViewer\nVersion {self.version}\n\nMade by: STBrian\nGitHub: https://github.com/STBrian"
