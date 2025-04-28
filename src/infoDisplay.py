@@ -66,7 +66,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                 position = element["uv"]
 
                 # Copy region and export
-                export = atlas.atlas.copy(position[0], position[1], position[2], position[3])
+                export = atlas.atlas.cropToImage(position[0], position[1], position[2], position[3])
                 if extension == ".png":
                     export.save(file)
                 elif extension == ".3dst":
@@ -157,7 +157,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
 
             # Copy region and update display
             print(selected)
-            portview = atlas.atlas.copy(position[0], position[1], position[2], position[3])
+            portview = atlas.cropToImage(position[0], position[1], position[2], position[3])
             portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
             
             if self.globalVars.showPreviewBg:

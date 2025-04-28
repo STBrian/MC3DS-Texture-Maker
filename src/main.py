@@ -17,6 +17,8 @@ from infoDisplay import InfoDisplayFrame
 from searchOptions import SearchOptionsFrame
 from autoImport import AutoImport
 
+from py3dst import Texture3dst
+
 VERSION = "3.0.0-preview.1"
 
 def clearTreeview(tree: ttk.Treeview):
@@ -157,7 +159,7 @@ class MainFrame(customtkinter.CTkFrame):
             element = self.globalVars.items[values[1]]
             position = element["uv"]
 
-            textureExtract = atlas.atlas.copy(position[0], position[1], position[2], position[3])
+            textureExtract = atlas.cropToImage(position[0], position[1], position[2], position[3])
             if textureExtract.size != (16, 16):
                 textureExtract = textureExtract.resize((16, 16), Image.Resampling.LANCZOS)
             iconTk = ImageTk.PhotoImage(textureExtract)

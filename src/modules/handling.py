@@ -2,7 +2,11 @@ import os
 from pathlib import Path
 from PIL import Image
 
-from py3dst import Texture3dst
+try:
+    from py3dst.py3dst_exp import Texture3dst
+    print("[Warning] Experimental py3dst_exp module loaded, use with precaution")
+except:
+    from py3dst import Texture3dst
 
 class atlasTexture3dst():
     def __init__(self):
@@ -17,11 +21,14 @@ class atlasTexture3dst():
             raise ValueError("Expected int type for tile_padding.")
 
         print("Opening atlas...")
-        atlas = Texture3dst().open(path)
+        atlas = Texture3dst().open(str(path))
 
         self.atlas = atlas
         self.tile_padding = tile_padding
         return self
+    
+    def cropToImage(self, x1, y1, x2, y2):
+        return self.atlas.cropToImage(x1, y1, x2, y2)
 
     def addElement(self, position: tuple | list, new_texture: Image.Image):
         new_texture = new_texture.convert("RGBA")
@@ -72,8 +79,7 @@ class atlasTexture3dst():
                 else:
                     y2_atlas = y_atlas
 
-                r, g, b, a = new_texture.getpixel((x2, y2))
-                self.atlas.setPixel(x2_atlas, y2_atlas, (r, g, b, a))
+                self.atlas.setPixel(x2_atlas, y2_atlas, new_texture.getpixel((x2, y2)))
                 x += 1
                 x_atlas += 1
             x = -self.tile_padding

@@ -2,15 +2,42 @@ import argparse, os, sys, customtkinter
 import traceback
 import CTkMenuBar
 
-from modules.MyCTkTopLevel import *
+from src.modules.MyCTkTopLevel import *
 from tkinter import messagebox
 from PIL import Image, ImageTk, ImageDraw
 from pathlib import Path
-from py3dst import Texture3dst, Texture3dstUnsupported, Texture3dstNoSignature
+try:
+    from py3dst.py3dst_exp import Texture3dst
+except:
+    print("Could not load experimental module")
+    from py3dst import Texture3dst
+from py3dst import Texture3dstUnsupported, Texture3dstNoSignature
 from py3dst.tex3dst import _createPixelDataStructure, _getTexturePosition
 from py3dst.error_classes import Texture3dstUnexpectedEndOfFile
 
 VERSION = "1.1.0"
+
+def _getFormatInfo(format: int) -> dict:
+    FORMATS = (("rgba8", True, 4, 4),
+               ("rgb8", True, 3, 3),
+               ("rgba5551", True, 2, 4),
+               ("rgb565", True, 2, 3),
+               ("rgba4", True, 2, 4),
+               ("la8", True, 2, 2),
+               ("hilo8", False, 2, 2),
+               ("l8", False, 1, 1),
+               ("a8", False, 1, 1),
+               ("la4", True, 1, 2))
+    
+    if format < 0 or format >= len(FORMATS):
+        return None
+    
+    format_info = {}
+    format_info["name"] = FORMATS[format][0]
+    format_info["supported"] = FORMATS[format][1]
+    format_info["pixel_length"] = FORMATS[format][2]
+    format_info["pixel_channels"] = FORMATS[format][3]
+    return format_info
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (180, 180, 180, 255))
@@ -150,7 +177,7 @@ class App(customtkinter.CTk):
             filePath = customtkinter.filedialog.asksaveasfilename(filetypes=[("Image files", ".png .jpeg .jpg .webp .bmp"), ("All image files", saveSuppExtStr)])
             if filePath != '':
                 texture = Texture3dst().open(self.imgPath)
-                imgCopy = texture.copy(0, 0, texture.size[0], texture.size[1])
+                imgCopy = texture.cropToImage(0, 0, texture.size[0], texture.size[1])
                 try:
                     imgCopy.save(filePath)
                 except ValueError:
@@ -168,8 +195,8 @@ class App(customtkinter.CTk):
             if os.path.exists(filePath):
                 path = Path(filePath)
                 try:
-                    texture = Texture3dst().open(path)
-                    preview = texture.copy(0, 0, texture.size[0], texture.size[1])
+                    texture = Texture3dst().open(str(path))
+                    preview = texture.cropToImage(0, 0, texture.size[0], texture.size[1])
                     preview = preview.convert("RGBA")
 
                     minwidth = 256
@@ -193,7 +220,10 @@ class App(customtkinter.CTk):
 
                     # Generates the chessboard pattern in a secondary image then fuses with the source image
                     if not self.ignoreAlphaValue.get():
-                        chessboard = _generateChessboardPattern(texture.size[0], texture.size[1])
+                        try:
+                            chessboard = _generateChessboardPattern(texture.size.width, texture.size.height)
+                        except:
+                            chessboard = _generateChessboardPattern(texture.size[0], texture.size[1])
                         previewFinal = Image.alpha_composite(chessboard, preview)
                     else:
                         previewFinal = preview
@@ -203,7 +233,7 @@ class App(customtkinter.CTk):
                     self.portviewFrame.configure(image=portviewImg)
 
                     self.sizeValue.set(f"{preview.size[0]} x {preview.size[1]}")
-                    self.formatValue.set(f"{texture._getFormatInfo(texture.header.format)['name'].upper()}")
+                    self.formatValue.set(f"{_getFormatInfo(texture.header.format)['name'].upper()}")
                     self.mipLevelValue.set(f"{texture.header.mip_level}")
 
                     self.imgName = path.name
@@ -268,7 +298,7 @@ class App(customtkinter.CTk):
                             tmpTexture.setPixel(k, j, pixel_values)
 
                     preview = _generateChessboardPattern(miptexWidth, miptexHeight)
-                    preview = Image.alpha_composite(preview, tmpTexture.copy(0, 0, tmpTexture.size[0], tmpTexture.size[1]))
+                    preview = Image.alpha_composite(preview, tmpTexture.cropToImage(0, 0, tmpTexture.size[0], tmpTexture.size[1]))
 
                     portviewFrame = customtkinter.CTkLabel(secondary_window, width=miptexWidth, height=miptexHeight, text="", compound="top", bg_color="black")
                     portviewFrame.grid(column=i, row=0, sticky="n")

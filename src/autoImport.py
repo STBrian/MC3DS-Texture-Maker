@@ -153,9 +153,8 @@ class StartFrame(customtkinter.CTkFrame):
 
                         if not Path(f"{outputDir}/{textureDestDir}").exists():
                             Path(f"{outputDir}/{textureDestDir}").mkdir(parents=True)
-                        newTexture = Texture3dst().new(textureToReplace.size[0], textureToReplace.size[1], 1)
-                        newTexture.paste(textureToReplace, 0, 0)
-                        newTexture.export(f"{outputDir}/{textureDestDir}/{sourceIndex[modifiedIndex.index(value)]}.3dst")
+                        #newTexture = Texture3dst().fromImage(textureToReplace)
+                        #newTexture.export(f"{outputDir}/{textureDestDir}/{sourceIndex[modifiedIndex.index(value)]}.3dst")
 
                         # Check for duplicated
                         duplicated = checkForMatch(sourceIndex[modifiedIndex.index(value)], added.getItems())
