@@ -23,7 +23,7 @@ if [[ "$rel_t" = "--debug" || "$rel_t" = "--release" ]]; then
 
 	if command -v python3.14 &> /dev/null; then
 		python3.14 -m PyInstaller --noconfirm --clean build.spec
-	if command -v python3.13 &> /dev/null; then
+	elif command -v python3.13 &> /dev/null; then
 		python3.13 -m PyInstaller --noconfirm --clean build.spec
 	elif command -v python3.12 &> /dev/null; then
 		python3.12 -m PyInstaller --noconfirm --clean build.spec
