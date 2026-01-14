@@ -2,6 +2,7 @@
 
 # Custom code to detect from extern script if build debug or release
 import sys, os
+from PyInstaller.utils.hooks import collect_data_files
 
 with open("./release_type.txt", "r") as f:
     release_type = f.read().split("\n")[0]
@@ -21,6 +22,7 @@ main_datas = [
     ("icon_viewer.ico", "."),
     ("icon_viewer.png", ".")
 ]
+main_datas.extend(collect_data_files("py3dst"))
 main_hiddenimports = ["PIL", "PIL._imagingtk", "PIL._tkinter_finder", "pkg_resources.extern"]
 
 main_a = Analysis( # type: ignore

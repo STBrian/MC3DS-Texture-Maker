@@ -153,7 +153,7 @@ class StartFrame(customtkinter.CTkFrame):
 
                         if not Path(f"{outputDir}/{textureDestDir}").exists():
                             Path(f"{outputDir}/{textureDestDir}").mkdir(parents=True)
-                        #newTexture = Texture3dst().fromImage(textureToReplace)
+                        #newTexture = Texture3dst.fromImage(textureToReplace)
                         #newTexture.export(f"{outputDir}/{textureDestDir}/{sourceIndex[modifiedIndex.index(value)]}.3dst")
 
                         # Check for duplicated

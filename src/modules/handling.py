@@ -4,7 +4,6 @@ from PIL import Image
 
 try:
     from py3dst.py3dst_exp import Texture3dst
-    print("[Warning] Experimental py3dst_exp module loaded, use with precaution")
 except:
     from py3dst import Texture3dst
 
@@ -21,14 +20,14 @@ class atlasTexture3dst():
             raise ValueError("Expected int type for tile_padding.")
 
         print("Opening atlas...")
-        atlas = Texture3dst().open(str(path))
+        atlas = Texture3dst.open(str(path))
 
         self.atlas = atlas
         self.tile_padding = tile_padding
         return self
     
     def cropToImage(self, x1, y1, x2, y2):
-        return self.atlas.cropToImage(x1, y1, x2, y2)
+        return self.atlas.crop(x1, y1, x2, y2).toImage()
 
     def addElement(self, position: tuple | list, new_texture: Image.Image):
         new_texture = new_texture.convert("RGBA")

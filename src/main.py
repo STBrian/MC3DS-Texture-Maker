@@ -17,9 +17,13 @@ from infoDisplay import InfoDisplayFrame
 from searchOptions import SearchOptionsFrame
 from autoImport import AutoImport
 
-from py3dst import Texture3dst
+try:
+    from py3dst.py3dst_exp import Texture3dst
+except:
+    print("[Warning] Could not load experimental module")
+    from py3dst import Texture3dst
 
-VERSION = "3.0.0-preview.1"
+VERSION = "3.0.0-preview.2"
 
 def clearTreeview(tree: ttk.Treeview):
     for item in tree.get_children():

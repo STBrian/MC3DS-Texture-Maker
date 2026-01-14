@@ -70,7 +70,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                 if extension == ".png":
                     export.save(file)
                 elif extension == ".3dst":
-                    export3dst = Texture3dst().fromImage(export)
+                    export3dst = Texture3dst.fromImage(export)
                     export3dst.export(file.name)
             file.close()
 
@@ -116,7 +116,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     if not os.path.exists(f"{outputDir}/textures"):
                         os.makedirs(f"{outputDir}/textures")
 
-                    newTexture = Texture3dst().fromImage(textureToReplace)
+                    newTexture = Texture3dst.fromImage(textureToReplace)
                     newTexture.export(f"{outputDir}/textures/{value}.3dst")
 
                     if duplicated == -1:

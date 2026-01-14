@@ -6,9 +6,9 @@ Luma's LayeredFS feature is currently used to load custom textures into the game
 Additionally, the atlas containing the game blocks has several bitmap versions within the file that are not easily modified. For these complicated tasks I have developed this tool.
 # Requirements
 The executable does not require nothing since all it's packaged inside, but for running from source you need to install some things
-- Python 3.12
+- Python 3.11 (at least)
 - python3-tkinter
-- Please check the requirements.txt file
+- Install other dependencies with ```pip install -r requirements.txt```
 # How to use
 The README file refers to the latest beta version v2.0-beta2 since version v1.0-release is outdated and I don't suggest using it
 
@@ -40,11 +40,11 @@ Execute the `build.bat` file after installed the dependencies
 ```bash
 sudo apt-get update
 ```
-You can either install Python 3.11 or 3.12, just find the way to install Python 3.12 on your distribution
+Install Python at least 3.11. Replace 3.11 with your version
 ```bash
 sudo apt-get install python3.11 python3-tk python3-pip python3.11-dev
 ```
-Here replace 3.11 with 3.12 if you have that Python version installed
+Install other dependencies. Replace 3.11 with your version
 ```bash
 python3.11 -m pip install -r requirements.txt
 ```

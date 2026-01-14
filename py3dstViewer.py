@@ -9,13 +9,13 @@ from pathlib import Path
 try:
     from py3dst.py3dst_exp import Texture3dst
 except:
-    print("Could not load experimental module")
+    print("[Warning] Could not load experimental module")
     from py3dst import Texture3dst
 from py3dst import Texture3dstUnsupported, Texture3dstNoSignature
 from py3dst.tex3dst import _createPixelDataStructure, _getTexturePosition
 from py3dst.error_classes import Texture3dstUnexpectedEndOfFile
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 
 def _getFormatInfo(format: int) -> dict:
     FORMATS = (("rgba8", True, 4, 4),
@@ -176,8 +176,8 @@ class App(customtkinter.CTk):
                 saveSuppExtStr += f"{ex} "
             filePath = customtkinter.filedialog.asksaveasfilename(filetypes=[("Image files", ".png .jpeg .jpg .webp .bmp"), ("All image files", saveSuppExtStr)])
             if filePath != '':
-                texture = Texture3dst().open(self.imgPath)
-                imgCopy = texture.cropToImage(0, 0, texture.size[0], texture.size[1])
+                texture = Texture3dst.open(self.imgPath)
+                imgCopy = texture.crop(0, 0, texture.size[0], texture.size[1]).toImage()
                 try:
                     imgCopy.save(filePath)
                 except ValueError:
@@ -195,8 +195,8 @@ class App(customtkinter.CTk):
             if os.path.exists(filePath):
                 path = Path(filePath)
                 try:
-                    texture = Texture3dst().open(str(path))
-                    preview = texture.cropToImage(0, 0, texture.size[0], texture.size[1])
+                    texture = Texture3dst.open(str(path))
+                    preview = texture.crop(0, 0, texture.size[0], texture.size[1]).toImage()
                     preview = preview.convert("RGBA")
 
                     minwidth = 256
@@ -220,10 +220,7 @@ class App(customtkinter.CTk):
 
                     # Generates the chessboard pattern in a secondary image then fuses with the source image
                     if not self.ignoreAlphaValue.get():
-                        try:
-                            chessboard = _generateChessboardPattern(texture.size.width, texture.size.height)
-                        except:
-                            chessboard = _generateChessboardPattern(texture.size[0], texture.size[1])
+                        chessboard = _generateChessboardPattern(texture.size[0], texture.size[1])
                         previewFinal = Image.alpha_composite(chessboard, preview)
                     else:
                         previewFinal = preview
@@ -254,22 +251,22 @@ class App(customtkinter.CTk):
 
     def showMipmaps(self):
         if self.imgOpen:
-            texture = Texture3dst().open(self.imgPath)
+            texture = Texture3dst.open(self.imgPath)
             if texture.header.mip_level > 1:
                 secondary_window = MyCTkTopLevel(self)
                 secondary_window.title("Mipmap viewer")
-                secondary_window.geometry(f"{int(texture.header.full_size[0]/2)}x{int(texture.header.full_size[1]/2)}")
+                secondary_window.geometry(f"{int(texture.header.full_size.width/2)}x{int(texture.header.full_size.height/2)}")
 
                 texPixelFormat = texture._getFormatInfo(texture.header.format)
-                texPixelLenght = texPixelFormat["pixel_lenght"]
+                texPixelLenght = texPixelFormat["pixel_length"]
                 
                 start_idx = 0x20
-                mipData_end_idx = start_idx + texPixelLenght * texture.header.full_size[0] * texture.header.full_size[1]
+                mipData_end_idx = start_idx + texPixelLenght * texture.header.full_size.width * texture.header.full_size.height
                 
                 mipmapsFrames = 0
                 for i in range(0, texture.header.mip_level - 1):
-                    miptexWidth = int(texture.header.full_size[0] / (2 * (i+1)))
-                    miptexHeight = int(texture.header.full_size[1] / (2 * (i+1)))
+                    miptexWidth = int(texture.header.full_size.width / (2 * (i+1)))
+                    miptexHeight = int(texture.header.full_size.height / (2 * (i+1)))
                     mipData_start_idx = mipData_end_idx 
                     mipData_end_idx = mipData_start_idx + (texPixelLenght * miptexWidth * miptexHeight)
 
@@ -298,7 +295,7 @@ class App(customtkinter.CTk):
                             tmpTexture.setPixel(k, j, pixel_values)
 
                     preview = _generateChessboardPattern(miptexWidth, miptexHeight)
-                    preview = Image.alpha_composite(preview, tmpTexture.cropToImage(0, 0, tmpTexture.size[0], tmpTexture.size[1]))
+                    preview = Image.alpha_composite(preview, tmpTexture.crop(0, 0, tmpTexture.size[0], tmpTexture.size[1]).toImage())
 
                     portviewFrame = customtkinter.CTkLabel(secondary_window, width=miptexWidth, height=miptexHeight, text="", compound="top", bg_color="black")
                     portviewFrame.grid(column=i, row=0, sticky="n")
@@ -309,9 +306,9 @@ class App(customtkinter.CTk):
                     mipmapsFrames += 1
                 
                 finalWidth = 0
-                finalHeight = int(texture.header.full_size[1] / 2)
+                finalHeight = int(texture.header.full_size.height / 2)
                 for i in range(mipmapsFrames):
-                    finalWidth += texture.header.full_size[0] / (2 * (i+1))
+                    finalWidth += texture.header.full_size.width / (2 * (i+1))
 
                 secondary_window.geometry(f"{int(finalWidth)}x{finalHeight}")
             else:
@@ -319,7 +316,7 @@ class App(customtkinter.CTk):
 
     def rebuildTexture(self):
         if self.imgOpen:
-            texture = Texture3dst().open(self.imgPath)
+            texture = Texture3dst.open(self.imgPath)
             texture.export(self.imgPath)
 
     def showAbout(self):
