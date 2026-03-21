@@ -1,17 +1,15 @@
 import customtkinter
-from appGlobalVars import appGlobalVars
+from globals import GLOBAL_STATE
 
 class SearchOptionsFrame(customtkinter.CTkFrame):
-    def __init__(self, master, globalVars: appGlobalVars, **kwargs):
+    def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-
-        self.globalVars = globalVars
 
         # Variables
         self.searchText = customtkinter.StringVar(value="")
         self.showModifiedVar = customtkinter.StringVar(value="off")
         self.showUnmodifiedVar = customtkinter.StringVar(value="on")
-        self.globalVars.searchData = ["", "off", "on"]
+        GLOBAL_STATE.searchData = ["", "off", "on"]
 
         self.grid_columnconfigure(0, weight=1)
 
@@ -31,11 +29,11 @@ class SearchOptionsFrame(customtkinter.CTkFrame):
         self.button.grid(row=3, column=1, padx=5, pady=5, sticky="wn")
         
     def saveSearch(self):
-        if self.globalVars.openedProject:
+        if GLOBAL_STATE.openedProject:
             searchText = self.searchText.get()
             modifiedVar = self.showModifiedVar.get()
             unmodifiedVar = self.showUnmodifiedVar.get()
 
-            if self.globalVars.searchData != [searchText, modifiedVar, unmodifiedVar]:
-                self.globalVars.searchData = [searchText, modifiedVar, unmodifiedVar]
-                self.globalVars.updateList()
+            if GLOBAL_STATE.searchData != [searchText, modifiedVar, unmodifiedVar]:
+                GLOBAL_STATE.searchData = [searchText, modifiedVar, unmodifiedVar]
+                GLOBAL_STATE.updateList()

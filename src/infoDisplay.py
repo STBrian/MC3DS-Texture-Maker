@@ -5,7 +5,7 @@ from pathlib import Path
 from py3dst import Texture3dst
 from tkinter import messagebox
 from modules import atlasTexture3dst, canOpenImage, isImageSize, checkForMatch
-from appGlobalVars import appGlobalVars
+from globals import GLOBAL_STATE
 
 def _generateChessboardPattern(width, height, tileSize = 10):
     chessboard = Image.new("RGBA", (width, height), (146, 146, 146, 255))
@@ -22,12 +22,10 @@ def _generateChessboardPattern(width, height, tileSize = 10):
     return chessboard
 
 class InfoDisplayFrame(customtkinter.CTkFrame):
-    def __init__(self, master, globalVars: appGlobalVars, **kwargs):
+    def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure((0, 1, 2, 3), weight=1)
-
-        self.globalVars = globalVars
 
         # Variables
         self.selected = customtkinter.StringVar(value="No element selected")
@@ -61,8 +59,8 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             if value != "":
                 selected = value
 
-                element = self.globalVars.items[selected]
-                atlas = self.globalVars.atlasHandler
+                element = GLOBAL_STATE.items[selected]
+                atlas = GLOBAL_STATE.atlasHandler
                 position = element["uv"]
 
                 # Copy region and export
@@ -78,12 +76,12 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         self.changeTextureFunc(self.selected.get())
 
     def changeTextureFunc(self, value):
-        outputDir = self.globalVars.outputFolder
-        allowResize = self.globalVars.allowResize
+        outputDir = GLOBAL_STATE.outputFolder
+        allowResize = GLOBAL_STATE.allowResize
 
-        added = self.globalVars.addedItems
-        atlas: atlasTexture3dst = self.globalVars.atlasHandler
-        element = self.globalVars.items[value]
+        added = GLOBAL_STATE.addedItems
+        atlas: atlasTexture3dst = GLOBAL_STATE.atlasHandler
+        element = GLOBAL_STATE.items[value]
         position = element["uv"]
 
         exts = Image.registered_extensions()
@@ -105,9 +103,9 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                 else:
                     if not isSized:
                         resampling = Image.Resampling.LANCZOS
-                        if self.globalVars.resamplingType == "Bilinear":
+                        if GLOBAL_STATE.resamplingType == "Bilinear":
                             resampling = Image.Resampling.BILINEAR
-                        elif self.globalVars.resamplingType == "Nearest":
+                        elif GLOBAL_STATE.resamplingType == "Nearest":
                             resampling = Image.Resampling.NEAREST
                         textureToReplace = textureToReplace.resize((position[2] - position[0], position[3] - position[1]), resampling)
                     atlas.addElement(position, textureToReplace)
@@ -125,13 +123,13 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
                     # Updates portview
                     self.showItemInfo(value)
 
-                    self.globalVars.saved = False
-                    self.globalVars.updateList()
+                    GLOBAL_STATE.saved = False
+                    GLOBAL_STATE.updateList()
         self.buttonReplace.configure(state="normal")
 
     def showItemInfo(self, value = None):
         if value == None:
-            item = self.globalVars.treeElementSelected
+            item = GLOBAL_STATE.treeElementSelected
             if not "values" in item:
                 return
             print(item)
@@ -151,8 +149,8 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
         if selected != "No element selected":
             self.selected.set(selected)
 
-            element = self.globalVars.items[selected]
-            atlas: atlasTexture3dst = self.globalVars.atlasHandler
+            element = GLOBAL_STATE.items[selected]
+            atlas = GLOBAL_STATE.atlasHandler
             position = element["uv"]
 
             # Copy region and update display
@@ -160,7 +158,7 @@ class InfoDisplayFrame(customtkinter.CTkFrame):
             portview = atlas.cropToImage(position[0], position[1], position[2], position[3])
             portviewRes = portview.resize((256, 256), Image.Resampling.NEAREST)
             
-            if self.globalVars.showPreviewBg:
+            if GLOBAL_STATE.showPreviewBg:
                 backgound = _generateChessboardPattern(256, 256, tileSize=20)
                 portviewRes = Image.alpha_composite(backgound, portviewRes)
 

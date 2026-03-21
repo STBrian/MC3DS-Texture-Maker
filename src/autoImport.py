@@ -5,6 +5,12 @@ from pathlib import Path
 from modules import *
 from modules.MyCTkTopLevel import *
 
+from globals import GLOBAL_STATE
+from paths import paths
+
+from typing import cast
+from tkinter import PhotoImage
+
 def getFileNamesWithExtensionInDir(path: Path, ext: str):
     matches = []
     for file in path.glob(f"**/*.{ext}"):
@@ -13,7 +19,7 @@ def getFileNamesWithExtensionInDir(path: Path, ext: str):
     return matches
 
 class OptionsFrame(customtkinter.CTkFrame):
-    def __init__(self, master, globalVars, **kwargs):
+    def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
@@ -25,7 +31,7 @@ class OptionsFrame(customtkinter.CTkFrame):
         self.label2 = customtkinter.CTkLabel(self, text="Version:")
         self.label2.grid(row=1, column=0, padx=10, pady=0, sticky="w")
 
-        rules = getFileNamesWithExtensionInDir(Path(globalVars.assetsPath, "rules"), "json")
+        rules = getFileNamesWithExtensionInDir(paths.getResource("rules"), "json")
 
         self.rule = customtkinter.StringVar(value="nn3ds 1.9.19")
 
@@ -33,11 +39,10 @@ class OptionsFrame(customtkinter.CTkFrame):
         self.cb2.grid(row=2, column=0, padx=10, pady=(5, 10), sticky="w")
 
 class StartFrame(customtkinter.CTkFrame):
-    def __init__(self, master, globalVars, **kwargs):
+    def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
 
         self.root = master
-        self.globalVars = globalVars
 
         self.grid_columnconfigure(0, weight=1)
 
@@ -70,8 +75,8 @@ class StartFrame(customtkinter.CTkFrame):
         autoImportThread.start()
 
     def loadRulesFile(self, ruleName: str, source: list, out: list, atlasType: str):
-        if Path(self.globalVars.assetsPath, f"rules/{ruleName}.json").exists():
-            with open(Path(self.globalVars.assetsPath, f"rules/{ruleName}.json"), "r") as f:
+        if paths.getResource(f"rules/{ruleName}.json").exists():
+            with open(paths.getResource(f"rules/{ruleName}.json"), "r") as f:
                 ruleData = json.loads(f.read())
 
             if "parent" in ruleData:
@@ -84,22 +89,21 @@ class StartFrame(customtkinter.CTkFrame):
     
     def autoImport(self):
         root = self.root
-        atlasType = self.globalVars.atlasType
+        atlasType = GLOBAL_STATE.atlasType
         ruleFile = root.optionsFrame.rule.get()
         inputDir = self.dirPath
-        outputDir = self.globalVars.outputFolder
-        allowResize = self.globalVars.allowResize
-        appPath = self.globalVars.appPath
+        outputDir = GLOBAL_STATE.outputFolder
+        allowResize = GLOBAL_STATE.allowResize
+        #appPath = self.globalVars.appPath
         self.button.configure(state="disabled")
         self.button.configure(text="Please wait...")
         print(atlasType)
         print(inputDir)
         print(outputDir)
-        print(appPath)
 
-        index: dict = self.globalVars.items
-        added: IndexFile = self.globalVars.addedItems
-        atlas: atlasTexture3dst = self.globalVars.atlasHandler
+        index = GLOBAL_STATE.items
+        added = GLOBAL_STATE.addedItems
+        atlas = GLOBAL_STATE.atlasHandler
         textureDestDir = "textures"
 
         # Load rules
@@ -140,9 +144,9 @@ class StartFrame(customtkinter.CTkFrame):
                         
                         if not isSized:
                             resampling = Image.Resampling.LANCZOS
-                            if self.globalVars.resamplingType == "Bilinear":
+                            if GLOBAL_STATE.resamplingType == "Bilinear":
                                 resampling = Image.Resampling.BILINEAR
-                            elif self.globalVars.resamplingType == "Nearest":
+                            elif GLOBAL_STATE.resamplingType == "Nearest":
                                 resampling = Image.Resampling.NEAREST
                             textureToReplace = textureToReplace.resize((position[2] - position[0], position[3] - position[1]), resampling)
                         # Show new texture in preview frame
@@ -172,11 +176,11 @@ class StartFrame(customtkinter.CTkFrame):
         print("Total textures not found:", len(not_found_textures))
 
         # Finish reloading lists in main app
-        self.globalVars.saved = False
+        GLOBAL_STATE.saved = False
         mainApp = self.root.root
         infoDispFrame = mainApp.mainFrame.infoDispFrame
         infoDispFrame.showItemInfo(infoDispFrame.selected.get())
-        self.globalVars.updateList()
+        GLOBAL_STATE.updateList()
 
         portviewImage = Image.new("RGBA", (16, 16))
         portviewRes = portviewImage.resize((256, 256), Image.Resampling.NEAREST)
@@ -204,7 +208,7 @@ class PreviewFrame(customtkinter.CTkFrame):
         self.portviewFrame.grid(row=0, column=0, padx=2, pady=2, sticky="wnse")
 
 class AutoImport(MyCTkTopLevel):
-    def __init__(self, master, globalVars, *args, **kwargs):
+    def __init__(self, master, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
         self.geometry("400x240")
         self.resizable(False, False)
@@ -213,27 +217,25 @@ class AutoImport(MyCTkTopLevel):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        self.globalVars = globalVars
-
         self.root = master
-        self.itemsAtlas = self.globalVars.atlasHandler
-        self.items = self.globalVars.items
-        self.addedItems = self.globalVars.addedItems
+        #self.itemsAtlas = self.globalVars.atlasHandler
+        #self.items = self.globalVars.items
+        #self.addedItems = self.globalVars.addedItems
 
-        self.app_path = self.globalVars.appPath
+        #self.app_path = self.globalVars.appPath
         os_name = os.name
         if os_name == "nt" or os_name == "posix":
-            iconpath = ImageTk.PhotoImage(file=(self.globalVars.iconPath.joinpath("icon2.png")))
+            iconpath = ImageTk.PhotoImage(file=paths.getAppPath("icon2.png"))
             self.wm_iconbitmap()
-            self.iconphoto(False, iconpath)
+            self.iconphoto(False, cast(PhotoImage, iconpath))
 
-        self.output_dir = self.globalVars.outputFolder
+        #self.output_dir = self.globalVars.outputFolder
         self.inputDir = customtkinter.StringVar(value="")
 
-        self.optionsFrame = OptionsFrame(self, globalVars)
+        self.optionsFrame = OptionsFrame(self)
         self.optionsFrame.grid(row=0, column=0, padx=5, pady=5, sticky="we")
 
-        self.startFrame = StartFrame(self, globalVars)
+        self.startFrame = StartFrame(self)
         self.startFrame.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="wens")
 
         self.previewFrame = PreviewFrame(self)
